@@ -79,10 +79,12 @@ describe("request.ts", () => {
   describe("isGenerativeLanguageRequest", () => {
     it("returns true for generativelanguage.googleapis.com URLs", () => {
       expect(isGenerativeLanguageRequest("https://generativelanguage.googleapis.com/v1/models")).toBe(true);
+      expect(isGenerativeLanguageRequest(new Request("https://generativelanguage.googleapis.com/v1/models"))).toBe(true);
     });
 
     it("returns false for other URLs", () => {
       expect(isGenerativeLanguageRequest("https://api.anthropic.com/v1/messages")).toBe(false);
+      expect(isGenerativeLanguageRequest("https://example.com/redirect?next=https://generativelanguage.googleapis.com/v1/models")).toBe(false);
     });
 
     it("returns false for non-string inputs", () => {

@@ -83,11 +83,13 @@ describe("debug sink policy", () => {
       Authorization: "Bearer secret",
       "x-api-key": "api-secret",
       "x-goog-api-key": "goog-secret",
+      "Proxy-Authorization": "Basic proxy-secret",
       "content-type": "application/json",
     })).toEqual({
       authorization: "[redacted]",
       "x-api-key": "[redacted]",
       "x-goog-api-key": "[redacted]",
+      "proxy-authorization": "[redacted]",
       "content-type": "application/json",
     })
     expect(sanitizeUrlForLog("https://generativelanguage.googleapis.com/v1beta/models?key=secret&alt=sse")).toBe(

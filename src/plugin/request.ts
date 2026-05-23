@@ -19,7 +19,6 @@ import {
 import { defaultSignatureStore } from "./stores/signature-store";
 import {
   DEBUG_MESSAGE_PREFIX,
-  isDebugEnabled,
   isDebugTuiEnabled,
   logAntigravityDebugResponse,
   logCacheStats,
@@ -60,8 +59,6 @@ import {
 import { sanitizeCrossModelPayloadInPlace } from "./transform/cross-model-sanitizer";
 import { isGemini3Model, isImageGenerationModel, buildImageGenerationConfig, applyGeminiTransforms } from "./transform";
 import {
-  resolveModelWithTier,
-  resolveModelWithVariant,
   resolveModelForHeaderStyle,
   resolveAntigravityGemini35FlashBackendModel,
   isClaudeModel,
@@ -751,11 +748,19 @@ function ensureDefaultGemini3ThinkingLevel(
 
 const STREAM_ACTION = "streamGenerateContent";
 
+interface RequestInitWithDuplex extends RequestInit {
+  duplex?: "half";
+}
+
 /**
  * Detects requests headed to the Google Generative Language API so we can intercept them.
  */
 export function isGenerativeLanguageRequest(input: RequestInfo): boolean {
-  return requestInfoUrl(input).includes("generativelanguage.googleapis.com");
+  try {
+    return new URL(requestInfoUrl(input)).hostname === "generativelanguage.googleapis.com";
+  } catch {
+    return false;
+  }
 }
 
 function requestInfoUrl(input: RequestInfo): string {
@@ -803,8 +808,17 @@ export function prepareAntigravityRequest(
   thinkingRecoveryMessage?: string;
 } {
   const requestUrl = requestInfoUrl(input);
-  const baseInit: RequestInit = { ...init };
-  const headers = new Headers(init?.headers ?? (typeof input === "string" ? undefined : input.headers));
+  const requestInput = typeof input === "string" ? undefined : input;
+  const baseInit: RequestInitWithDuplex = {
+    method: requestInput?.method,
+    body: requestInput?.body,
+    signal: requestInput?.signal,
+    ...init,
+  };
+  if (baseInit.body instanceof ReadableStream && baseInit.duplex === undefined) {
+    baseInit.duplex = "half";
+  }
+  const headers = new Headers(init?.headers ?? requestInput?.headers);
   let resolvedProjectId = projectId?.trim() || "";
   let toolDebugMissing = 0;
   const toolDebugSummaries: string[] = [];

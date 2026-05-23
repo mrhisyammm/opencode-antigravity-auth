@@ -307,7 +307,9 @@ export function maskHeadersForLog(headers?: HeadersInit | Headers): Record<strin
 
 function isSensitiveHeader(key: string): boolean {
   const normalized = key.toLowerCase();
-  return normalized === "authorization" || normalized.includes("api-key");
+  return normalized === "authorization"
+    || normalized === "proxy-authorization"
+    || normalized.includes("api-key");
 }
 
 export function sanitizeUrlForLog(urlString: string): string {
