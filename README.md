@@ -12,7 +12,8 @@ Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth
 
 - **Claude Opus 4.6, Sonnet 4.6** and **Gemini 3.1 Pro/Flash** via Google OAuth
 - **Multi-account support** — add multiple Google accounts, auto-rotates when rate-limited
-- **Dual quota system** — access both Antigravity and Gemini CLI quotas from one plugin
+- **Modern Gemini API support** — use Antigravity SDK-style API keys / Cloud Projects as Gemini backups or opt-in primary routing
+- **Legacy Gemini CLI quota support** — still available for compatibility and quota fallback
 - **Thinking models** — extended thinking for Claude and Gemini 3 with configurable budgets
 - **Google Search grounding** — enable web search for Gemini models (auto or always-on)
 - **Auto-recovery** — handles session errors and tool failures automatically
@@ -67,7 +68,7 @@ Install the opencode-antigravity-auth plugin and add the Antigravity model defin
    opencode auth login
    ```
 
-3. **Add models** — choose one:
+3. **Models** — current OpenCode versions can load plugin models dynamically at runtime. If your OpenCode version still requires static provider config, choose one:
    - Run `opencode auth login` → Google → OAuth with Google (Antigravity) → select **"Configure models in opencode.json"** (auto-configures all models)
    - Or manually copy the [full configuration](#models) below
 
@@ -119,7 +120,11 @@ opencode run "Hello" --model=google/antigravity-claude-opus-4-6-thinking --varia
 | `antigravity-claude-sonnet-4-6` | — | Claude Sonnet 4.6 |
 | `antigravity-claude-opus-4-6-thinking` | low, max | Claude Opus 4.6 with extended thinking |
 
-**Gemini CLI quota** (separate from Antigravity; used when `cli_first` is true or as fallback):
+**Antigravity SDK / Gemini API projects** (API-key backed; used by API-key auth, or as OAuth fallback when configured):
+
+The official Antigravity SDK uses `GEMINI_API_KEY` for local Gemini access. This plugin now supports that path directly for Gemini models while keeping OAuth accounts for Antigravity and Claude.
+
+**Legacy Gemini CLI quota** (separate from Antigravity; used when `cli_first` is true or as fallback):
 
 | Model | Notes |
 |-------|-------|
@@ -132,9 +137,10 @@ opencode run "Hello" --model=google/antigravity-claude-opus-4-6-thinking --varia
 | `gemini-3.1-pro-preview-customtools` | Gemini 3.1 Pro Preview Custom Tools |
 
 > **Routing Behavior:**
-> - **Antigravity-first (default):** Gemini models use Antigravity quota across accounts.
-> - **CLI-first (`cli_first: true`):** Gemini models use Gemini CLI quota first.
-> - When a Gemini quota pool is exhausted, the plugin automatically falls back to the other pool.
+> - **OAuth Antigravity-first (default):** Gemini models use Antigravity quota across OAuth accounts.
+> - **Antigravity SDK / Gemini API:** API-key auth, `GEMINI_API_KEY`, or configured `agy_sdk.cloud_projects` route Gemini requests through the public Gemini API.
+> - **Legacy CLI-first (`cli_first: true`):** Gemini models use the legacy Gemini CLI quota first.
+> - When OAuth quota pools are exhausted, configured `agy_sdk.cloud_projects` are used as backup capacity before failing.
 > - Claude and image models always use Antigravity.
 > Model names are automatically transformed for the target API (e.g., `antigravity-gemini-3-flash` → `gemini-3-flash-preview` for CLI).
 
@@ -611,7 +617,38 @@ Most users don't need to configure anything — defaults work well.
 |--------|---------|--------------
 | `keep_thinking` | `false` | Preserve Claude's thinking across turns. **Warning:** enabling may degrade model stability. |
 | `session_recovery` | `true` | Auto-recover from tool errors |
-| `cli_first` | `false` | Route Gemini models to Gemini CLI first (Claude and image models stay on Antigravity). |
+| `cli_first` | `false` | Route Gemini models to the legacy Gemini CLI path first (Claude and image models stay on Antigravity). |
+| `agy_sdk.enabled` | `true` | Enables the Antigravity SDK / Gemini API key route for Gemini requests. |
+| `agy_sdk.prefer_for_gemini` | `false` | When API keys are configured, use the Gemini API route before OAuth-backed Antigravity for Gemini models. |
+| `agy_sdk.api_key_fallback` | `true` | Use configured API keys / Cloud Projects when OAuth Antigravity and legacy Gemini CLI quotas are unavailable. |
+| `model_discovery.enabled` | `true` | Load provider models dynamically from Gemini API / Antigravity model APIs, with bundled static definitions as fallback. |
+
+### Antigravity SDK / Gemini API keys
+
+The official Antigravity SDK quickstart uses `GEMINI_API_KEY`. You can provide one key via environment variable:
+
+```bash
+GEMINI_API_KEY=your-key opencode run "Hello" --model=google/gemini-3-pro
+```
+
+For multiple Cloud Projects / API keys, add them to `~/.config/opencode/antigravity.json`:
+
+```json
+{
+  "agy_sdk": {
+    "api_key_fallback": true,
+    "prefer_for_gemini": false,
+    "cloud_projects": [
+      { "label": "primary", "project_id": "my-project", "api_key": "..." },
+      { "label": "backup", "project_id": "my-backup-project", "api_key": "..." }
+    ]
+  }
+}
+```
+
+Keep this file private: API keys are stored in your local OpenCode config and are sent to Gemini with the `x-goog-api-key` header, never in the request URL. Do not commit `antigravity.json` with real keys.
+
+Set `prefer_for_gemini: true` if you want Gemini models to use the newer Gemini API path before OAuth-backed Antigravity. OAuth multi-account rotation remains active for Antigravity/Claude and as fallback when `prefer_for_gemini` keys are unavailable. `cli_first` remains the legacy Gemini CLI compatibility mode.
 
 ### Account Rotation
 
