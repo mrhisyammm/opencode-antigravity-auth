@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  enhanceAgySdkErrorResponse,
   getAgySdkCredentials,
   fetchGeminiApiModels,
   isAgySdkSupportedRequest,
+  isLikelyAntigravityOnlyModel,
   prepareAgySdkGeminiRequest,
   selectAgySdkCredential,
   markAgySdkCredentialRateLimited,
@@ -305,5 +307,168 @@ describe("api-key agy sdk support", () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe("isLikelyAntigravityOnlyModel", () => {
+  it("flags bare gemini-3 pro/flash ids as Antigravity-only", () => {
+    expect(isLikelyAntigravityOnlyModel("gemini-3-pro")).toBe(true);
+    expect(isLikelyAntigravityOnlyModel("gemini-3.1-pro")).toBe(true);
+    expect(isLikelyAntigravityOnlyModel("gemini-3-flash")).toBe(true);
+    expect(isLikelyAntigravityOnlyModel("gemini-3.1-flash")).toBe(true);
+  });
+
+  it("flags antigravity- and claude- prefixed ids as Antigravity-only", () => {
+    expect(isLikelyAntigravityOnlyModel("antigravity-gemini-3.1-pro")).toBe(true);
+    expect(isLikelyAntigravityOnlyModel("antigravity-claude-sonnet-4-6")).toBe(true);
+    expect(isLikelyAntigravityOnlyModel("claude-opus-4-6-thinking")).toBe(true);
+  });
+
+  it("does NOT flag public-API Gemini 3 ids (preview / lite / 3.5-flash)", () => {
+    expect(isLikelyAntigravityOnlyModel("gemini-3.1-pro-preview")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-3-pro-preview")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-3.1-flash-lite")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-3-flash-preview")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-3.5-flash")).toBe(false);
+  });
+
+  it("does NOT flag Gemini 2.x ids", () => {
+    expect(isLikelyAntigravityOnlyModel("gemini-2.5-pro")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-2.5-flash")).toBe(false);
+    expect(isLikelyAntigravityOnlyModel("gemini-2.0-flash")).toBe(false);
+  });
+});
+
+describe("enhanceAgySdkErrorResponse", () => {
+  function jsonResponse(body: unknown, status = 404): Response {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  async function bodyOf(response: Response): Promise<{ error?: { message?: string; code?: number; status?: string } }> {
+    return JSON.parse(await response.text());
+  }
+
+  it("returns the response unchanged for non-404 statuses", async () => {
+    const original = jsonResponse({ error: { code: 500, message: "boom" } }, 500);
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).toBe(original);
+  });
+
+  it("returns the response unchanged when no model is provided", async () => {
+    const original = jsonResponse({ error: { code: 404, message: "Model is not found" } });
+    const result = await enhanceAgySdkErrorResponse(original, undefined);
+    expect(result).toBe(original);
+  });
+
+  it("returns the response unchanged when body is not parseable as JSON", async () => {
+    const original = new Response("<html>not found</html>", {
+      status: 404,
+      headers: { "content-type": "text/html" },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).toBe(original);
+  });
+
+  it("rewrites 404 with text/event-stream content-type (streamGenerateContent?alt=sse case)", async () => {
+    const original = new Response(JSON.stringify({
+      error: {
+        code: 404,
+        message: "models/gemini-3.1-pro is not found for API version v1beta",
+        status: "NOT_FOUND",
+      },
+    }), {
+      status: 404,
+      headers: { "content-type": "text/event-stream" },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).not.toBe(original);
+    const enhanced = await bodyOf(result);
+    expect(enhanced.error?.message).toContain("Antigravity Code Assist");
+  });
+
+  it("returns the response unchanged for 404s that don't look like model-not-found", async () => {
+    const original = jsonResponse({ error: { code: 404, message: "Project not found" } });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).toBe(original);
+  });
+
+  it("rewrites 404 with OAuth guidance for Antigravity-only models", async () => {
+    const original = jsonResponse({
+      error: {
+        code: 404,
+        message: "Model is not found: models/gemini-3.1-pro for api version v1beta",
+        status: "NOT_FOUND",
+      },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).not.toBe(original);
+    expect(result.status).toBe(404);
+
+    const enhanced = await bodyOf(result);
+    expect(enhanced.error?.code).toBe(404);
+    expect(enhanced.error?.status).toBe("NOT_FOUND");
+    expect(enhanced.error?.message).toContain("gemini-3.1-pro");
+    expect(enhanced.error?.message).toContain("Antigravity Code Assist backend");
+    expect(enhanced.error?.message).toContain("opencode auth login");
+    expect(enhanced.error?.message).toContain("api_key_fallback");
+    expect(enhanced.error?.message).toContain("Public-API models known to work");
+    expect(enhanced.error?.message).toContain("gemini-3.1-pro-preview");
+    expect(enhanced.error?.message).toContain("(Underlying Gemini API error: Model is not found");
+  });
+
+  it("rewrites 404 with spelling/lookup hint for unknown non-Antigravity models", async () => {
+    const original = jsonResponse({
+      error: {
+        code: 404,
+        message: "Model is not found: models/gemini-nonexistent-v9 for api version v1beta",
+        status: "NOT_FOUND",
+      },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-nonexistent-v9");
+
+    const enhanced = await bodyOf(result);
+    expect(enhanced.error?.message).toContain("gemini-nonexistent-v9");
+    expect(enhanced.error?.message).toContain("forwarded to the public Gemini API verbatim");
+    expect(enhanced.error?.message).not.toContain("Antigravity Code Assist");
+    expect(enhanced.error?.message).not.toContain("opencode auth login");
+    expect(enhanced.error?.message).toContain("Public-API models known to work");
+  });
+
+  it("triggers on 'not supported for generateContent' phrasing too", async () => {
+    const original = jsonResponse({
+      error: {
+        code: 404,
+        message: "models/gemini-3.1-pro is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+        status: "NOT_FOUND",
+      },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "gemini-3.1-pro");
+    expect(result).not.toBe(original);
+    const enhanced = await bodyOf(result);
+    expect(enhanced.error?.message).toContain("Antigravity Code Assist");
+  });
+
+  it("preserves status, normalizes content-type to application/json, strips content-length", async () => {
+    const original = new Response(JSON.stringify({
+      error: { code: 404, message: "Model is not found", status: "NOT_FOUND" },
+    }), {
+      status: 404,
+      statusText: "Not Found",
+      headers: {
+        "content-type": "text/event-stream",
+        "content-length": "12345",
+        "x-trace-id": "abc",
+      },
+    });
+    const result = await enhanceAgySdkErrorResponse(original, "antigravity-gemini-3-flash");
+
+    expect(result.status).toBe(404);
+    expect(result.statusText).toBe("Not Found");
+    expect(result.headers.get("content-type")).toBe("application/json");
+    expect(result.headers.get("content-length")).toBeNull();
+    expect(result.headers.get("x-trace-id")).toBe("abc");
   });
 });

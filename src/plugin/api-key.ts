@@ -144,6 +144,143 @@ export function isAgySdkSupportedRequest(urlString: string): boolean {
   return !!model && model.toLowerCase().includes("gemini");
 }
 
+/**
+ * Public Gemini API models commonly available on `generativelanguage.googleapis.com/v1beta`.
+ * Used to suggest alternatives when an Antigravity-only model is requested through
+ * the API-key path. Kept short and stable; the live registry has more, but these
+ * are the high-signal choices for the error hint.
+ *
+ * Source: GET https://generativelanguage.googleapis.com/v1beta/models (May 2026).
+ */
+const PUBLIC_GEMINI_API_MODEL_SUGGESTIONS = [
+  "gemini-2.5-pro",
+  "gemini-2.5-flash",
+  "gemini-3.1-pro-preview",
+  "gemini-3.1-flash-lite",
+  "gemini-3.5-flash",
+] as const;
+
+/**
+ * Bare Gemini ids that the Antigravity Code Assist backend serves but the public
+ * Gemini API does NOT expose. Cross-checked against
+ * `GET https://generativelanguage.googleapis.com/v1beta/models` (May 2026).
+ *
+ * The public registry DOES include `-preview` / `-lite` / `-image` / `-tts` variants,
+ * and notably `gemini-3.5-flash` as a bare id, so this list stays explicit rather
+ * than pattern-based to avoid false positives.
+ */
+const ANTIGRAVITY_ONLY_BARE_GEMINI_IDS: ReadonlySet<string> = new Set([
+  "gemini-3-pro",
+  "gemini-3-flash",
+  "gemini-3.1-pro",
+  "gemini-3.1-flash",
+]);
+
+/**
+ * Classifies models that the Antigravity Code Assist backend serves but the public
+ * Gemini API (v1beta on `generativelanguage.googleapis.com`) does not.
+ *
+ * Anything with the `antigravity-` prefix or any Claude model is OAuth-only by
+ * construction. For Gemini ids we use an explicit denylist (see
+ * `ANTIGRAVITY_ONLY_BARE_GEMINI_IDS`).
+ */
+export function isLikelyAntigravityOnlyModel(model: string): boolean {
+  const m = model.toLowerCase();
+  if (m.startsWith("antigravity-")) return true;
+  if (m.includes("claude")) return true;
+  return ANTIGRAVITY_ONLY_BARE_GEMINI_IDS.has(m);
+}
+
+interface GeminiErrorBody {
+  error?: { code?: number; message?: string; status?: string };
+}
+
+/**
+ * When the public Gemini API returns 404 NOT_FOUND for a model, rewrite the
+ * response body with actionable guidance. Without this, users see a bare
+ * "models/X is not found for API version v1beta" from Google and have no
+ * indication that the plugin routed their request through the API-key path
+ * because (a) opencode is in API-key mode for the google provider, or
+ * (b) all OAuth accounts were rate-limited and `api_key_fallback` kicked in.
+ *
+ * The rewritten body preserves the JSON error envelope so `@ai-sdk/google` still
+ * surfaces it as a normal `AI_APICallError` — only the human-facing message changes.
+ */
+export async function enhanceAgySdkErrorResponse(
+  response: Response,
+  requestedModel: string | undefined,
+): Promise<Response> {
+  if (response.status !== 404 || !requestedModel) return response;
+
+  // NB: Gemini's `streamGenerateContent?alt=sse` returns 404 errors with a JSON
+  // body but `Content-Type: text/event-stream`, so we can't gate on content-type.
+  // Parse the body as JSON unconditionally; bail if it doesn't look like the
+  // expected `{ error: { message } }` envelope.
+  let body: GeminiErrorBody;
+  try {
+    body = JSON.parse(await response.clone().text()) as GeminiErrorBody;
+  } catch {
+    return response;
+  }
+
+  const originalMessage = body.error?.message ?? "";
+  const looksLikeModelNotFound =
+    /not (?:found|supported)/i.test(originalMessage) &&
+    originalMessage.toLowerCase().includes("model");
+  if (!looksLikeModelNotFound) return response;
+
+  const suggestions = PUBLIC_GEMINI_API_MODEL_SUGGESTIONS.join(", ");
+  const antigravityOnly = isLikelyAntigravityOnlyModel(requestedModel);
+
+  const lines: string[] = [
+    `Model '${requestedModel}' was sent to the public Gemini API (v1beta) and rejected as NOT_FOUND.`,
+  ];
+  if (antigravityOnly) {
+    lines.push(
+      "",
+      "This model id is served by the Antigravity Code Assist backend, not the public Gemini API.",
+      "The plugin's API-key path forwarded the request unchanged because either:",
+      "  • opencode's 'google' provider is in API-key mode (no OAuth session), or",
+      "  • all OAuth Antigravity accounts were rate-limited and `agy_sdk.api_key_fallback` kicked in.",
+      "",
+      "To reach this model, re-authenticate with OAuth:",
+      "  opencode auth logout google",
+      "  opencode auth login   # choose Google → OAuth with Google (Antigravity)",
+    );
+  } else {
+    lines.push(
+      "",
+      "The model id was forwarded to the public Gemini API verbatim. Double-check the spelling,",
+      "or pick a model that's actually published on v1beta.",
+    );
+  }
+  lines.push(
+    "",
+    `Public-API models known to work: ${suggestions}.`,
+    "",
+    `(Underlying Gemini API error: ${originalMessage})`,
+  );
+
+  const enhanced: GeminiErrorBody = {
+    error: {
+      code: body.error?.code ?? 404,
+      message: lines.join("\n"),
+      status: body.error?.status ?? "NOT_FOUND",
+    },
+  };
+
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  // Body is now JSON regardless of the original (`text/event-stream` on SSE 404s);
+  // normalize content-type so downstream parsers don't try to read it as a stream.
+  headers.set("content-type", "application/json");
+  return new Response(JSON.stringify(enhanced), {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 function extractGeminiModelFromUrl(urlString: string): string | undefined {
   try {
     const url = new URL(urlString);
@@ -332,7 +469,7 @@ export async function fetchWithAgySdkCredential(
   if (response.status === 429 || response.status === 503 || response.status === 529) {
     markAgySdkCredentialRateLimited(credential, retryAfterMsFromResponse(response, fallbackRetryAfterMs));
   }
-  return response;
+  return enhanceAgySdkErrorResponse(response, prepared.model);
 }
 
 export async function fetchGeminiApiModels(credential: AgySdkCredential): Promise<GeminiApiModel[]> {
