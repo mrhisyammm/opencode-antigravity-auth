@@ -9,7 +9,7 @@ export interface OAuthAuthDetails {
 }
 
 export interface ApiKeyAuthDetails {
-  type: "api_key";
+  type: "api" | "api_key";
   key: string;
 }
 
@@ -23,15 +23,24 @@ export type AuthDetails = OAuthAuthDetails | ApiKeyAuthDetails | NonOAuthAuthDet
 export type GetAuth = () => Promise<AuthDetails>;
 
 export interface ProviderModel {
-  cost?: {
-    input: number;
-    output: number;
-  };
+  cost?: Record<string, unknown>;
   [key: string]: unknown;
 }
 
 export interface Provider {
+  id?: string;
+  api?: string;
+  npm?: string;
   models?: Record<string, ProviderModel>;
+}
+
+export interface ProviderModelsContext {
+  auth?: AuthDetails;
+}
+
+export interface ProviderHook {
+  id: string;
+  models?: (provider: Provider, context: ProviderModelsContext) => Promise<Record<string, ProviderModel>>;
 }
 
 export interface LoaderResult {
@@ -97,6 +106,7 @@ export interface PluginResult {
   };
   event?: (payload: PluginEventPayload) => void;
   tool?: Record<string, unknown>;
+  provider?: ProviderHook;
 }
 
 export interface RefreshParts {
@@ -109,4 +119,3 @@ export interface ProjectContextResult {
   auth: OAuthAuthDetails;
   effectiveProjectId: string;
 }
-

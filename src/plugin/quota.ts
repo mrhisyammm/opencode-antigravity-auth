@@ -62,11 +62,11 @@ export interface AccountQuotaResult {
   updatedAccount?: AccountMetadataV3;
 }
 
-interface FetchAvailableModelsResponse {
+export interface FetchAvailableModelsResponse {
   models?: Record<string, FetchAvailableModelEntry>;
 }
 
-interface FetchAvailableModelEntry {
+export interface FetchAvailableModelEntry {
   quotaInfo?: {
     remainingFraction?: number;
     resetTime?: string;
@@ -182,7 +182,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = F
   }
 }
 
-async function fetchAvailableModels(
+export async function fetchAvailableModels(
   accessToken: string,
   projectId: string,
 ): Promise<FetchAvailableModelsResponse> {
@@ -340,7 +340,7 @@ export async function checkAccountsQuota(
       // Fetch both Antigravity and Gemini CLI quotas in parallel
       const [antigravityResponse, geminiCliResponse] = await Promise.all([
         fetchAvailableModels(auth.access ?? "", projectContext.effectiveProjectId)
-          .catch((error): FetchAvailableModelsResponse => ({ models: undefined })),
+          .catch((): FetchAvailableModelsResponse => ({ models: undefined })),
         fetchGeminiCliQuota(auth.access ?? "", projectContext.effectiveProjectId),
       ]);
 

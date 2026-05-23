@@ -11,7 +11,7 @@ import {
 import { authorizeAntigravity, exchangeAntigravity } from "./antigravity/oauth";
 import type { AntigravityTokenExchangeResult } from "./antigravity/oauth";
 import { accessTokenExpired, isOAuthAuth, parseRefreshParts, formatRefreshParts } from "./plugin/auth";
-import { promptAddAnotherAccount, promptLoginMode, promptProjectId } from "./plugin/cli";
+import { promptAddAnotherAccount, promptLoginMode, promptProjectId, type LoginMenuResult } from "./plugin/cli";
 import { ensureProjectContext } from "./plugin/project";
 import {
   startAntigravityDebugRequest, 
@@ -24,6 +24,7 @@ import {
   isDebugEnabled,
   getLogFilePath,
   initializeDebug,
+  sanitizeUrlForLog,
 } from "./plugin/debug";
 import {
   buildThinkingWarmupBody,
@@ -44,14 +45,30 @@ import { AccountManager, type ModelFamily, parseRateLimitReason, calculateBackof
 import { createAutoUpdateCheckerHook } from "./hooks/auto-update-checker";
 import { loadConfig, initRuntimeConfig, type AntigravityConfig } from "./plugin/config";
 import { createSessionRecoveryHook, getRecoverySuccessToast } from "./plugin/recovery";
-import { checkAccountsQuota } from "./plugin/quota";
+import { checkAccountsQuota, fetchAvailableModels } from "./plugin/quota";
 import { initDiskSignatureCache } from "./plugin/cache";
 import { createProactiveRefreshQueue, type ProactiveRefreshQueue } from "./plugin/refresh-queue";
 import { initLogger, createLogger } from "./plugin/logger";
 import { initHealthTracker, getHealthTracker, initTokenTracker, getTokenTracker } from "./plugin/rotation";
 import { initAntigravityVersion } from "./plugin/version";
 import { executeSearch } from "./plugin/search";
+import {
+  fetchWithAgySdkCredential,
+  fetchGeminiApiModels,
+  getAgySdkCredentials,
+  isAgySdkSupportedRequest,
+  isApiKeyAuth,
+  selectAgySdkCredential,
+} from "./plugin/api-key";
+import {
+  OPENCODE_MODEL_DEFINITIONS,
+  mergeModelDefinitions,
+  modelsFromAntigravityAvailableModels,
+  modelsFromGeminiApi,
+} from "./plugin/config/models";
+import type { AgySdkCredential } from "./plugin/api-key";
 import type {
+  AuthDetails,
   GetAuth,
   LoaderResult,
   PluginClient,
@@ -59,6 +76,7 @@ import type {
   PluginResult,
   ProjectContextResult,
   Provider,
+  ProviderModel,
 } from "./plugin/types";
 
 const MAX_OAUTH_ACCOUNTS = 10;
@@ -121,6 +139,206 @@ function resetAllAccountsBlockedToasts(): void {
 }
 
 const quotaRefreshInProgressByEmail = new Set<string>();
+
+function isRetryableAgySdkCapacityStatus(status: number): boolean {
+  return status === 429 || status === 503 || status === 529;
+}
+
+function defaultRetryMsForConfig(config: AntigravityConfig): number {
+  return (config.default_retry_after_seconds ?? 60) * 1000;
+}
+
+async function tryFetchWithAgySdkCredentials(
+  input: RequestInfo,
+  init: RequestInit | undefined,
+  credentials: AgySdkCredential[],
+  fallbackRetryAfterMs: number,
+): Promise<Response | null> {
+  if (credentials.length === 0) return null;
+  const attempted = new Set<string>();
+  let lastResponse: Response | null = null;
+
+  while (attempted.size < credentials.length) {
+    const credential = selectAgySdkCredential(credentials);
+    if (!credential || attempted.has(credential.apiKey)) {
+      break;
+    }
+    attempted.add(credential.apiKey);
+    const response = await fetchWithAgySdkCredential(input, init, credential, fallbackRetryAfterMs);
+    if (!isRetryableAgySdkCapacityStatus(response.status)) {
+      return response;
+    }
+    lastResponse = response;
+  }
+
+  return lastResponse ?? new Response(
+    JSON.stringify({ error: { message: "All Gemini API keys are temporarily rate-limited" } }),
+    {
+      status: 429,
+      headers: { "content-type": "application/json" },
+    },
+  );
+}
+
+async function modelsFromAgySdkCredentials(
+  config: AntigravityConfig,
+  auth: AuthDetails | undefined,
+): Promise<Record<string, ProviderModel>> {
+  if (!config.model_discovery.enabled || !config.model_discovery.gemini_api) return {};
+  const credentials = getAgySdkCredentials(config, isApiKeyAuth(auth) ? auth : null);
+  if (credentials.length === 0) return {};
+
+  const errors: unknown[] = [];
+  for (const credential of credentials) {
+    try {
+      return modelsFromGeminiApi(await fetchGeminiApiModels(credential));
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+
+  if (errors.length > 0) {
+    log.debug("gemini-model-discovery-failed", { errors: errors.map((error) => String(error)) });
+  }
+  return {};
+}
+
+async function modelsFromOAuthAuth(
+  config: AntigravityConfig,
+  auth: AuthDetails | undefined,
+  client: PluginClient,
+  providerId: string,
+): Promise<Record<string, ProviderModel>> {
+  if (!config.model_discovery.enabled || !config.model_discovery.antigravity || !auth || !isOAuthAuth(auth)) return {};
+
+  let accessToken = auth.access;
+  if (!accessToken || accessTokenExpired(auth)) {
+    const refreshed = await refreshAccessToken(auth, client, providerId);
+    accessToken = refreshed?.access;
+  }
+  if (!accessToken) return {};
+
+  const parts = parseRefreshParts(auth.refresh);
+  const projectId = parts.managedProjectId || parts.projectId || ANTIGRAVITY_DEFAULT_PROJECT_ID;
+  const response = await fetchAvailableModels(accessToken, projectId);
+  return modelsFromAntigravityAvailableModels(response.models ?? {});
+}
+
+function hasProviderModelRuntimeShape(model: ProviderModel | undefined): boolean {
+  return !!model
+    && typeof model.api === "object"
+    && model.api !== null
+    && typeof model.capabilities === "object"
+    && model.capabilities !== null;
+}
+
+function modalitiesToCapabilities(model: ProviderModel, existing: ProviderModel | undefined): Record<string, unknown> {
+  const modalities = model.modalities as { input?: string[]; output?: string[] } | undefined;
+  const existingCapabilities = existing?.capabilities as Record<string, unknown> | undefined;
+  const existingInput = existingCapabilities?.input as Record<string, unknown> | undefined;
+  const existingOutput = existingCapabilities?.output as Record<string, unknown> | undefined;
+
+  const input = modalities?.input ?? [];
+  const output = modalities?.output ?? [];
+
+  return {
+    temperature: existingCapabilities?.temperature ?? true,
+    reasoning: existingCapabilities?.reasoning ?? !!model.variants,
+    attachment: existingCapabilities?.attachment ?? (input.includes("image") || input.includes("pdf")),
+    toolcall: existingCapabilities?.toolcall ?? true,
+    input: {
+      text: existingInput?.text ?? input.includes("text"),
+      audio: existingInput?.audio ?? input.includes("audio"),
+      image: existingInput?.image ?? input.includes("image"),
+      video: existingInput?.video ?? input.includes("video"),
+      pdf: existingInput?.pdf ?? input.includes("pdf"),
+    },
+    output: {
+      text: existingOutput?.text ?? output.includes("text"),
+      audio: existingOutput?.audio ?? output.includes("audio"),
+      image: existingOutput?.image ?? output.includes("image"),
+      video: existingOutput?.video ?? output.includes("video"),
+      pdf: existingOutput?.pdf ?? output.includes("pdf"),
+    },
+    interleaved: existingCapabilities?.interleaved ?? false,
+  };
+}
+
+function costForProviderModel(model: ProviderModel, existing: ProviderModel | undefined): Record<string, unknown> {
+  const existingCost = existing?.cost as Record<string, unknown> | undefined;
+  const modelCost = model.cost;
+  return {
+    input: modelCost?.input ?? existingCost?.input ?? 0,
+    output: modelCost?.output ?? existingCost?.output ?? 0,
+    cache: existingCost?.cache ?? { read: 0, write: 0 },
+  };
+}
+
+function normalizeProviderHookModels(
+  providerId: string,
+  provider: Provider,
+  definitions: Record<string, ProviderModel>,
+  existingModels: Record<string, ProviderModel> = provider.models ?? {},
+): Record<string, ProviderModel> {
+  const normalized: Record<string, ProviderModel> = {};
+  const providerApi = typeof provider.api === "string" ? provider.api : "";
+  const providerNpm = typeof provider.npm === "string" ? provider.npm : "@ai-sdk/google";
+
+  for (const [id, model] of Object.entries(definitions)) {
+    const existing = existingModels[id];
+    if (hasProviderModelRuntimeShape(model)) {
+      normalized[id] = model;
+      continue;
+    }
+
+    const limit = model.limit as { context?: number; input?: number; output?: number } | undefined;
+    const existingLimit = existing?.limit as { context?: number; input?: number; output?: number } | undefined;
+    const existingApi = existing?.api as Record<string, unknown> | undefined;
+
+    normalized[id] = {
+      ...existing,
+      ...model,
+      id,
+      providerID: existing?.providerID ?? provider.id ?? providerId,
+      api: {
+        id: existingApi?.id ?? id,
+        url: existingApi?.url ?? providerApi,
+        npm: existingApi?.npm ?? providerNpm,
+      },
+      status: existing?.status ?? model.status ?? "active",
+      headers: existing?.headers ?? model.headers ?? {},
+      options: existing?.options ?? model.options ?? {},
+      cost: costForProviderModel(model, existing),
+      limit: {
+        context: limit?.context ?? existingLimit?.context ?? 0,
+        input: limit?.input ?? existingLimit?.input,
+        output: limit?.output ?? existingLimit?.output ?? 0,
+      },
+      capabilities: modalitiesToCapabilities(model, existing),
+      release_date: existing?.release_date ?? model.release_date ?? "",
+    };
+  }
+
+  return normalized;
+}
+
+async function tryAgySdkFallbackForRequest(
+  input: RequestInfo,
+  init: RequestInit | undefined,
+  config: AntigravityConfig,
+  credentials: AgySdkCredential[],
+  urlString: string,
+): Promise<Response | null> {
+  if (!config.agy_sdk.api_key_fallback || credentials.length === 0 || !isAgySdkSupportedRequest(urlString)) {
+    return null;
+  }
+  return tryFetchWithAgySdkCredentials(
+    input,
+    init,
+    credentials,
+    defaultRetryMsForConfig(config),
+  );
+}
 
 async function triggerAsyncQuotaRefreshForAccount(
   accountManager: AccountManager,
@@ -925,9 +1143,8 @@ function parseDurationToMs(duration: string): number | null {
   const compoundRegex = /(\d+(?:\.\d+)?)(h|m(?!s)|s|ms)/gi;
   let totalMs = 0;
   let matchFound = false;
-  let match;
-  
-  while ((match = compoundRegex.exec(duration)) !== null) {
+  let match = compoundRegex.exec(duration);
+  while (match !== null) {
     matchFound = true;
     const value = parseFloat(match[1]!);
     const unit = match[2]!.toLowerCase();
@@ -937,6 +1154,7 @@ function parseDurationToMs(duration: string): number | null {
       case "s": totalMs += value * 1000; break;
       case "ms": totalMs += value; break;
     }
+    match = compoundRegex.exec(duration);
   }
   
   return matchFound ? totalMs : null;
@@ -1385,6 +1603,37 @@ export const createAntigravityPlugin = (providerId: string) => async (
     tool: {
       google_search: googleSearchTool,
     },
+    provider: {
+      id: providerId,
+      async models(provider: Provider, context): Promise<Record<string, ProviderModel>> {
+        const fallbackModels = normalizeProviderHookModels(
+          providerId,
+          provider,
+          mergeModelDefinitions(OPENCODE_MODEL_DEFINITIONS, provider.models ?? {}),
+        );
+        if (!config.model_discovery.enabled) {
+          return fallbackModels;
+        }
+
+        try {
+          const auth = cachedGetAuth ? await cachedGetAuth() : context.auth;
+          const [geminiModels, antigravityModels] = await Promise.all([
+            modelsFromAgySdkCredentials(config, auth),
+            modelsFromOAuthAuth(config, auth, client, providerId),
+          ]);
+
+          return normalizeProviderHookModels(
+            providerId,
+            provider,
+            mergeModelDefinitions(fallbackModels, geminiModels, antigravityModels),
+            fallbackModels,
+          );
+        } catch (error) {
+          log.debug("model-discovery-fallback", { error: error instanceof Error ? error.message : String(error) });
+          return fallbackModels;
+        }
+      },
+    },
     auth: {
     provider: providerId,
     loader: async (getAuth: GetAuth, provider: Provider): Promise<LoaderResult | Record<string, unknown>> => {
@@ -1392,15 +1641,39 @@ export const createAntigravityPlugin = (providerId: string) => async (
       cachedGetAuth = getAuth;
 
       const auth = await getAuth();
-      
+      const apiKeyAuth = isApiKeyAuth(auth) ? auth : null;
+      const initialAgySdkCredentials = getAgySdkCredentials(config, apiKeyAuth);
+       
       // If OpenCode has no valid OAuth auth, clear any stale account storage
       if (!isOAuthAuth(auth)) {
-        try {
-          await clearAccounts();
-        } catch {
-          // ignore
+        if (initialAgySdkCredentials.length === 0) {
+          try {
+            await clearAccounts();
+          } catch {
+            // ignore
+          }
+          return {};
         }
-        return {};
+
+        return {
+          apiKey: "",
+          async fetch(input, init) {
+            const urlString = toUrlString(input);
+            if (!isAgySdkSupportedRequest(urlString)) {
+              return fetch(input, init);
+            }
+            const latest = await getAuth();
+            const latestCredentials = getAgySdkCredentials(config, isApiKeyAuth(latest) ? latest : apiKeyAuth);
+            const response = await tryFetchWithAgySdkCredentials(
+              input,
+              init,
+              latestCredentials,
+              (config.default_retry_after_seconds ?? 60) * 1000,
+            );
+            if (response) return response;
+            return fetch(input, init);
+          },
+        };
       }
 
       // Validate that stored accounts are in sync with OpenCode's auth
@@ -1458,6 +1731,17 @@ export const createAntigravityPlugin = (providerId: string) => async (
 
           const latestAuth = await getAuth();
           if (!isOAuthAuth(latestAuth)) {
+            const latestCredentials = getAgySdkCredentials(config, isApiKeyAuth(latestAuth) ? latestAuth : null);
+            const urlString = toUrlString(input);
+            if (isAgySdkSupportedRequest(urlString)) {
+              const response = await tryFetchWithAgySdkCredentials(
+                input,
+                init,
+                latestCredentials,
+                (config.default_retry_after_seconds ?? 60) * 1000,
+              );
+              if (response) return response;
+            }
             return fetch(input, init);
           }
 
@@ -1468,12 +1752,13 @@ export const createAntigravityPlugin = (providerId: string) => async (
           const urlString = toUrlString(input);
           const family = getModelFamilyFromUrl(urlString);
           const model = extractModelFromUrl(urlString);
+          const agySdkCredentials = getAgySdkCredentials(config, null);
           const debugLines: string[] = [];
           const pushDebug = (line: string) => {
             if (!isDebugEnabled()) return;
             debugLines.push(line);
           };
-          pushDebug(`request=${urlString}`);
+          pushDebug(`request=${sanitizeUrlForLog(urlString)}`);
 
           type FailureContext = {
             response: Response;
@@ -1552,8 +1837,28 @@ export const createAntigravityPlugin = (providerId: string) => async (
               explicitQuota,
               allowQuotaFallback,
             } = routingDecision;
+
+            if (
+              family === "gemini" &&
+              config.agy_sdk.prefer_for_gemini &&
+              !explicitQuota &&
+              agySdkCredentials.length > 0 &&
+              isAgySdkSupportedRequest(urlString)
+            ) {
+              const response = await tryFetchWithAgySdkCredentials(
+                input,
+                init,
+                agySdkCredentials,
+                (config.default_retry_after_seconds ?? 60) * 1000,
+              );
+              if (response && !isRetryableAgySdkCapacityStatus(response.status)) {
+                return response;
+              }
+            }
             
             if (accountCount === 0) {
+              const response = await tryAgySdkFallbackForRequest(input, init, config, agySdkCredentials, urlString);
+              if (response) return response;
               throw new Error("No Antigravity accounts available. Run `opencode auth login`.");
             }
 
@@ -1596,6 +1901,8 @@ export const createAntigravityPlugin = (providerId: string) => async (
                 const threshold = config.soft_quota_threshold_percent;
                 const softQuotaWaitMs = accountManager.getMinWaitTimeForSoftQuota(family, threshold, softQuotaCacheTtlMs, model);
                 const maxWaitMs = (config.max_rate_limit_wait_seconds ?? 300) * 1000;
+                const response = await tryAgySdkFallbackForRequest(input, init, config, agySdkCredentials, urlString);
+                if (response) return response;
                 
                 if (softQuotaWaitMs === null || (maxWaitMs > 0 && softQuotaWaitMs > maxWaitMs)) {
                   const waitTimeFormatted = softQuotaWaitMs ? formatWaitTime(softQuotaWaitMs) : "unknown";
@@ -1645,6 +1952,8 @@ export const createAntigravityPlugin = (providerId: string) => async (
               // If wait time exceeds max threshold, return error immediately instead of hanging
               // 0 means disabled (wait indefinitely)
               const maxWaitMs = (config.max_rate_limit_wait_seconds ?? 300) * 1000;
+              const response = await tryAgySdkFallbackForRequest(input, init, config, agySdkCredentials, urlString);
+              if (response) return response;
               if (maxWaitMs > 0 && waitMs > maxWaitMs) {
                 const waitTimeFormatted = formatWaitTime(waitMs);
                 await showToast(
@@ -1982,7 +2291,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
                 const originalUrl = toUrlString(input);
                 const resolvedUrl = toUrlString(prepared.request);
                 pushDebug(`endpoint=${currentEndpoint}`);
-                pushDebug(`resolved=${resolvedUrl}`);
+                pushDebug(`resolved=${sanitizeUrlForLog(resolvedUrl)}`);
                 const debugContext = startAntigravityDebugRequest({
                   originalUrl,
                   resolvedUrl,
@@ -2215,6 +2524,15 @@ export const createAntigravityPlugin = (providerId: string) => async (
                       }
                     }
                   }
+
+                  const agySdkFallbackResponse = await tryAgySdkFallbackForRequest(
+                    input,
+                    init,
+                    config,
+                    agySdkCredentials,
+                    urlString,
+                  );
+                  if (agySdkFallbackResponse) return agySdkFallbackResponse;
 
                   const quotaName = headerStyle === "antigravity" ? "Antigravity" : "Gemini CLI";
 
@@ -2522,7 +2840,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
             let refreshAccountIndex: number | undefined;
             const existingStorage = await loadAccounts();
             if (existingStorage && existingStorage.accounts.length > 0) {
-              let menuResult;
+              let menuResult: LoginMenuResult;
               while (true) {
                 const now = Date.now();
                 const existingAccounts = existingStorage.accounts.map((acc, idx) => {
@@ -3320,8 +3638,17 @@ export const createAntigravityPlugin = (providerId: string) => async (
         },
       },
       {
-        label: "Manually enter API Key",
+        label: "Gemini API key (Antigravity SDK / Google AI)",
         type: "api",
+        prompts: [
+          {
+            type: "text",
+            key: "key",
+            message: "Gemini API key",
+            placeholder: "GEMINI_API_KEY or Google AI API key",
+            validate: (value: string) => value.trim() ? undefined : "API key is required",
+          },
+        ],
       },
     ],
   },
