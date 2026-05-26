@@ -1636,6 +1636,24 @@ describe("AccountManager", () => {
       expect(account).toBeNull();
     });
 
+    it("returns null in hybrid mode when every account is over soft quota threshold", () => {
+      const stored: AccountStorageV4 = {
+        version: 4,
+        accounts: [
+          { refreshToken: "r1", projectId: "p1", addedAt: 1, lastUsed: 0 },
+          { refreshToken: "r2", projectId: "p2", addedAt: 2, lastUsed: 0 },
+        ],
+        activeIndex: 0,
+      };
+
+      const manager = new AccountManager(undefined, stored);
+      manager.updateQuotaCache(0, { "gemini-pro": { remainingFraction: 0, modelCount: 1 } });
+      manager.updateQuotaCache(1, { "gemini-pro": { remainingFraction: 0, modelCount: 1 } });
+
+      const account = manager.getCurrentOrNextForFamily("gemini", null, "hybrid", "antigravity", false, 90);
+      expect(account).toBeNull();
+    });
+
     it("skips account over threshold in round-robin mode", () => {
       const stored: AccountStorageV4 = {
         version: 4,

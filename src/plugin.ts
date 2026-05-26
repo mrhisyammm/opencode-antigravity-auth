@@ -1267,6 +1267,24 @@ function formatWaitTime(ms: number): string {
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
 }
 
+function createSoftQuotaBlockedResponse(input: {
+  accountCount: number;
+  family: ModelFamily;
+  threshold: number;
+  waitMs: number | null;
+  requestedModel?: string;
+}): Response {
+  const waitTimeFormatted = input.waitMs ? formatWaitTime(input.waitMs) : "unknown";
+  const errorMessage = [
+    `[Antigravity Error] Quota protection: All ${input.accountCount} account(s) are over ${input.threshold}% usage for ${input.family}.`,
+    `Quota resets in ${waitTimeFormatted}.`,
+    "",
+    "API-key fallback is disabled or unavailable, so the request was not routed to the public Gemini API.",
+    "To continue, add more accounts, wait for quota reset, set soft_quota_threshold_percent: 100 to disable soft quota protection, or enable agy_sdk.api_key_fallback with a usable Gemini API key.",
+  ].join("\n");
+  return createSyntheticErrorResponse(errorMessage, input.requestedModel);
+}
+
 // Progressive rate limit retry delays
 const FIRST_RETRY_DELAY_MS = 1000;      // 1s - first 429 quick retry on same account
 const SWITCH_ACCOUNT_DELAY_MS = 5000;   // 5s - delay before switching to another account
@@ -1920,11 +1938,13 @@ export const createAntigravityPlugin = (providerId: string) => async (
                     `All accounts over ${threshold}% quota threshold. Resets in ${waitTimeFormatted}.`,
                     "error"
                   );
-                  throw new Error(
-                    `Quota protection: All ${accountCount} account(s) are over ${threshold}% usage for ${family}. ` +
-                    `Quota resets in ${waitTimeFormatted}. ` +
-                    `Add more accounts, wait for quota reset, or set soft_quota_threshold_percent: 100 to disable.`
-                  );
+                  return createSoftQuotaBlockedResponse({
+                    accountCount,
+                    family,
+                    threshold,
+                    waitMs: softQuotaWaitMs,
+                    requestedModel: model ?? undefined,
+                  });
                 }
                 
                 const waitSecValue = Math.max(1, Math.ceil(softQuotaWaitMs / 1000));
@@ -3795,6 +3815,7 @@ function isExplicitQuotaFromUrl(urlString: string): boolean {
 
 export const __testExports = {
   getHeaderStyleFromUrl,
+  createSoftQuotaBlockedResponse,
   resolveHeaderRoutingDecision,
   resolveQuotaFallbackHeaderStyle,
 };

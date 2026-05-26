@@ -24,9 +24,18 @@ type ResolveHeaderRoutingDecision = (
   allowQuotaFallback: boolean;
 };
 
+type CreateSoftQuotaBlockedResponse = (input: {
+  accountCount: number;
+  family: ModelFamily;
+  threshold: number;
+  waitMs: number | null;
+  requestedModel?: string;
+}) => Response;
+
 let resolveQuotaFallbackHeaderStyle: ResolveQuotaFallbackHeaderStyle | undefined;
 let getHeaderStyleFromUrl: GetHeaderStyleFromUrl | undefined;
 let resolveHeaderRoutingDecision: ResolveHeaderRoutingDecision | undefined;
+let createSoftQuotaBlockedResponse: CreateSoftQuotaBlockedResponse | undefined;
 
 beforeAll(async () => {
   vi.mock("@opencode-ai/plugin", () => ({
@@ -43,6 +52,9 @@ beforeAll(async () => {
   resolveHeaderRoutingDecision = (__testExports as {
     resolveHeaderRoutingDecision?: ResolveHeaderRoutingDecision;
   }).resolveHeaderRoutingDecision;
+  createSoftQuotaBlockedResponse = (__testExports as {
+    createSoftQuotaBlockedResponse?: CreateSoftQuotaBlockedResponse;
+  }).createSoftQuotaBlockedResponse;
 });
 
 describe("quota fallback direction", () => {
@@ -187,5 +199,27 @@ describe("header routing decision", () => {
       explicitQuota: false,
       allowQuotaFallback: true,
     });
+  });
+});
+
+describe("quota blocked responses", () => {
+  it("returns a synthetic stream instead of throwing when API-key fallback is disabled", async () => {
+    const response = createSoftQuotaBlockedResponse?.({
+      accountCount: 2,
+      family: "gemini",
+      threshold: 90,
+      waitMs: null,
+      requestedModel: "antigravity-gemini-3-pro",
+    });
+
+    expect(response).toBeInstanceOf(Response);
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get("content-type")).toContain("text/event-stream");
+
+    const body = await response!.text();
+    expect(body).toContain("Quota protection: All 2 account(s) are over 90% usage for gemini.");
+    expect(body).toContain("Quota resets in unknown.");
+    expect(body).toContain("api_key_fallback");
+    expect(body).toContain("antigravity-gemini-3-pro");
   });
 });
