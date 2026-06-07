@@ -1,8 +1,8 @@
-import type { AutoUpdateCheckerOptions } from "./types";
-import { getCachedVersion, getLocalDevVersion, findPluginEntry, getLatestVersion, updatePinnedVersion } from "./checker";
-import { invalidatePackage } from "./cache";
-import { PACKAGE_NAME } from "./constants";
-import { logAutoUpdate } from "./logging";
+import type { AutoUpdateCheckerOptions } from "./types.js";
+import { getCachedVersion, getLocalDevVersion, findPluginEntry, getLatestVersion, updatePinnedVersion } from "./checker.js";
+import { invalidatePackage } from "./cache.js";
+import { PACKAGE_NAME } from "./constants.js";
+import { logAutoUpdate } from "./logging.js";
 
 interface PluginClient {
   tui: {
@@ -165,6 +165,6 @@ async function showLocalDevToast(client: PluginClient, version: string): Promise
   logAutoUpdate(`Local dev toast shown: v${version}`);
 }
 
-export type { UpdateCheckResult, AutoUpdateCheckerOptions } from "./types";
-export { checkForUpdate, getCachedVersion, getLatestVersion } from "./checker";
-export { invalidatePackage, invalidateCache } from "./cache";
+export type { UpdateCheckResult, AutoUpdateCheckerOptions } from "./types.js";
+export { checkForUpdate, getCachedVersion, getLatestVersion } from "./checker.js";
+export { invalidatePackage, invalidateCache } from "./cache.js";

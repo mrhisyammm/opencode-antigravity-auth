@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { isOAuthAuth, parseRefreshParts, formatRefreshParts, accessTokenExpired } from "./auth";
-import type { OAuthAuthDetails, ApiKeyAuthDetails } from "./types";
+import { isOAuthAuth, parseRefreshParts, formatRefreshParts, accessTokenExpired } from "./auth.js";
+import type { OAuthAuthDetails, ApiKeyAuthDetails } from "./types.js";
 
 describe("isOAuthAuth", () => {
   it("returns true for oauth auth type", () => {

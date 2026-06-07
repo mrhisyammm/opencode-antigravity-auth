@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { AccountManager } from "./accounts";
-import type { OAuthAuthDetails } from "./types";
+import { AccountManager } from "./accounts.js";
+import type { OAuthAuthDetails } from "./types.js";
 
 describe("Model-specific Gemini quota", () => {
   let manager: AccountManager;

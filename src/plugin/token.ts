@@ -1,9 +1,9 @@
-import { ANTIGRAVITY_CLIENT_ID, ANTIGRAVITY_CLIENT_SECRET } from "../constants";
-import { formatRefreshParts, parseRefreshParts, calculateTokenExpiry } from "./auth";
-import { clearCachedAuth, storeCachedAuth } from "./cache";
-import { createLogger } from "./logger";
-import { invalidateProjectContextCache } from "./project";
-import type { OAuthAuthDetails, PluginClient, RefreshParts } from "./types";
+import { ANTIGRAVITY_CLIENT_ID, ANTIGRAVITY_CLIENT_SECRET } from "../constants.js";
+import { formatRefreshParts, parseRefreshParts, calculateTokenExpiry } from "./auth.js";
+import { clearCachedAuth, storeCachedAuth } from "./cache.js";
+import { createLogger } from "./logger.js";
+import { invalidateProjectContextCache } from "./project.js";
+import type { OAuthAuthDetails, PluginClient, RefreshParts } from "./types.js";
 
 const log = createLogger("token");
 

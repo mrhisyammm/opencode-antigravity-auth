@@ -3,8 +3,8 @@ import type {
   StreamingCallbacks,
   StreamingOptions,
   ThoughtBuffer,
-} from './types';
-import { processImageData } from '../../image-saver';
+} from './types.js';
+import { processImageData } from '../../image-saver.js';
 
 /**
  * Simple string hash for thinking deduplication.

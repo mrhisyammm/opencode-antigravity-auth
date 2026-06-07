@@ -13,8 +13,8 @@ import {
   selectAgySdkCredential,
   markAgySdkCredentialRateLimited,
   resetAgySdkCredentialStateForTests,
-} from "./api-key";
-import { DEFAULT_CONFIG, type AntigravityConfig } from "./config";
+} from "./api-key.js";
+import { DEFAULT_CONFIG, type AntigravityConfig } from "./config/index.js";
 
 function withConfig(overrides: Partial<AntigravityConfig>): AntigravityConfig {
   return {

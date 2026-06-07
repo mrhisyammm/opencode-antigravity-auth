@@ -6,7 +6,7 @@ import {
   sanitizeCrossModelPayload,
   deepSanitizeCrossModelMetadata,
   sanitizeCrossModelPayloadInPlace,
-} from "./cross-model-sanitizer";
+} from "./cross-model-sanitizer.js";
 
 describe("cross-model-sanitizer", () => {
   describe("getModelFamily", () => {

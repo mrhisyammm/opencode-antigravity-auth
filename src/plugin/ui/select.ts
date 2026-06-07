@@ -1,4 +1,4 @@
-import { ANSI, isTTY, parseKey } from './ansi';
+import { ANSI, isTTY, parseKey } from './ansi.js';
 
 export interface MenuItem<T = string> {
   label: string;

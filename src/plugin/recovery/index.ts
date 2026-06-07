@@ -7,6 +7,6 @@
  * - thinking_disabled_violation: Thinking in non-thinking model
  */
 
-export * from "./types";
-export * from "./constants";
-export * from "./storage";
+export * from "./types.js";
+export * from "./constants.js";
+export * from "./storage.js";

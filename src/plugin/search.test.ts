@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { executeSearch } from "./search";
+import { executeSearch } from "./search.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

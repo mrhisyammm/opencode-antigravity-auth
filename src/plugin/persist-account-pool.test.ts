@@ -10,8 +10,8 @@
 
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { promises as fs } from "node:fs";
-import * as storageModule from "./storage";
-import type { AccountStorageV4, AccountMetadataV3 } from "./storage";
+import * as storageModule from "./storage.js";
+import type { AccountStorageV4, AccountMetadataV3 } from "./storage.js";
 
 vi.mock("proper-lockfile", () => ({
   default: {

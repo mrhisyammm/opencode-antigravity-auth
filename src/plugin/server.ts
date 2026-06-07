@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
 
-import { ANTIGRAVITY_REDIRECT_URI } from "../constants";
+import { ANTIGRAVITY_REDIRECT_URI } from "../constants.js";
 
 interface OAuthListenerOptions {
   /**

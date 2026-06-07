@@ -7,8 +7,8 @@ import {
   cacheSignature,
   getCachedSignature,
   clearSignatureCache,
-} from "./cache";
-import type { OAuthAuthDetails } from "./types";
+} from "./cache.js";
+import type { OAuthAuthDetails } from "./types.js";
 
 function createAuth(overrides: Partial<OAuthAuthDetails> = {}): OAuthAuthDetails {
   return {

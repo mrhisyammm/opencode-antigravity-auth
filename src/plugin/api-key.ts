@@ -1,9 +1,9 @@
-import { extractVariantThinkingConfig } from "./request-helpers";
-import { applyGeminiTransforms, isGemini3Model, mapAntigravityModelToPublicApi, resolveModelForHeaderStyle } from "./transform";
-import type { AntigravityConfig } from "./config";
-import type { GeminiApiModel } from "./config/models";
-import type { ApiKeyAuthDetails } from "./types";
-import type { RequestPayload, ThinkingTier } from "./transform";
+import { extractVariantThinkingConfig } from "./request-helpers.js";
+import { applyGeminiTransforms, isGemini3Model, mapAntigravityModelToPublicApi, resolveModelForHeaderStyle } from "./transform/index.js";
+import type { AntigravityConfig } from "./config/index.js";
+import type { GeminiApiModel } from "./config/models.js";
+import type { ApiKeyAuthDetails } from "./types.js";
+import type { RequestPayload, ThinkingTier } from "./transform/index.js";
 
 export interface AgySdkCredential {
   label: string;

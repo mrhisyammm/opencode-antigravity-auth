@@ -6,8 +6,8 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { MESSAGE_STORAGE, PART_STORAGE, THINKING_TYPES, META_TYPES } from "./constants";
-import type { StoredMessageMeta, StoredPart, StoredTextPart } from "./types";
+import { MESSAGE_STORAGE, PART_STORAGE, THINKING_TYPES, META_TYPES } from "./constants.js";
+import type { StoredMessageMeta, StoredPart, StoredTextPart } from "./types.js";
 
 // =============================================================================
 // ID Generation

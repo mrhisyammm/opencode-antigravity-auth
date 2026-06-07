@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   sanitizeCrossModelPayload,
   getModelFamily,
-} from "./transform/cross-model-sanitizer";
+} from "./transform/cross-model-sanitizer.js";
 
 describe("Cross-Model Session Integration", () => {
   describe("Gemini → Claude model switch with tool calls", () => {

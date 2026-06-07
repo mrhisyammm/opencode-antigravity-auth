@@ -11,8 +11,8 @@ import {
   applyGeminiTransforms,
   toGeminiSchema,
   wrapToolsAsFunctionDeclarations,
-} from "./gemini";
-import type { RequestPayload } from "./types";
+} from "./gemini.js";
+import type { RequestPayload } from "./types.js";
 
 describe("transform/gemini", () => {
   describe("isGeminiModel", () => {

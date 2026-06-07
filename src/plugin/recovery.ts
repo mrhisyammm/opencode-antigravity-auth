@@ -9,10 +9,10 @@
  * Based on oh-my-opencode/src/hooks/session-recovery/index.ts
  */
 
-import type { AntigravityConfig } from "./config";
-import { createLogger } from "./logger";
-import { logToast } from "./debug";
-import type { PluginClient } from "./types";
+import type { AntigravityConfig } from "./config/index.js";
+import { createLogger } from "./logger.js";
+import { logToast } from "./debug.js";
+import type { PluginClient } from "./types.js";
 import {
   readParts,
   findMessagesWithThinkingBlocks,
@@ -20,14 +20,14 @@ import {
   findMessageByIndexNeedingThinking,
   prependThinkingPart,
   stripThinkingParts,
-} from "./recovery/storage";
+} from "./recovery/storage.js";
 import type {
   MessageInfo,
   MessageData,
   MessagePart,
   RecoveryErrorType,
   ResumeConfig,
-} from "./recovery/types";
+} from "./recovery/types.js";
 
 // =============================================================================
 // Constants

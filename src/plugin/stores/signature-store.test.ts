@@ -3,7 +3,7 @@ import {
   createSignatureStore,
   createThoughtBuffer,
   defaultSignatureStore,
-} from "./signature-store";
+} from "./signature-store.js";
 
 // ─── createSignatureStore ─────────────────────────────────────────────────────
 

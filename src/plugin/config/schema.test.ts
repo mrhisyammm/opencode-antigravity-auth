@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { AgySdkCloudProjectSchema, DEFAULT_CONFIG } from "./schema";
+import { AgySdkCloudProjectSchema, DEFAULT_CONFIG } from "./schema.js";
 
 describe("cli_first config", () => {
   it("includes cli_first default in DEFAULT_CONFIG", () => {

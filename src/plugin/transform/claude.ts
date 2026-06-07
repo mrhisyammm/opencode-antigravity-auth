@@ -8,11 +8,11 @@
  * - Tool normalization (functionDeclarations format)
  */
 
-import type { RequestPayload, ThinkingConfig } from "./types";
+import type { RequestPayload, ThinkingConfig } from "./types.js";
 import {
   EMPTY_SCHEMA_PLACEHOLDER_NAME,
   EMPTY_SCHEMA_PLACEHOLDER_DESCRIPTION,
-} from "../../constants";
+} from "../../constants.js";
 
 /** Claude thinking models need a sufficiently large max output token limit when thinking is enabled */
 export const CLAUDE_THINKING_MAX_OUTPUT_TOKENS = 64_000;

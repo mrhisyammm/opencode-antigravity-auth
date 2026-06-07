@@ -3,10 +3,10 @@ import {
   ANTIGRAVITY_ENDPOINT_FALLBACKS,
   ANTIGRAVITY_LOAD_ENDPOINTS,
   ANTIGRAVITY_DEFAULT_PROJECT_ID,
-} from "../constants";
-import { formatRefreshParts, parseRefreshParts } from "./auth";
-import { createLogger } from "./logger";
-import type { OAuthAuthDetails, ProjectContextResult } from "./types";
+} from "../constants.js";
+import { formatRefreshParts, parseRefreshParts } from "./auth.js";
+import { createLogger } from "./logger.js";
+import type { OAuthAuthDetails, ProjectContextResult } from "./types.js";
 
 const log = createLogger("project");
 

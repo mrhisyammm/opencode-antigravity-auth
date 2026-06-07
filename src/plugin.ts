@@ -8,12 +8,12 @@ import {
   ANTIGRAVITY_PROVIDER_ID,
   getAntigravityHeaders,
   type HeaderStyle,
-} from "./constants";
-import { authorizeAntigravity, exchangeAntigravity } from "./antigravity/oauth";
-import type { AntigravityTokenExchangeResult } from "./antigravity/oauth";
-import { accessTokenExpired, isOAuthAuth, parseRefreshParts, formatRefreshParts } from "./plugin/auth";
-import { pressEnterToContinue, promptAddAnotherAccount, promptLoginMode, promptProjectId, type LoginMenuResult } from "./plugin/cli";
-import { ensureProjectContext } from "./plugin/project";
+} from "./constants.js";
+import { authorizeAntigravity, exchangeAntigravity } from "./antigravity/oauth.js";
+import type { AntigravityTokenExchangeResult } from "./antigravity/oauth.js";
+import { accessTokenExpired, isOAuthAuth, parseRefreshParts, formatRefreshParts } from "./plugin/auth.js";
+import { pressEnterToContinue, promptAddAnotherAccount, promptLoginMode, promptProjectId, type LoginMenuResult } from "./plugin/cli.js";
+import { ensureProjectContext } from "./plugin/project.js";
 import {
   startAntigravityDebugRequest, 
   logAntigravityDebugResponse,
@@ -26,33 +26,33 @@ import {
   getLogFilePath,
   initializeDebug,
   sanitizeUrlForLog,
-} from "./plugin/debug";
+} from "./plugin/debug.js";
 import {
   buildThinkingWarmupBody,
   isGenerativeLanguageRequest,
   prepareAntigravityRequest,
   transformAntigravityResponse,
-} from "./plugin/request";
-import { resolveModelWithTier } from "./plugin/transform/model-resolver";
+} from "./plugin/request.js";
+import { resolveModelWithTier } from "./plugin/transform/model-resolver.js";
 import {
   isEmptyResponseBody,
   createSyntheticErrorResponse,
-} from "./plugin/request-helpers";
-import { EmptyResponseError } from "./plugin/errors";
-import { AntigravityTokenRefreshError, refreshAccessToken } from "./plugin/token";
-import { startOAuthListener, type OAuthListener } from "./plugin/server";
-import { clearAccounts, loadAccounts, saveAccounts, saveAccountsReplace } from "./plugin/storage";
-import { AccountManager, type ModelFamily, parseRateLimitReason, calculateBackoffMs, computeSoftQuotaCacheTtlMs } from "./plugin/accounts";
-import { createAutoUpdateCheckerHook } from "./hooks/auto-update-checker";
-import { loadConfig, initRuntimeConfig, type AntigravityConfig } from "./plugin/config";
-import { createSessionRecoveryHook, getRecoverySuccessToast } from "./plugin/recovery";
-import { checkAccountsQuota, fetchAvailableModels } from "./plugin/quota";
-import { initDiskSignatureCache } from "./plugin/cache";
-import { createProactiveRefreshQueue, type ProactiveRefreshQueue } from "./plugin/refresh-queue";
-import { initLogger, createLogger } from "./plugin/logger";
-import { initHealthTracker, getHealthTracker, initTokenTracker, getTokenTracker } from "./plugin/rotation";
-import { initAntigravityVersion } from "./plugin/version";
-import { executeSearch } from "./plugin/search";
+} from "./plugin/request-helpers.js";
+import { EmptyResponseError } from "./plugin/errors.js";
+import { AntigravityTokenRefreshError, refreshAccessToken } from "./plugin/token.js";
+import { startOAuthListener, type OAuthListener } from "./plugin/server.js";
+import { clearAccounts, loadAccounts, saveAccounts, saveAccountsReplace } from "./plugin/storage.js";
+import { AccountManager, type ModelFamily, parseRateLimitReason, calculateBackoffMs, computeSoftQuotaCacheTtlMs } from "./plugin/accounts.js";
+import { createAutoUpdateCheckerHook } from "./hooks/auto-update-checker/index.js";
+import { loadConfig, initRuntimeConfig, type AntigravityConfig } from "./plugin/config/index.js";
+import { createSessionRecoveryHook, getRecoverySuccessToast } from "./plugin/recovery.js";
+import { checkAccountsQuota, fetchAvailableModels } from "./plugin/quota.js";
+import { initDiskSignatureCache } from "./plugin/cache.js";
+import { createProactiveRefreshQueue, type ProactiveRefreshQueue } from "./plugin/refresh-queue.js";
+import { initLogger, createLogger } from "./plugin/logger.js";
+import { initHealthTracker, getHealthTracker, initTokenTracker, getTokenTracker } from "./plugin/rotation.js";
+import { initAntigravityVersion } from "./plugin/version.js";
+import { executeSearch } from "./plugin/search.js";
 import {
   createAntigravityOnlyModelErrorResponse,
   extractRequestedGeminiModel,
@@ -63,14 +63,14 @@ import {
   isAntigravityOnlyGenerativeLanguageRequest,
   isApiKeyAuth,
   selectAgySdkCredential,
-} from "./plugin/api-key";
+} from "./plugin/api-key.js";
 import {
   OPENCODE_MODEL_DEFINITIONS,
   mergeModelDefinitions,
   modelsFromAntigravityAvailableModels,
   modelsFromGeminiApi,
-} from "./plugin/config/models";
-import type { AgySdkCredential } from "./plugin/api-key";
+} from "./plugin/config/models.js";
+import type { AgySdkCredential } from "./plugin/api-key.js";
 import type {
   AuthDetails,
   GetAuth,
@@ -81,7 +81,7 @@ import type {
   ProjectContextResult,
   Provider,
   ProviderModel,
-} from "./plugin/types";
+} from "./plugin/types.js";
 
 const MAX_OAUTH_ACCOUNTS = 10;
 const MAX_WARMUP_SESSIONS = 1000;
@@ -3147,6 +3147,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
                         { name: "Claude", data: groups.claude },
                         { name: "Gemini 3 Pro", data: groups["gemini-pro"] },
                         { name: "Gemini 3 Flash", data: groups["gemini-flash"] },
+                        { name: "Gemini 3.5 Flash", data: groups["gemini-3.5-flash"] },
                       ].filter(g => g.data);
                       
                       groupEntries.forEach((g, idx) => {

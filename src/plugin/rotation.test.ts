@@ -8,7 +8,7 @@ import {
   sortByLruWithHealth,
   selectHybridAccount,
   type AccountWithMetrics,
-} from "./rotation";
+} from "./rotation.js";
 
 describe("HealthScoreTracker", () => {
   beforeEach(() => {

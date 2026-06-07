@@ -1,4 +1,4 @@
-import type { SignatureStore, SignedThinking, ThoughtBuffer } from '../core/streaming/types';
+import type { SignatureStore, SignedThinking, ThoughtBuffer } from '../core/streaming/types.js';
 
 export function createSignatureStore(): SignatureStore {
   const store = new Map<string, SignedThinking>();

@@ -1,17 +1,17 @@
-import { formatRefreshParts, parseRefreshParts } from "./auth";
-import { loadAccounts, saveAccounts, type AccountStorageV4, type AccountMetadataV3, type RateLimitStateV3, type ModelFamily, type HeaderStyle, type CooldownReason } from "./storage";
-import type { OAuthAuthDetails, RefreshParts } from "./types";
-import type { AccountSelectionStrategy } from "./config/schema";
-import { getHealthTracker, getTokenTracker, selectHybridAccount, type AccountWithMetrics } from "./rotation";
-import { generateFingerprint, updateFingerprintVersion, type Fingerprint, type FingerprintVersion, MAX_FINGERPRINT_HISTORY } from "./fingerprint";
-import type { QuotaGroup, QuotaGroupSummary } from "./quota";
-import { getModelFamily } from "./transform/model-resolver";
-import { debugLogToFile } from "./debug";
-import { formatAccountLabel } from "./logging-utils";
+import { formatRefreshParts, parseRefreshParts } from "./auth.js";
+import { loadAccounts, saveAccounts, type AccountStorageV4, type AccountMetadataV3, type RateLimitStateV3, type ModelFamily, type HeaderStyle, type CooldownReason } from "./storage.js";
+import type { OAuthAuthDetails, RefreshParts } from "./types.js";
+import type { AccountSelectionStrategy } from "./config/schema.js";
+import { getHealthTracker, getTokenTracker, selectHybridAccount, type AccountWithMetrics } from "./rotation.js";
+import { generateFingerprint, updateFingerprintVersion, type Fingerprint, type FingerprintVersion, MAX_FINGERPRINT_HISTORY } from "./fingerprint.js";
+import type { QuotaGroup, QuotaGroupSummary } from "./quota.js";
+import { getModelFamily } from "./transform/model-resolver.js";
+import { debugLogToFile } from "./debug.js";
+import { formatAccountLabel } from "./logging-utils.js";
 
 
-export type { ModelFamily, HeaderStyle, CooldownReason } from "./storage";
-export type { AccountSelectionStrategy } from "./config/schema";
+export type { ModelFamily, HeaderStyle, CooldownReason } from "./storage.js";
+export type { AccountSelectionStrategy } from "./config/schema.js";
 
 
 export type RateLimitReason = 
@@ -238,6 +238,10 @@ function clearExpiredRateLimits(account: ManagedAccount): void {
  */
 export function resolveQuotaGroup(family: ModelFamily, model?: string | null): QuotaGroup {
   if (model) {
+    const lower = model.toLowerCase();
+    if (lower.includes("3.5") && lower.includes("flash")) {
+      return "gemini-3.5-flash";
+    }
     return getModelFamily(model);
   }
   return family === "claude" ? "claude" : "gemini-pro";

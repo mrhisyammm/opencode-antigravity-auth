@@ -23,8 +23,8 @@ import {
   cleanJSONSchemaForAntigravity,
   createSyntheticErrorResponse,
   recursivelyParseJsonStrings,
-} from "./request-helpers";
-import { deduplicateThinkingText, createThoughtBuffer } from "./core/streaming/transformer";
+} from "./request-helpers.js";
+import { deduplicateThinkingText, createThoughtBuffer } from "./core/streaming/transformer.js";
 
 describe("sanitizeThinkingPart (covered via filtering)", () => {
   it("extracts wrapped text and strips SDK fields for Gemini-style thought blocks", () => {

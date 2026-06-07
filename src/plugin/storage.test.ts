@@ -5,7 +5,7 @@ import {
   loadAccounts,
   type AccountMetadata,
   type AccountStorage,
-} from "./storage";
+} from "./storage.js";
 import { promises as fs } from "node:fs";
 import {
   existsSync,

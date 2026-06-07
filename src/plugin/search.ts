@@ -12,8 +12,8 @@ import {
   SEARCH_MODEL,
   SEARCH_TIMEOUT_MS,
   SEARCH_SYSTEM_INSTRUCTION,
-} from "../constants";
-import { createLogger } from "./logger";
+} from "../constants.js";
+import { createLogger } from "./logger.js";
 
 const log = createLogger("search");
 

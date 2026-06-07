@@ -7,8 +7,8 @@
  * in top-level thinking blocks. Foreign signatures fail validation on the target model.
  */
 
-import { isClaudeModel } from "./claude";
-import { isGeminiModel } from "./gemini";
+import { isClaudeModel } from "./claude.js";
+import { isGeminiModel } from "./gemini.js";
 
 export type ModelFamily = "claude" | "gemini" | "unknown";
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { detectErrorType, isRecoverableError } from "./recovery";
+import { detectErrorType, isRecoverableError } from "./recovery.js";
 
 describe("detectErrorType", () => {
   describe("tool_result_missing detection", () => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PluginClient } from "./plugin/types";
+import type { PluginClient } from "./plugin/types.js";
 
 vi.mock("@opencode-ai/plugin", () => ({
   tool: Object.assign(

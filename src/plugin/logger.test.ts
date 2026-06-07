@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { DEFAULT_CONFIG } from "./config"
-import type { PluginClient } from "./types"
+import { DEFAULT_CONFIG } from "./config/index.js"
+import type { PluginClient } from "./types.js"
 
 const { ensureGitignoreSyncMock } = vi.hoisted(() => ({
   ensureGitignoreSyncMock: vi.fn(),

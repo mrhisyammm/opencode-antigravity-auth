@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { DEFAULT_CONFIG } from "./config"
+import { DEFAULT_CONFIG } from "./config/index.js"
 
 const { ensureGitignoreSyncMock } = vi.hoisted(() => ({
   ensureGitignoreSyncMock: vi.fn(),

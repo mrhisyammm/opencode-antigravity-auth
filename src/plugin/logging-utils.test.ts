@@ -7,7 +7,7 @@ import {
   formatErrorForLog,
   truncateTextForLog,
   writeConsoleLog,
-} from "./logging-utils"
+} from "./logging-utils.js"
 
 describe("deriveDebugPolicy", () => {
   it("keeps debug_tui disabled when debug is disabled", () => {

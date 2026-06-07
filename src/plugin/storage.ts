@@ -13,8 +13,8 @@ import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
 import lockfile from "proper-lockfile";
-import type { HeaderStyle } from "../constants";
-import { createLogger } from "./logger";
+import type { HeaderStyle } from "../constants.js";
+import { createLogger } from "./logger.js";
 
 const log = createLogger("storage");
 

@@ -5,7 +5,7 @@
  * to their actual API model names and corresponding thinking configurations.
  */
 
-import type { ResolvedModel, ThinkingTier, GoogleSearchConfig } from "./types";
+import type { ResolvedModel, ThinkingTier, GoogleSearchConfig } from "./types.js";
 
 export interface ModelResolverOptions {
   cli_first?: boolean;

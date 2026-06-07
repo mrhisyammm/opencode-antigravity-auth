@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { NpmDistTags, OpencodeConfig, PackageJson, UpdateCheckResult } from "./types";
+import type { NpmDistTags, OpencodeConfig, PackageJson, UpdateCheckResult } from "./types.js";
 import {
   PACKAGE_NAME,
   NPM_REGISTRY_URL,
@@ -9,8 +9,8 @@ import {
   INSTALLED_PACKAGE_JSON,
   USER_OPENCODE_CONFIG,
   USER_OPENCODE_CONFIG_JSONC,
-} from "./constants";
-import { logAutoUpdate } from "./logging";
+} from "./constants.js";
+import { logAutoUpdate } from "./logging.js";
 
 export function isLocalDevMode(directory: string): boolean {
   return getLocalDevPath(directory) !== null;

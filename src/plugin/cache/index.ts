@@ -5,4 +5,4 @@
 export {
   SignatureCache,
   createSignatureCache,
-} from "./signature-cache";
+} from "./signature-cache.js";

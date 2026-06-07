@@ -6,8 +6,8 @@ import {
   isTTY,
   type AccountInfo,
   type AccountStatus,
-} from "./ui/auth-menu";
-import { updateOpencodeConfig } from "./config/updater";
+} from "./ui/auth-menu.js";
+import { updateOpencodeConfig } from "./config/updater.js";
 
 export async function promptProjectId(): Promise<string> {
   const rl = createInterface({ input, output });
@@ -175,5 +175,5 @@ export async function promptLoginMode(existingAccounts: ExistingAccountInfo[]): 
   }
 }
 
-export { isTTY } from "./ui/auth-menu";
-export type { AccountStatus } from "./ui/auth-menu";
+export { isTTY } from "./ui/auth-menu.js";
+export type { AccountStatus } from "./ui/auth-menu.js";

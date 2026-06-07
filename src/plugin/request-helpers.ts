@@ -1,13 +1,13 @@
-import { getKeepThinking } from "./config";
-import { createLogger } from "./logger";
-import { cacheSignature } from "./cache";
+import { getKeepThinking } from "./config/index.js";
+import { createLogger } from "./logger.js";
+import { cacheSignature } from "./cache.js";
 import {
   EMPTY_SCHEMA_PLACEHOLDER_NAME,
   EMPTY_SCHEMA_PLACEHOLDER_DESCRIPTION,
   SKIP_THOUGHT_SIGNATURE,
-} from "../constants";
-import { processImageData } from "./image-saver";
-import type { GoogleSearchConfig } from "./transform/types";
+} from "../constants.js";
+import { processImageData } from "./image-saver.js";
+import type { GoogleSearchConfig } from "./transform/types.js";
 
 const log = createLogger("request-helpers");
 

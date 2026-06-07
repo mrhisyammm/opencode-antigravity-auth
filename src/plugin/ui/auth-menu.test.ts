@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ANSI } from './ansi';
+import { ANSI } from './ansi.js';
 
 function formatRelativeTime(timestamp: number | undefined): string {
   if (!timestamp) return 'never';

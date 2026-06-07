@@ -2,18 +2,18 @@ import {
   ANTIGRAVITY_ENDPOINT_PROD,
   getAntigravityHeaders,
   ANTIGRAVITY_PROVIDER_ID,
-} from "../constants";
-import { accessTokenExpired, formatRefreshParts, parseRefreshParts } from "./auth";
-import { logQuotaFetch, logQuotaStatus } from "./debug";
-import { ensureProjectContext } from "./project";
-import { refreshAccessToken } from "./token";
-import { getModelFamily } from "./transform/model-resolver";
-import type { PluginClient, OAuthAuthDetails } from "./types";
-import type { AccountMetadataV3 } from "./storage";
+} from "../constants.js";
+import { accessTokenExpired, formatRefreshParts, parseRefreshParts } from "./auth.js";
+import { logQuotaFetch, logQuotaStatus } from "./debug.js";
+import { ensureProjectContext } from "./project.js";
+import { refreshAccessToken } from "./token.js";
+import { getModelFamily } from "./transform/model-resolver.js";
+import type { PluginClient, OAuthAuthDetails } from "./types.js";
+import type { AccountMetadataV3 } from "./storage.js";
 
 const FETCH_TIMEOUT_MS = 10000;
 
-export type QuotaGroup = "claude" | "gemini-pro" | "gemini-flash";
+export type QuotaGroup = "claude" | "gemini-pro" | "gemini-flash" | "gemini-3.5-flash";
 
 export interface QuotaGroupSummary {
   remainingFraction?: number;
@@ -115,6 +115,10 @@ function classifyQuotaGroup(modelName: string, displayName?: string): QuotaGroup
   const isGemini3 = combined.includes("gemini-3") || combined.includes("gemini 3");
   if (!isGemini3) {
     return null;
+  }
+  // Distinguish gemini-3.5-flash from regular gemini-3-flash
+  if (combined.includes("3.5") && combined.includes("flash")) {
+    return "gemini-3.5-flash";
   }
   const family = getModelFamily(modelName);
   return family === "gemini-flash" ? "gemini-flash" : "gemini-pro";
@@ -256,6 +260,7 @@ function aggregateGeminiCliQuota(response: RetrieveUserQuotaResponse): GeminiCli
     const modelId = bucket.modelId;
     const isRelevantModel = 
       modelId.startsWith("gemini-3-") || 
+      modelId.startsWith("gemini-3.") ||
       modelId === "gemini-2.5-pro";
     
     if (!isRelevantModel) {

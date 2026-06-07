@@ -1,5 +1,5 @@
-import { accessTokenExpired } from "./auth";
-import type { OAuthAuthDetails } from "./types";
+import { accessTokenExpired } from "./auth.js";
+import type { OAuthAuthDetails } from "./types.js";
 import { createHash } from "node:crypto";
 
 const authCache = new Map<string, OAuthAuthDetails>();
@@ -69,8 +69,8 @@ export function clearCachedAuth(refresh?: string): void {
 // Thinking Signature Cache (for Claude multi-turn conversations)
 // ============================================================================
 
-import { SignatureCache, createSignatureCache } from "./cache/signature-cache";
-import type { SignatureCacheConfig } from "./config";
+import { SignatureCache, createSignatureCache } from "./cache/signature-cache.js";
+import type { SignatureCacheConfig } from "./config/index.js";
 
 interface SignatureEntry {
   signature: string;
@@ -233,5 +233,5 @@ export function clearSignatureCache(sessionId?: string): void {
 // ============================================================================
 
 // Re-export SignatureCache class and factory for direct use
-export { SignatureCache, createSignatureCache } from "./cache/signature-cache";
-export type { SignatureCacheConfig } from "./config";
+export { SignatureCache, createSignatureCache } from "./cache/signature-cache.js";
+export type { SignatureCacheConfig } from "./config/index.js";

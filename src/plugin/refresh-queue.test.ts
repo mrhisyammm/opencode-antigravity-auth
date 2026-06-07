@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ProactiveRefreshQueue } from "./refresh-queue";
-import { AccountManager } from "./accounts";
-import type { AccountStorageV4 } from "./storage";
-import type { PluginClient } from "./types";
+import { ProactiveRefreshQueue } from "./refresh-queue.js";
+import { AccountManager } from "./accounts.js";
+import type { AccountStorageV4 } from "./storage.js";
+import type { PluginClient } from "./types.js";
 
 // Mock PluginClient
 const mockClient: PluginClient = {

@@ -1,6 +1,6 @@
-import { ANSI } from './ansi';
-import { select, type MenuItem } from './select';
-import { confirm } from './confirm';
+import { ANSI } from './ansi.js';
+import { select, type MenuItem } from './select.js';
+import { confirm } from './confirm.js';
 
 export type AccountStatus = 'active' | 'rate-limited' | 'expired' | 'verification-required' | 'unknown';
 
@@ -140,4 +140,4 @@ export async function showAccountDetails(account: AccountInfo): Promise<AccountA
   }
 }
 
-export { isTTY } from './ansi';
+export { isTTY } from './ansi.js';

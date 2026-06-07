@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import type { HeaderStyle, ModelFamily } from "./accounts";
+import type { HeaderStyle, ModelFamily } from "./accounts.js";
 
 type ResolveQuotaFallbackHeaderStyle = (input: {
   family: ModelFamily;

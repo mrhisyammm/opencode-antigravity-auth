@@ -7,7 +7,7 @@
  * - Schema transformation (JSON Schema -> Gemini Schema format)
  */
 
-import type { RequestPayload, ThinkingConfig, ThinkingTier, GoogleSearchConfig } from "./types";
+import type { RequestPayload, ThinkingConfig, ThinkingTier, GoogleSearchConfig } from "./types.js";
 
 /**
  * Transform a JSON Schema to Gemini-compatible format.

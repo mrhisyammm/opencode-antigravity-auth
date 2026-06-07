@@ -5,13 +5,13 @@ import {
   getPluginSessionId,
   isGenerativeLanguageRequest,
   __testExports,
-} from "./request";
-import { DEFAULT_CONFIG } from "./config";
-import { initializeDebug } from "./debug";
-import { SKIP_THOUGHT_SIGNATURE } from "../constants";
-import { cacheSignature, getCachedSignature, clearSignatureCache } from "./cache";
-import * as config from "./config";
-import type { SignatureStore, ThoughtBuffer, StreamingCallbacks, StreamingOptions } from "./core/streaming/types";
+} from "./request.js";
+import { DEFAULT_CONFIG } from "./config/index.js";
+import { initializeDebug } from "./debug.js";
+import { SKIP_THOUGHT_SIGNATURE } from "../constants.js";
+import { cacheSignature, getCachedSignature, clearSignatureCache } from "./cache.js";
+import * as config from "./config/index.js";
+import type { SignatureStore, ThoughtBuffer, StreamingCallbacks, StreamingOptions } from "./core/streaming/types.js";
 
 const {
   buildSignatureSessionKey,

@@ -14,8 +14,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync, unlinkS
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 import { tmpdir } from "node:os";
-import type { SignatureCacheConfig } from "../config";
-import { ensureGitignoreSync } from "../storage";
+import type { SignatureCacheConfig } from "../config/index.js";
+import { ensureGitignoreSync } from "../storage.js";
 
 // =============================================================================
 // Types

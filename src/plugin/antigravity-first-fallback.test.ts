@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AccountManager, type ModelFamily, type HeaderStyle } from "./accounts";
-import type { AccountStorageV4 } from "./storage";
+import { AccountManager, type ModelFamily, type HeaderStyle } from "./accounts.js";
+import type { AccountStorageV4 } from "./storage.js";
 
 /**
  * Test: Antigravity-first fallback logic

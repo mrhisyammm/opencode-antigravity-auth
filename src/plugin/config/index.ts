@@ -3,7 +3,7 @@
  * 
  * @example
  * ```typescript
- * import { loadConfig, type AntigravityConfig } from "./config";
+ * import { loadConfig, type AntigravityConfig } from "./config.js";
  * 
  * const config = loadConfig(directory);
  * if (config.session_recovery) {
@@ -18,7 +18,7 @@ export {
   DEFAULT_CONFIG,
   type AntigravityConfig,
   type SignatureCacheConfig,
-} from "./schema";
+} from "./schema.js";
 
 export {
   loadConfig,
@@ -28,4 +28,4 @@ export {
   configExists,
   initRuntimeConfig,
   getKeepThinking,
-} from "./loader";
+} from "./loader.js";

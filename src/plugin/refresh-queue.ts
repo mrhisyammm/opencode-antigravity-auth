@@ -16,10 +16,10 @@
  * - Silent operation: no console output, uses structured logger
  */
 
-import type { AccountManager, ManagedAccount } from "./accounts";
-import type { PluginClient, OAuthAuthDetails } from "./types";
-import { refreshAccessToken } from "./token";
-import { createLogger } from "./logger";
+import type { AccountManager, ManagedAccount } from "./accounts.js";
+import type { PluginClient, OAuthAuthDetails } from "./types.js";
+import { refreshAccessToken } from "./token.js";
+import { createLogger } from "./logger.js";
 
 const log = createLogger("refresh-queue");
 

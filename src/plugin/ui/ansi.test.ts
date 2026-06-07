@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseKey, isTTY, ANSI } from './ansi';
+import { parseKey, isTTY, ANSI } from './ansi.js';
 
 describe('ansi', () => {
   describe('parseKey', () => {

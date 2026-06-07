@@ -8,12 +8,12 @@
  * - OPENCODE_ANTIGRAVITY_CONSOLE_LOG=1 → console output (independent of debug flags)
  */
 
-import type { PluginClient } from "./types";
-import { isDebugTuiEnabled } from "./debug";
+import type { PluginClient } from "./types.js";
+import { isDebugTuiEnabled } from "./debug.js";
 import {
   isTruthyFlag,
   writeConsoleLog,
-} from "./logging-utils";
+} from "./logging-utils.js";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 

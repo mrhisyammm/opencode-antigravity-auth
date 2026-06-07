@@ -12,8 +12,8 @@
  * @see https://github.com/lbjlaq/Antigravity-Manager (src-tauri/src/constants.rs)
  */
 
-import { getAntigravityVersion, setAntigravityVersion } from "../constants";
-import { createLogger } from "./logger";
+import { getAntigravityVersion, setAntigravityVersion } from "../constants.js";
+import { createLogger } from "./logger.js";
 
 const VERSION_URL = "https://antigravity-auto-updater-974169037036.us-central1.run.app";
 const CHANGELOG_URL = "https://antigravity.google/changelog";

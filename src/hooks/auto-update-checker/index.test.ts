@@ -16,9 +16,9 @@ vi.mock("../../plugin/debug", () => ({
   debugLogToFile: vi.fn(),
 }));
 
-import { createAutoUpdateCheckerHook } from "./index";
-import { getCachedVersion, getLocalDevVersion, findPluginEntry, getLatestVersion, updatePinnedVersion } from "./checker";
-import { invalidatePackage } from "./cache";
+import { createAutoUpdateCheckerHook } from "./index.js";
+import { getCachedVersion, getLocalDevVersion, findPluginEntry, getLatestVersion, updatePinnedVersion } from "./checker.js";
+import { invalidatePackage } from "./cache.js";
 
 function createMockClient() {
   return {

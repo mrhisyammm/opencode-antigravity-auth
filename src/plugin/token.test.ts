@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ANTIGRAVITY_PROVIDER_ID } from "../constants";
-import { AntigravityTokenRefreshError, refreshAccessToken } from "./token";
-import type { OAuthAuthDetails, PluginClient } from "./types";
+import { ANTIGRAVITY_PROVIDER_ID } from "../constants.js";
+import { AntigravityTokenRefreshError, refreshAccessToken } from "./token.js";
+import type { OAuthAuthDetails, PluginClient } from "./types.js";
 
 const baseAuth: OAuthAuthDetails = {
   type: "oauth",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EmptyResponseError, ToolIdMismatchError } from "./errors";
+import { EmptyResponseError, ToolIdMismatchError } from "./errors.js";
 
 // ─── EmptyResponseError ───────────────────────────────────────────────────────
 

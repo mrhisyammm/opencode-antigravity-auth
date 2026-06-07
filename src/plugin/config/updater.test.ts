@@ -2,8 +2,8 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
-import { updateOpencodeConfig } from "./updater";
-import { OPENCODE_MODEL_DEFINITIONS } from "./models";
+import { updateOpencodeConfig } from "./updater.js";
+import { OPENCODE_MODEL_DEFINITIONS } from "./models.js";
 
 describe("updateOpencodeConfig", () => {
   let tempDir: string;

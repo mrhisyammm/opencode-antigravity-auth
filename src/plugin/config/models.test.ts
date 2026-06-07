@@ -4,7 +4,7 @@ import {
   OPENCODE_MODEL_DEFINITIONS,
   modelsFromAntigravityAvailableModels,
   modelsFromGeminiApi,
-} from "./models";
+} from "./models.js";
 
 const getModel = (name: string) => {
   const model = OPENCODE_MODEL_DEFINITIONS[name];
