@@ -42,6 +42,7 @@
         "test:ui": "vitest --ui",
         "test:coverage": "vitest run --coverage",
         "prepublishOnly": "npm run build",
+        "postinstall": "node script/patch-dependencies.js",
         "test:e2e:models": "npx tsx script/test-models.ts",
         "test:e2e:regression": "npx tsx script/test-regression.ts"
     },

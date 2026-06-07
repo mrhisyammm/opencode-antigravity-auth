@@ -21,9 +21,9 @@ describe("Antigravity quota aggregation", () => {
       },
     });
 
-    expect(summary.groups["gemini-flash"]?.remainingFraction).toBe(1);
-    expect(summary.groups["gemini-flash"]?.resetTime).toBe("2026-05-26T18:00:00Z");
-    expect(summary.groups["gemini-flash"]?.modelCount).toBe(2);
+    expect(summary.groups["gemini-3.5-flash"]?.remainingFraction).toBe(1);
+    expect(summary.groups["gemini-3.5-flash"]?.resetTime).toBe("2026-05-26T18:00:00Z");
+    expect(summary.groups["gemini-3.5-flash"]?.modelCount).toBe(2);
   });
 
   it("keeps the reset time from the displayed Gemini variant quota", () => {
@@ -44,7 +44,7 @@ describe("Antigravity quota aggregation", () => {
       },
     });
 
-    expect(summary.groups["gemini-flash"]?.remainingFraction).toBe(1);
-    expect(summary.groups["gemini-flash"]?.resetTime).toBe("2026-05-27T18:00:00Z");
+    expect(summary.groups["gemini-3.5-flash"]?.remainingFraction).toBe(1);
+    expect(summary.groups["gemini-3.5-flash"]?.resetTime).toBe("2026-05-27T18:00:00Z");
   });
 });

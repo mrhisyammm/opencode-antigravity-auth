@@ -230,12 +230,48 @@ export function modelsFromAntigravityAvailableModels(
     const modelId = antigravityModelIdFromEntry(sourceId, entry);
     if (!modelId) continue;
 
-    const discovered: OpencodeModelDefinition = {
-      name: entry.displayName ? `${entry.displayName} (Antigravity)` : `${titleFromModelId(modelId)} (Antigravity)`,
-      limit: defaultLimitForModel(modelId),
-      modalities: DEFAULT_MODALITIES,
-    };
-    definitions[modelId] = mergeWithStaticDefinition(modelId, discovered);
+    // Check if the model has a tier/thinking suffix
+    const tierMatch = modelId.match(/-(minimal|low|medium|high|max)$/);
+    let baseModelId = modelId;
+    let variantName: string | undefined = undefined;
+
+    if (tierMatch) {
+      baseModelId = modelId.slice(0, -tierMatch[0].length);
+      variantName = tierMatch[1];
+    }
+
+    // Initialize or merge into the base model definition
+    if (!definitions[baseModelId]) {
+      const displayName = entry.displayName ?? titleFromModelId(baseModelId);
+      const baseName = displayName.replace(/[- ](minimal|low|medium|high|max)$/i, "").trim();
+
+      const discovered: OpencodeModelDefinition = {
+        name: `${baseName} (Antigravity)`,
+        limit: defaultLimitForModel(baseModelId),
+        modalities: DEFAULT_MODALITIES,
+      };
+      definitions[baseModelId] = mergeWithStaticDefinition(baseModelId, discovered);
+    }
+
+    // If it had a variant, add it to the variants record
+    const targetDef = definitions[baseModelId];
+    if (variantName && targetDef) {
+      if (!targetDef.variants) {
+        targetDef.variants = {};
+      }
+      
+      if (baseModelId.includes("claude")) {
+        // Map variant names to reasonable thinking budget numbers for Claude
+        const budget = variantName === "low" ? 8192 : 32768;
+        targetDef.variants[variantName] = {
+          thinkingConfig: { thinkingBudget: budget }
+        };
+      } else {
+        targetDef.variants[variantName] = {
+          thinkingLevel: variantName as ModelThinkingLevel
+        };
+      }
+    }
   }
 
   return definitions;

@@ -117,7 +117,7 @@ function classifyQuotaGroup(modelName: string, displayName?: string): QuotaGroup
     return null;
   }
   // Distinguish gemini-3.5-flash from regular gemini-3-flash
-  if (combined.includes("3.5") && combined.includes("flash")) {
+  if ((combined.includes("3.5") && combined.includes("flash")) || combined.includes("gemini-3-flash-agent")) {
     return "gemini-3.5-flash";
   }
   const family = getModelFamily(modelName);

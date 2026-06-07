@@ -30,6 +30,7 @@ describe("OPENCODE_MODEL_DEFINITIONS", () => {
       "gemini-3-flash-preview",
       "gemini-3-pro-preview",
       "gemini-3.1-pro",
+      "gemini-3.1-pro-preview",
       "gemini-3.1-pro-preview-customtools",
       "gemini-3.5-flash",
     ]);
@@ -138,6 +139,45 @@ describe("dynamic model discovery helpers", () => {
     expect(models["antigravity-claude-sonnet-4-6"]).toMatchObject({
       name: "Claude Sonnet 4.6 (Antigravity)",
       limit: { context: 200000, output: 64000 },
+    });
+  });
+
+  it("dynamically groups new tier-suffixed models into variants", () => {
+    const models = modelsFromAntigravityAvailableModels({
+      "gemini-4.0-flash-low": {
+        displayName: "Gemini 4.0 Flash Low",
+        modelName: "gemini-4.0-flash-low",
+      },
+      "gemini-4.0-flash-high": {
+        displayName: "Gemini 4.0 Flash High",
+        modelName: "gemini-4.0-flash-high",
+      },
+      "claude-5-thinking-low": {
+        displayName: "Claude 5 Thinking Low",
+        modelName: "claude-5-thinking-low",
+      },
+      "claude-5-thinking-max": {
+        displayName: "Claude 5 Thinking Max",
+        modelName: "claude-5-thinking-max",
+      },
+    });
+
+    expect(models["antigravity-gemini-4.0-flash"]).toMatchObject({
+      name: "Gemini 4.0 Flash (Antigravity)",
+      limit: { context: 1048576, output: 65536 },
+      variants: {
+        low: { thinkingLevel: "low" },
+        high: { thinkingLevel: "high" },
+      },
+    });
+
+    expect(models["antigravity-claude-5-thinking"]).toMatchObject({
+      name: "Claude 5 Thinking (Antigravity)",
+      limit: { context: 200000, output: 64000 },
+      variants: {
+        low: { thinkingConfig: { thinkingBudget: 8192 } },
+        max: { thinkingConfig: { thinkingBudget: 32768 } },
+      },
     });
   });
 });
