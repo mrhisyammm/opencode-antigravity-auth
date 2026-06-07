@@ -1,0 +1,16 @@
+/**
+ * Configuration module for opencode-antigravity-auth plugin.
+ *
+ * @example
+ * ```typescript
+ * import { loadConfig, type AntigravityConfig } from "./config.js";
+ *
+ * const config = loadConfig(directory);
+ * if (config.session_recovery) {
+ *   // Enable session recovery
+ * }
+ * ```
+ */
+export { AntigravityConfigSchema, SignatureCacheConfigSchema, DEFAULT_CONFIG, } from "./schema.js";
+export { loadConfig, getUserConfigPath, getProjectConfigPath, getDefaultLogsDir, configExists, initRuntimeConfig, getKeepThinking, } from "./loader.js";
+//# sourceMappingURL=index.js.map
