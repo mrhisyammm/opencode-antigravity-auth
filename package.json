@@ -30,6 +30,7 @@
     },
     "files": [
         "dist/",
+        "script/",
         "README.md",
         "LICENSE"
     ],
