@@ -11,11 +11,11 @@
     "author": "noefabris",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/NoeFabris/opencode-antigravity-auth.git"
+        "url": "git+https://github.com/mrhisyammm/opencode-antigravity-auth.git"
     },
-    "homepage": "https://github.com/NoeFabris/opencode-antigravity-auth#readme",
+    "homepage": "https://github.com/mrhisyammm/opencode-antigravity-auth#readme",
     "bugs": {
-        "url": "https://github.com/NoeFabris/opencode-antigravity-auth/issues"
+        "url": "https://github.com/mrhisyammm/opencode-antigravity-auth/issues"
     },
     "keywords": [
         "opencode",

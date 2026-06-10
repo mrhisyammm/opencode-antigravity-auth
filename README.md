@@ -1,8 +1,7 @@
 # Antigravity + Gemini CLI OAuth Plugin for Opencode
 
-[![npm version](https://img.shields.io/npm/v/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/opencode-antigravity-auth)
-[![npm beta](https://img.shields.io/npm/v/opencode-antigravity-auth/beta.svg?label=beta)](https://www.npmjs.com/package/opencode-antigravity-auth)
-[![npm downloads](https://img.shields.io/npm/dw/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/opencode-antigravity-auth)
+[![npm version](https://img.shields.io/npm/v/@mrhisyammm/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/@mrhisyammm/opencode-antigravity-auth)
+[![npm downloads](https://img.shields.io/npm/dw/@mrhisyammm/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/@mrhisyammm/opencode-antigravity-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![X (Twitter)](https://img.shields.io/badge/X-@dopesalmon-000000?style=flat&logo=x)](https://x.com/dopesalmon)
 
@@ -47,7 +46,7 @@ Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth
 Paste this into any LLM agent (Claude Code, OpenCode, Cursor, etc.):
 
 ```
-Install the opencode-antigravity-auth plugin and add the Antigravity model definitions to ~/.config/opencode/opencode.json by following: https://raw.githubusercontent.com/NoeFabris/opencode-antigravity-auth/dev/README.md
+Install the @mrhisyammm/opencode-antigravity-auth plugin and add the Antigravity model definitions to ~/.config/opencode/opencode.json by following: https://raw.githubusercontent.com/mrhisyammm/opencode-antigravity-auth/main/README.md
 ```
 
 **Option B: Manual setup**
@@ -56,7 +55,7 @@ Install the opencode-antigravity-auth plugin and add the Antigravity model defin
 
    ```json
    {
-     "plugin": ["opencode-antigravity-auth@latest"]
+     "plugin": ["@mrhisyammm/opencode-antigravity-auth@latest"]
    }
    ```
 
@@ -159,7 +158,7 @@ Add this to your `~/.config/opencode/opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-antigravity-auth@latest"],
+  "plugin": ["@mrhisyammm/opencode-antigravity-auth@latest"],
   "provider": {
     "google": {
       "models": {
@@ -382,7 +381,7 @@ Invalid JSON payload received. Unknown name "parameters" at 'request.tools[0]'
 **Solutions:**
 1. **Update to latest beta:**
    ```json
-   { "plugin": ["opencode-antigravity-auth@beta"] }
+   { "plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"] }
    ```
 
 2. **Disable MCP servers** one-by-one to find the problematic one
@@ -413,7 +412,7 @@ This usually means an MCP tool name starts with a number (for example, a 1mcp ke
 **Diagnosis:**
 1. Disable all MCP servers in your config
 2. Enable one-by-one until error reappears
-3. Report the specific MCP in a [GitHub issue](https://github.com/NoeFabris/opencode-antigravity-auth/issues)
+3. Report the specific MCP in a [GitHub issue](https://github.com/mrhisyammm/opencode-antigravity-auth/issues)
 
 ---
 
@@ -541,7 +540,7 @@ The correct key is `plugin` (singular):
 
 ```json
 {
-  "plugin": ["opencode-antigravity-auth@beta"]
+  "plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"]
 }
 ```
 
@@ -552,7 +551,7 @@ The correct key is `plugin` (singular):
 ### Migrating Accounts Between Machines
 
 When copying `antigravity-accounts.json` to a new machine:
-1. Ensure the plugin is installed: `"plugin": ["opencode-antigravity-auth@beta"]`
+1. Ensure the plugin is installed: `"plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"]`
 2. Copy `~/.config/opencode/antigravity-accounts.json`
 3. If you get "API key missing" error, the refresh token may be invalid — re-authenticate
 
@@ -570,7 +569,7 @@ DCP creates synthetic assistant messages that lack thinking blocks. **List this 
 ```json
 {
   "plugin": [
-    "opencode-antigravity-auth@latest",
+    "@mrhisyammm/opencode-antigravity-auth@latest",
     "@tarquinen/opencode-dcp@latest"
   ]
 }
@@ -605,7 +604,7 @@ Create `~/.config/opencode/antigravity.json` for optional settings:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/NoeFabris/opencode-antigravity-auth/main/assets/antigravity.schema.json"
+  "$schema": "https://raw.githubusercontent.com/mrhisyammm/opencode-antigravity-auth/main/assets/antigravity.schema.json"
 }
 ```
 
