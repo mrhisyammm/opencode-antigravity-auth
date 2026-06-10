@@ -1,6 +1,9 @@
 {
-    "name": "opencode-antigravity-auth",
-    "version": "1.6.0",
+    "name": "@mrhisyammm/opencode-antigravity-auth",
+    "version": "1.0.0",
+    "publishConfig": {
+        "access": "public"
+    },
     "description": "Google Antigravity IDE OAuth auth plugin for Opencode - access Gemini 3 Pro and Claude 4.6 using Google credentials",
     "main": "./dist/bundle.js",
     "type": "module",
