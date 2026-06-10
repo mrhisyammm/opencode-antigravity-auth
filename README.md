@@ -3,13 +3,14 @@
 [![npm version](https://img.shields.io/npm/v/@mrhisyammm/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/@mrhisyammm/opencode-antigravity-auth)
 [![npm downloads](https://img.shields.io/npm/dw/@mrhisyammm/opencode-antigravity-auth.svg)](https://www.npmjs.com/package/@mrhisyammm/opencode-antigravity-auth)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![X (Twitter)](https://img.shields.io/badge/X-@dopesalmon-000000?style=flat&logo=x)](https://x.com/dopesalmon)
+Enable OpenCode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.5-flash`, `gemini-3-pro`, and `claude-opus-4-6-thinking` with your Google credentials.
 
-Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.1-pro` and `claude-opus-4-6-thinking` with your Google credentials.
+> **Fork of [opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth)** with ESM fix, esbuild single-file bundle, dynamic model detection, and Gemini 3.5 Flash support.
 
 ## What You Get
 
-- **Claude Opus 4.6, Sonnet 4.6** and **Gemini 3.1 Pro/Flash** via Google OAuth
+- **Claude Opus 4.6, Sonnet 4.6** and **Gemini 3.5 Flash / 3.1 Pro / 3 Pro / 3 Flash** via Google OAuth
+- **Dynamic model detection** — new models are picked up automatically from the backend, no config changes needed
 - **Multi-account support** — add multiple Google accounts, auto-rotates when rate-limited
 - **Modern Gemini API support** — use Antigravity SDK-style API keys / Cloud Projects as Gemini backups or opt-in primary routing
 - **Legacy Gemini CLI quota support** — still available for compatibility and quota fallback
@@ -36,6 +37,21 @@ Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth
 
 ---
 
+## Fork Differences
+
+This is a fork of [NoeFabris/opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth) with the following improvements:
+
+| Feature | Original | This Fork |
+|---------|----------|-----------|
+| **OpenCode Desktop** | Broken (extensionless ESM imports) | Fixed — all imports have `.js` extensions |
+| **Distribution** | ~240 individual `.js` files + dependencies | Single `bundle.js` (esbuild, ~270 KB, zero runtime deps) |
+| **Install** | Requires `git` for GitHub installs | `npm install` only — no git needed |
+| **Model detection** | Static model list, manual config updates | Dynamic — auto-detects new models and tier variants from backend |
+| **Gemini 3.5 Flash** | Not supported | Full support with separate quota tracking |
+| **Dependency patching** | Manual | Automatic via `postinstall` (when building from source) |
+
+---
+
 ## Installation
 
 <details open>
@@ -59,7 +75,7 @@ Install the @mrhisyammm/opencode-antigravity-auth plugin and add the Antigravity
    }
    ```
 
-   > Want bleeding-edge features? Use `opencode-antigravity-auth@beta` instead.
+   > Want bleeding-edge features? Use `@mrhisyammm/opencode-antigravity-auth@latest` instead.
 
 2. **Login** with your Google account:
 
@@ -381,7 +397,7 @@ Invalid JSON payload received. Unknown name "parameters" at 'request.tools[0]'
 **Solutions:**
 1. **Update to latest beta:**
    ```json
-   { "plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"] }
+   { "plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"] }
    ```
 
 2. **Disable MCP servers** one-by-one to find the problematic one
@@ -540,7 +556,7 @@ The correct key is `plugin` (singular):
 
 ```json
 {
-  "plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"]
+  "plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"]
 }
 ```
 
@@ -551,7 +567,7 @@ The correct key is `plugin` (singular):
 ### Migrating Accounts Between Machines
 
 When copying `antigravity-accounts.json` to a new machine:
-1. Ensure the plugin is installed: `"plugin": ["@mrhisyammm/opencode-antigravity-auth@beta"]`
+1. Ensure the plugin is installed: `"plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"]`
 2. Copy `~/.config/opencode/antigravity-accounts.json`
 3. If you get "API key missing" error, the refresh token may be invalid — re-authenticate
 
@@ -729,16 +745,9 @@ See the full [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for solutions to c
 
 ---
 
-## Support
-
-If this plugin saves you time, consider supporting its development:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S81QBOIR)
-
----
-
 ## Credits
 
+- [opencode-antigravity-auth](https://github.com/NoeFabris/opencode-antigravity-auth) by [@NoeFabris](https://github.com/NoeFabris) — original plugin
 - [opencode-gemini-auth](https://github.com/jenslys/opencode-gemini-auth) by [@jenslys](https://github.com/jenslys)
 - [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI)
 
