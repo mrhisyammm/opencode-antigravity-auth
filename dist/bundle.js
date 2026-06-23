@@ -33801,16 +33801,6 @@ function resolveModelWithTier(requestedModel, options = {}) {
     explicitQuota
   };
 }
-function getModelFamily2(model) {
-  const lower = model.toLowerCase();
-  if (lower.includes("claude")) {
-    return "claude";
-  }
-  if (lower.includes("flash")) {
-    return "gemini-flash";
-  }
-  return "gemini-pro";
-}
 var ANTIGRAVITY_TO_PUBLIC_API_MODEL_MAP = /* @__PURE__ */ new Map([
   ["gemini-3-pro", "gemini-3-pro-preview"],
   ["gemini-3-flash", "gemini-3-flash-preview"],
@@ -36486,14 +36476,13 @@ function clearExpiredRateLimits(account) {
   }
 }
 function resolveQuotaGroup(family, model) {
-  if (model) {
-    const lower = model.toLowerCase();
-    if (lower.includes("3.5") && lower.includes("flash")) {
-      return "gemini-3.5-flash";
-    }
-    return getModelFamily2(model);
+  const modelName = model || (family === "claude" ? "claude" : "gemini");
+  const lower = modelName.toLowerCase();
+  if (lower.includes("claude")) {
+    return "claude-weekly";
+  } else {
+    return "gemini-nonweekly";
   }
-  return family === "claude" ? "claude" : "gemini-pro";
 }
 function isOverSoftQuotaThreshold(account, family, thresholdPercent, cacheTtlMs, model) {
   if (thresholdPercent >= 100)
@@ -37701,20 +37690,28 @@ function parseResetTime(resetTime) {
   }
   return timestamp;
 }
-function classifyQuotaGroup(modelName, displayName) {
+function isWeeklyQuota(resetTime) {
+  if (!resetTime)
+    return false;
+  const resetTimestamp = Date.parse(resetTime);
+  if (!Number.isFinite(resetTimestamp))
+    return false;
+  const diffMs = resetTimestamp - Date.now();
+  return diffMs > 24 * 60 * 60 * 1e3;
+}
+function classifyQuotaGroup(modelName, displayName, resetTime) {
   const combined = `${modelName} ${displayName ?? ""}`.toLowerCase();
-  if (combined.includes("claude")) {
-    return "claude";
-  }
-  const isGemini3 = combined.includes("gemini-3") || combined.includes("gemini 3");
-  if (!isGemini3) {
+  const isClaude = combined.includes("claude");
+  const isGemini = combined.includes("gemini");
+  if (!isClaude && !isGemini) {
     return null;
   }
-  if (combined.includes("3.5") && combined.includes("flash") || combined.includes("gemini-3-flash-agent")) {
-    return "gemini-3.5-flash";
+  const isWeekly = isWeeklyQuota(resetTime);
+  if (isClaude) {
+    return isWeekly ? "claude-weekly" : "claude-nonweekly";
+  } else {
+    return isWeekly ? "gemini-weekly" : "gemini-nonweekly";
   }
-  const family = getModelFamily2(modelName);
-  return family === "gemini-flash" ? "gemini-flash" : "gemini-pro";
 }
 function aggregateQuota(models) {
   const groups = {};
@@ -37723,7 +37720,7 @@ function aggregateQuota(models) {
   }
   let totalCount = 0;
   for (const [modelName, entry] of Object.entries(models)) {
-    const group = classifyQuotaGroup(modelName, entry.displayName ?? entry.modelName);
+    const group = classifyQuotaGroup(modelName, entry.displayName ?? entry.modelName, entry.quotaInfo?.resetTime);
     if (!group) {
       continue;
     }
@@ -40833,16 +40830,17 @@ Alternatively, you can:
                       } else {
                         const groups = res.quota.groups;
                         const groupEntries = [
-                          { name: "Claude", data: groups.claude },
-                          { name: "Gemini 3 Pro", data: groups["gemini-pro"] },
-                          { name: "Gemini 3 Flash", data: groups["gemini-flash"] },
-                          { name: "Gemini 3.5 Flash", data: groups["gemini-3.5-flash"] }
-                        ].filter((g) => g.data);
+                          { name: "Claude (Non-Weekly)", data: groups["claude-nonweekly"] },
+                          { name: "Claude (Weekly)", data: groups["claude-weekly"] },
+                          { name: "Gemini (Non-Weekly)", data: groups["gemini-nonweekly"] },
+                          { name: "Gemini (Weekly)", data: groups["gemini-weekly"] }
+                        ];
                         groupEntries.forEach((g, idx) => {
                           const isLast = idx === groupEntries.length - 1;
                           const connector = isLast ? "\u2514\u2500" : "\u251C\u2500";
-                          const bar = createProgressBar(g.data.remainingFraction);
-                          const reset = formatReset(g.data.resetTime);
+                          const remaining = g.data?.remainingFraction ?? 1;
+                          const bar = createProgressBar(remaining);
+                          const reset = formatReset(g.data?.resetTime);
                           const modelName = g.name.padEnd(29);
                           console.log(`     ${connector} ${modelName} ${bar}${reset}`);
                         });

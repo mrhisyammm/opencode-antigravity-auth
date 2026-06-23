@@ -237,14 +237,13 @@ function clearExpiredRateLimits(account: ManagedAccount): void {
  * @returns The QuotaGroup to use for soft quota checks
  */
 export function resolveQuotaGroup(family: ModelFamily, model?: string | null): QuotaGroup {
-  if (model) {
-    const lower = model.toLowerCase();
-    if (lower.includes("3.5") && lower.includes("flash")) {
-      return "gemini-3.5-flash";
-    }
-    return getModelFamily(model);
+  const modelName = model || (family === "claude" ? "claude" : "gemini");
+  const lower = modelName.toLowerCase();
+  if (lower.includes("claude")) {
+    return "claude-weekly";
+  } else {
+    return "gemini-nonweekly";
   }
-  return family === "claude" ? "claude" : "gemini-pro";
 }
 
 function isOverSoftQuotaThreshold(

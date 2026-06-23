@@ -3144,17 +3144,18 @@ export const createAntigravityPlugin = (providerId: string) => async (
                     } else {
                       const groups = res.quota!.groups;
                       const groupEntries = [
-                        { name: "Claude", data: groups.claude },
-                        { name: "Gemini 3 Pro", data: groups["gemini-pro"] },
-                        { name: "Gemini 3 Flash", data: groups["gemini-flash"] },
-                        { name: "Gemini 3.5 Flash", data: groups["gemini-3.5-flash"] },
-                      ].filter(g => g.data);
+                        { name: "Claude (Non-Weekly)", data: groups["claude-nonweekly"] },
+                        { name: "Claude (Weekly)", data: groups["claude-weekly"] },
+                        { name: "Gemini (Non-Weekly)", data: groups["gemini-nonweekly"] },
+                        { name: "Gemini (Weekly)", data: groups["gemini-weekly"] },
+                      ];
                       
                       groupEntries.forEach((g, idx) => {
                         const isLast = idx === groupEntries.length - 1;
                         const connector = isLast ? "└─" : "├─";
-                        const bar = createProgressBar(g.data!.remainingFraction);
-                        const reset = formatReset(g.data!.resetTime);
+                        const remaining = g.data?.remainingFraction ?? 1;
+                        const bar = createProgressBar(remaining);
+                        const reset = formatReset(g.data?.resetTime);
                         const modelName = g.name.padEnd(29);
                         console.log(`     ${connector} ${modelName} ${bar}${reset}`);
                       });

@@ -1608,7 +1608,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.05, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 90);
       expect(account?.parts.refreshToken).toBe("r2");
@@ -1624,7 +1624,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.15, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.15, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 90);
       expect(account?.parts.refreshToken).toBe("r1");
@@ -1640,7 +1640,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.01, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.01, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 100);
       expect(account?.parts.refreshToken).toBe("r1");
@@ -1657,8 +1657,8 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.05, modelCount: 1 } });
-      manager.updateQuotaCache(1, { claude: { remainingFraction: 0.08, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } });
+      manager.updateQuotaCache(1, { "claude-weekly": { remainingFraction: 0.08, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 90);
       expect(account).toBeNull();
@@ -1675,8 +1675,8 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { "gemini-pro": { remainingFraction: 0, modelCount: 1 } });
-      manager.updateQuotaCache(1, { "gemini-pro": { remainingFraction: 0, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "gemini-nonweekly": { remainingFraction: 0, modelCount: 1 } });
+      manager.updateQuotaCache(1, { "gemini-nonweekly": { remainingFraction: 0, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("gemini", null, "hybrid", "antigravity", false, 90);
       expect(account).toBeNull();
@@ -1693,7 +1693,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.05, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "round-robin", "antigravity", false, 90);
       expect(account?.parts.refreshToken).toBe("r2");
@@ -1725,7 +1725,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0, modelCount: 1 } });
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 90);
       expect(account?.parts.refreshToken).toBe("r2");
@@ -1744,7 +1744,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.05, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } });
 
       vi.setSystemTime(new Date(11 * 60 * 1000));
 
@@ -1765,7 +1765,7 @@ describe("AccountManager", () => {
 
       const manager = new AccountManager(undefined, stored);
       const acc = (manager as any).accounts[0];
-      acc.cachedQuota = { claude: { remainingFraction: 0.05, modelCount: 1 } };
+      acc.cachedQuota = { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } };
       acc.cachedQuotaUpdatedAt = undefined;
 
       const account = manager.getCurrentOrNextForFamily("claude", null, "sticky", "antigravity", false, 90);
@@ -1784,7 +1784,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.15, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.15, modelCount: 1 } });
 
       const waitMs = manager.getMinWaitTimeForSoftQuota("claude", 90, 10 * 60 * 1000);
       expect(waitMs).toBe(0);
@@ -1800,7 +1800,7 @@ describe("AccountManager", () => {
       };
 
       const manager = new AccountManager(undefined, stored);
-      manager.updateQuotaCache(0, { claude: { remainingFraction: 0.05, modelCount: 1 } });
+      manager.updateQuotaCache(0, { "claude-weekly": { remainingFraction: 0.05, modelCount: 1 } });
 
       const waitMs = manager.getMinWaitTimeForSoftQuota("claude", 90, 10 * 60 * 1000);
       expect(waitMs).toBeNull();
@@ -1820,7 +1820,7 @@ describe("AccountManager", () => {
 
       const manager = new AccountManager(undefined, stored);
       manager.updateQuotaCache(0, { 
-        claude: { 
+        "claude-weekly": { 
           remainingFraction: 0.05, 
           resetTime: "2026-01-28T15:00:00Z",
           modelCount: 1 
@@ -1847,7 +1847,7 @@ describe("AccountManager", () => {
 
       const manager = new AccountManager(undefined, stored);
       manager.updateQuotaCache(0, { 
-        claude: { 
+        "claude-weekly": { 
           remainingFraction: 0.05, 
           resetTime: "2026-01-28T15:00:00Z",
           modelCount: 1 
@@ -1875,10 +1875,10 @@ describe("AccountManager", () => {
 
       const manager = new AccountManager(undefined, stored);
       manager.updateQuotaCache(0, { 
-        claude: { remainingFraction: 0.05, resetTime: "2026-01-28T15:00:00Z", modelCount: 1 } 
+        "claude-weekly": { remainingFraction: 0.05, resetTime: "2026-01-28T15:00:00Z", modelCount: 1 } 
       });
       manager.updateQuotaCache(1, { 
-        claude: { remainingFraction: 0.08, resetTime: "2026-01-28T12:00:00Z", modelCount: 1 } 
+        "claude-weekly": { remainingFraction: 0.08, resetTime: "2026-01-28T12:00:00Z", modelCount: 1 } 
       });
 
       const waitMs = manager.getMinWaitTimeForSoftQuota("claude", 90, 10 * 60 * 1000);
@@ -1891,24 +1891,24 @@ describe("AccountManager", () => {
 
 describe("resolveQuotaGroup", () => {
   it("returns model-based quota group when model is provided", () => {
-    expect(resolveQuotaGroup("claude", "claude-opus-4-6-thinking")).toBe("claude");
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-pro")).toBe("gemini-pro");
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-flash");
+    expect(resolveQuotaGroup("claude", "claude-opus-4-6-thinking")).toBe("claude-weekly");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-pro")).toBe("gemini-nonweekly");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-nonweekly");
   });
 
   it("falls back to claude for claude family when no model", () => {
-    expect(resolveQuotaGroup("claude", null)).toBe("claude");
-    expect(resolveQuotaGroup("claude", undefined)).toBe("claude");
+    expect(resolveQuotaGroup("claude", null)).toBe("claude-weekly");
+    expect(resolveQuotaGroup("claude", undefined)).toBe("claude-weekly");
   });
 
   it("falls back to gemini-pro for gemini family when no model", () => {
-    expect(resolveQuotaGroup("gemini", null)).toBe("gemini-pro");
-    expect(resolveQuotaGroup("gemini", undefined)).toBe("gemini-pro");
+    expect(resolveQuotaGroup("gemini", null)).toBe("gemini-nonweekly");
+    expect(resolveQuotaGroup("gemini", undefined)).toBe("gemini-nonweekly");
   });
 
   it("model takes precedence over family", () => {
     // Even if family says claude, model determines the quota group
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-flash");
-    expect(resolveQuotaGroup("gemini", "gemini-3-pro")).toBe("gemini-pro");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-nonweekly");
+    expect(resolveQuotaGroup("gemini", "gemini-3-pro")).toBe("gemini-nonweekly");
   });
 });

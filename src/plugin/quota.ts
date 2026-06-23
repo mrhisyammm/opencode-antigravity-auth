@@ -13,7 +13,7 @@ import type { AccountMetadataV3 } from "./storage.js";
 
 const FETCH_TIMEOUT_MS = 10000;
 
-export type QuotaGroup = "claude" | "gemini-pro" | "gemini-flash" | "gemini-3.5-flash";
+export type QuotaGroup = "claude-weekly" | "claude-nonweekly" | "gemini-weekly" | "gemini-nonweekly";
 
 export interface QuotaGroupSummary {
   remainingFraction?: number;
@@ -107,21 +107,27 @@ function parseResetTime(resetTime?: string): number | null {
   return timestamp;
 }
 
-function classifyQuotaGroup(modelName: string, displayName?: string): QuotaGroup | null {
+function isWeeklyQuota(resetTime?: string): boolean {
+  if (!resetTime) return false;
+  const resetTimestamp = Date.parse(resetTime);
+  if (!Number.isFinite(resetTimestamp)) return false;
+  const diffMs = resetTimestamp - Date.now();
+  return diffMs > 24 * 60 * 60 * 1000; // > 24 hours
+}
+
+function classifyQuotaGroup(modelName: string, displayName?: string, resetTime?: string): QuotaGroup | null {
   const combined = `${modelName} ${displayName ?? ""}`.toLowerCase();
-  if (combined.includes("claude")) {
-    return "claude";
-  }
-  const isGemini3 = combined.includes("gemini-3") || combined.includes("gemini 3");
-  if (!isGemini3) {
+  const isClaude = combined.includes("claude");
+  const isGemini = combined.includes("gemini");
+  if (!isClaude && !isGemini) {
     return null;
   }
-  // Distinguish gemini-3.5-flash from regular gemini-3-flash
-  if ((combined.includes("3.5") && combined.includes("flash")) || combined.includes("gemini-3-flash-agent")) {
-    return "gemini-3.5-flash";
+  const isWeekly = isWeeklyQuota(resetTime);
+  if (isClaude) {
+    return isWeekly ? "claude-weekly" : "claude-nonweekly";
+  } else {
+    return isWeekly ? "gemini-weekly" : "gemini-nonweekly";
   }
-  const family = getModelFamily(modelName);
-  return family === "gemini-flash" ? "gemini-flash" : "gemini-pro";
 }
 
 function aggregateQuota(models?: Record<string, FetchAvailableModelEntry>): QuotaSummary {
@@ -132,7 +138,7 @@ function aggregateQuota(models?: Record<string, FetchAvailableModelEntry>): Quot
 
   let totalCount = 0;
   for (const [modelName, entry] of Object.entries(models)) {
-    const group = classifyQuotaGroup(modelName, entry.displayName ?? entry.modelName);
+    const group = classifyQuotaGroup(modelName, entry.displayName ?? entry.modelName, entry.quotaInfo?.resetTime);
     if (!group) {
       continue;
     }
