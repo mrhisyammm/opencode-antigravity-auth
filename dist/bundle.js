@@ -41,7 +41,7 @@ var require_polyfills = __commonJS({
     var constants = __require("constants");
     var origCwd = process.cwd;
     var cwd = null;
-    var platform2 = process.env.GRACEFUL_FS_PLATFORM || process.platform;
+    var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform;
     process.cwd = function() {
       if (!cwd)
         cwd = origCwd.call(process);
@@ -100,7 +100,7 @@ var require_polyfills = __commonJS({
         fs5.lchownSync = function() {
         };
       }
-      if (platform2 === "win32") {
+      if (platform === "win32") {
         fs5.rename = typeof fs5.rename !== "function" ? fs5.rename : (function(fs$rename) {
           function rename(from, to, cb) {
             var start = Date.now();
@@ -1612,7 +1612,7 @@ var require_proper_lockfile = __commonJS({
   }
 });
 
-// dist/src/plugin.js
+// src/plugin.ts
 import { exec } from "node:child_process";
 
 // node_modules/@opencode-ai/plugin/node_modules/zod/v4/classic/external.js
@@ -14037,7 +14037,7 @@ function tool(input2) {
 }
 tool.schema = external_exports;
 
-// dist/src/constants.js
+// src/constants.ts
 var ANTIGRAVITY_CLIENT_ID = "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com";
 var ANTIGRAVITY_CLIENT_SECRET = "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";
 var ANTIGRAVITY_SCOPES = [
@@ -14071,8 +14071,7 @@ function getAntigravityVersion() {
   return antigravityVersion;
 }
 function setAntigravityVersion(version3) {
-  if (versionLocked)
-    return;
+  if (versionLocked) return;
   antigravityVersion = version3;
   versionLocked = true;
 }
@@ -14111,10 +14110,10 @@ function getRandomizedHeaders(style, model) {
       "Client-Metadata": GEMINI_CLI_HEADERS["Client-Metadata"]
     };
   }
-  const platform2 = randomFrom(ANTIGRAVITY_PLATFORMS);
-  const metadataPlatform = platform2.startsWith("windows") ? "WINDOWS" : "MACOS";
+  const platform = randomFrom(ANTIGRAVITY_PLATFORMS);
+  const metadataPlatform = platform.startsWith("windows") ? "WINDOWS" : "MACOS";
   return {
-    "User-Agent": `antigravity/${getAntigravityVersion()} ${platform2}`,
+    "User-Agent": `antigravity/${getAntigravityVersion()} ${platform}`,
     "X-Goog-Api-Client": randomFrom(ANTIGRAVITY_API_CLIENTS),
     "Client-Metadata": `{"ideType":"ANTIGRAVITY","platform":"${metadataPlatform}","pluginType":"GEMINI"}`
   };
@@ -14214,22 +14213,20 @@ async function generatePKCE(length = 64) {
   };
 }
 
-// dist/src/plugin/debug.js
+// src/plugin/debug.ts
 import { createWriteStream, mkdirSync as mkdirSync2, readdirSync, statSync, unlinkSync as unlinkSync2 } from "node:fs";
 import { join as join2 } from "node:path";
 import { env } from "node:process";
 import { homedir as homedir2 } from "node:os";
 
-// dist/src/plugin/logging-utils.js
+// src/plugin/logging-utils.ts
 function isTruthyFlag(flag) {
   return flag === "1" || flag?.toLowerCase() === "true";
 }
 function parseDebugLevel(flag) {
   const trimmed = flag.trim();
-  if (trimmed === "2" || trimmed === "verbose")
-    return 2;
-  if (trimmed === "1" || trimmed === "true")
-    return 1;
+  if (trimmed === "2" || trimmed === "verbose") return 2;
+  if (trimmed === "1" || trimmed === "true") return 1;
   return 0;
 }
 function deriveDebugPolicy(input2) {
@@ -14308,10 +14305,19 @@ function writeConsoleLog(level, ...args) {
   }
 }
 
-// dist/src/plugin/storage.js
+// src/plugin/storage.ts
 var import_proper_lockfile = __toESM(require_proper_lockfile(), 1);
 import { promises as fs } from "node:fs";
-import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync, renameSync, copyFileSync, unlinkSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  appendFileSync,
+  mkdirSync,
+  renameSync,
+  copyFileSync,
+  unlinkSync
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
@@ -14337,16 +14343,26 @@ async function ensureGitignore(configDir) {
       }
       content = "";
     }
-    const missingEntries = GITIGNORE_ENTRIES.filter((entry) => !existingLines.includes(entry));
+    const missingEntries = GITIGNORE_ENTRIES.filter(
+      (entry) => !existingLines.includes(entry)
+    );
     if (missingEntries.length === 0) {
       return;
     }
     if (content === "") {
-      await fs.writeFile(gitignorePath, missingEntries.join("\n") + "\n", "utf-8");
+      await fs.writeFile(
+        gitignorePath,
+        missingEntries.join("\n") + "\n",
+        "utf-8"
+      );
       log.info("Created .gitignore in config directory");
     } else {
       const suffix = content.endsWith("\n") ? "" : "\n";
-      await fs.appendFile(gitignorePath, suffix + missingEntries.join("\n") + "\n", "utf-8");
+      await fs.appendFile(
+        gitignorePath,
+        suffix + missingEntries.join("\n") + "\n",
+        "utf-8"
+      );
       log.info("Updated .gitignore with missing entries", {
         added: missingEntries
       });
@@ -14365,7 +14381,9 @@ function ensureGitignoreSync(configDir) {
     } else {
       content = "";
     }
-    const missingEntries = GITIGNORE_ENTRIES.filter((entry) => !existingLines.includes(entry));
+    const missingEntries = GITIGNORE_ENTRIES.filter(
+      (entry) => !existingLines.includes(entry)
+    );
     if (missingEntries.length === 0) {
       return;
     }
@@ -14374,7 +14392,11 @@ function ensureGitignoreSync(configDir) {
       log.info("Created .gitignore in config directory");
     } else {
       const suffix = content.endsWith("\n") ? "" : "\n";
-      appendFileSync(gitignorePath, suffix + missingEntries.join("\n") + "\n", "utf-8");
+      appendFileSync(
+        gitignorePath,
+        suffix + missingEntries.join("\n") + "\n",
+        "utf-8"
+      );
       log.info("Updated .gitignore with missing entries", {
         added: missingEntries
       });
@@ -14383,7 +14405,10 @@ function ensureGitignoreSync(configDir) {
   }
 }
 function getLegacyWindowsConfigDir() {
-  return join(process.env.APPDATA || join(homedir(), "AppData", "Roaming"), "opencode");
+  return join(
+    process.env.APPDATA || join(homedir(), "AppData", "Roaming"),
+    "opencode"
+  );
 }
 function getConfigDir() {
   if (process.env.OPENCODE_CONFIG_DIR) {
@@ -14397,7 +14422,10 @@ function migrateLegacyWindowsConfig() {
     return false;
   }
   const newPath = join(getConfigDir(), "antigravity-accounts.json");
-  const legacyPath = join(getLegacyWindowsConfigDir(), "antigravity-accounts.json");
+  const legacyPath = join(
+    getLegacyWindowsConfigDir(),
+    "antigravity-accounts.json"
+  );
   if (!existsSync(legacyPath) || existsSync(newPath)) {
     return false;
   }
@@ -14427,7 +14455,10 @@ function getStoragePathWithMigration() {
   if (process.platform === "win32") {
     migrateLegacyWindowsConfig();
     if (!existsSync(newPath)) {
-      const legacyPath = join(getLegacyWindowsConfigDir(), "antigravity-accounts.json");
+      const legacyPath = join(
+        getLegacyWindowsConfigDir(),
+        "antigravity-accounts.json"
+      );
       if (existsSync(legacyPath)) {
         log.info("Using legacy Windows config path (migration failed)", {
           legacyPath,
@@ -14462,7 +14493,11 @@ async function ensureFileExists(path5) {
     await fs.access(path5);
   } catch {
     await fs.mkdir(dirname(path5), { recursive: true });
-    await fs.writeFile(path5, JSON.stringify({ version: 4, accounts: [], activeIndex: 0 }, null, 2), { encoding: "utf-8", mode: 384 });
+    await fs.writeFile(
+      path5,
+      JSON.stringify({ version: 4, accounts: [], activeIndex: 0 }, null, 2),
+      { encoding: "utf-8", mode: 384 }
+    );
   }
 }
 async function withFileLock(path5, fn) {
@@ -14521,8 +14556,7 @@ function deduplicateAccountsByEmail(accounts) {
   const indicesToKeep = /* @__PURE__ */ new Set();
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
-    if (!acc)
-      continue;
+    if (!acc) continue;
     if (!acc.email) {
       indicesToKeep.add(i);
       continue;
@@ -14675,9 +14709,11 @@ async function loadAccounts() {
       });
       return null;
     }
-    const validAccounts = storage.accounts.filter((a) => {
-      return !!a && typeof a === "object" && typeof a.refreshToken === "string";
-    });
+    const validAccounts = storage.accounts.filter(
+      (a) => {
+        return !!a && typeof a === "object" && typeof a.refreshToken === "string";
+      }
+    );
     const deduplicatedAccounts = deduplicateAccountsByEmail(validAccounts);
     let activeIndex = typeof storage.activeIndex === "number" && Number.isFinite(storage.activeIndex) ? storage.activeIndex : 0;
     if (deduplicatedAccounts.length > 0) {
@@ -14782,14 +14818,14 @@ async function clearAccounts() {
   }
 }
 
-// dist/src/plugin/debug.js
+// src/plugin/debug.ts
 var MAX_BODY_PREVIEW_CHARS = 12e3;
 var MAX_BODY_LOG_CHARS = 5e4;
 var DEBUG_MESSAGE_PREFIX = "[opencode-antigravity-auth debug]";
 var debugState = null;
 function getConfigDir2() {
-  const platform2 = process.platform;
-  if (platform2 === "win32") {
+  const platform = process.platform;
+  if (platform === "win32") {
     return join2(env.APPDATA || join2(homedir2(), "AppData", "Roaming"), "opencode");
   }
   const xdgConfig = env.XDG_CONFIG_HOME || join2(homedir2(), ".config");
@@ -14927,8 +14963,14 @@ function logAntigravityDebugResponse(context, response, meta3 = {}) {
     return;
   }
   const durationMs = Date.now() - context.startedAt;
-  logDebug(`[Antigravity Debug ${context.id}] Response ${response.status} ${response.statusText} (${durationMs}ms)`);
-  logDebug(`[Antigravity Debug ${context.id}] Response Headers: ${JSON.stringify(maskHeadersForLog(meta3.headersOverride ?? response.headers))}`);
+  logDebug(
+    `[Antigravity Debug ${context.id}] Response ${response.status} ${response.statusText} (${durationMs}ms)`
+  );
+  logDebug(
+    `[Antigravity Debug ${context.id}] Response Headers: ${JSON.stringify(
+      maskHeadersForLog(meta3.headersOverride ?? response.headers)
+    )}`
+  );
   if (meta3.note) {
     logDebug(`[Antigravity Debug ${context.id}] Note: ${meta3.note}`);
   }
@@ -14936,7 +14978,9 @@ function logAntigravityDebugResponse(context, response, meta3 = {}) {
     logDebug(`[Antigravity Debug ${context.id}] Error: ${formatErrorForLog(meta3.error)}`);
   }
   if (meta3.body) {
-    logDebug(`[Antigravity Debug ${context.id}] Response Body Preview: ${truncateTextForLog(meta3.body, MAX_BODY_PREVIEW_CHARS)}`);
+    logDebug(
+      `[Antigravity Debug ${context.id}] Response Body Preview: ${truncateTextForLog(meta3.body, MAX_BODY_PREVIEW_CHARS)}`
+    );
   }
 }
 function maskHeadersForLog(headers) {
@@ -14973,8 +15017,7 @@ function logDebug(line) {
   getDebugState().logWriter(line);
 }
 function runWithDebugEnabled(action) {
-  if (!getDebugState().debugEnabled)
-    return;
+  if (!getDebugState().debugEnabled) return;
   action();
 }
 function logAccountContext(label, info) {
@@ -15034,8 +15077,7 @@ function logRateLimitSnapshot(family, accounts) {
 }
 async function logResponseBody(context, response, status) {
   const state = getDebugState();
-  if (!state.debugEnabled || !context)
-    return void 0;
+  if (!state.debugEnabled || !context) return void 0;
   try {
     const text = await response.clone().text();
     const preview = truncateTextForLog(text, MAX_BODY_LOG_CHARS);
@@ -15085,7 +15127,7 @@ function logQuotaFetch(event, accountCount, details) {
   });
 }
 
-// dist/src/plugin/logger.js
+// src/plugin/logger.ts
 var ENV_CONSOLE_LOG = "OPENCODE_ANTIGRAVITY_CONSOLE_LOG";
 var _client = null;
 function isConsoleLogEnabled() {
@@ -15120,7 +15162,7 @@ function createLogger(module) {
   };
 }
 
-// dist/src/plugin/auth.js
+// src/plugin/auth.ts
 var ACCESS_TOKEN_EXPIRY_BUFFER_MS = 60 * 1e3;
 function isOAuthAuth(auth) {
   return auth.type === "oauth";
@@ -15152,7 +15194,7 @@ function calculateTokenExpiry(requestTimeMs, expiresInSeconds) {
   return requestTimeMs + seconds * 1e3;
 }
 
-// dist/src/antigravity/oauth.js
+// src/antigravity/oauth.ts
 var log2 = createLogger("oauth");
 function encodeState(payload) {
   return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
@@ -15179,7 +15221,10 @@ async function authorizeAntigravity(projectId = "") {
   url3.searchParams.set("scope", ANTIGRAVITY_SCOPES.join(" "));
   url3.searchParams.set("code_challenge", pkce.challenge);
   url3.searchParams.set("code_challenge_method", "S256");
-  url3.searchParams.set("state", encodeState({ verifier: pkce.verifier, projectId: projectId || "" }));
+  url3.searchParams.set(
+    "state",
+    encodeState({ verifier: pkce.verifier, projectId: projectId || "" })
+  );
   url3.searchParams.set("access_type", "offline");
   url3.searchParams.set("prompt", "consent");
   return {
@@ -15206,7 +15251,9 @@ async function fetchProjectID(accessToken) {
     "User-Agent": GEMINI_CLI_HEADERS["User-Agent"],
     "Client-Metadata": getAntigravityHeaders()["Client-Metadata"]
   };
-  const loadEndpoints = Array.from(/* @__PURE__ */ new Set([...ANTIGRAVITY_LOAD_ENDPOINTS, ...ANTIGRAVITY_ENDPOINT_FALLBACKS]));
+  const loadEndpoints = Array.from(
+    /* @__PURE__ */ new Set([...ANTIGRAVITY_LOAD_ENDPOINTS, ...ANTIGRAVITY_ENDPOINT_FALLBACKS])
+  );
   for (const baseEndpoint of loadEndpoints) {
     try {
       const url3 = `${baseEndpoint}/v1internal:loadCodeAssist`;
@@ -15223,7 +15270,9 @@ async function fetchProjectID(accessToken) {
       });
       if (!response.ok) {
         const message = await response.text().catch(() => "");
-        errors.push(`loadCodeAssist ${response.status} at ${baseEndpoint}${message ? `: ${message}` : ""}`);
+        errors.push(
+          `loadCodeAssist ${response.status} at ${baseEndpoint}${message ? `: ${message}` : ""}`
+        );
         continue;
       }
       const data = await response.json();
@@ -15235,7 +15284,9 @@ async function fetchProjectID(accessToken) {
       }
       errors.push(`loadCodeAssist missing project id at ${baseEndpoint}`);
     } catch (e) {
-      errors.push(`loadCodeAssist error at ${baseEndpoint}: ${e instanceof Error ? e.message : String(e)}`);
+      errors.push(
+        `loadCodeAssist error at ${baseEndpoint}: ${e instanceof Error ? e.message : String(e)}`
+      );
     }
   }
   if (errors.length) {
@@ -15269,12 +15320,15 @@ async function exchangeAntigravity(code, state) {
       return { type: "failed", error: errorText };
     }
     const tokenPayload = await tokenResponse.json();
-    const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v1/userinfo?alt=json", {
-      headers: {
-        Authorization: `Bearer ${tokenPayload.access_token}`,
-        "User-Agent": GEMINI_CLI_HEADERS["User-Agent"]
+    const userInfoResponse = await fetch(
+      "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
+      {
+        headers: {
+          Authorization: `Bearer ${tokenPayload.access_token}`,
+          "User-Agent": GEMINI_CLI_HEADERS["User-Agent"]
+        }
       }
-    });
+    );
     const userInfo = userInfoResponse.ok ? await userInfoResponse.json() : {};
     const refreshToken = tokenPayload.refresh_token;
     if (!refreshToken) {
@@ -15301,11 +15355,11 @@ async function exchangeAntigravity(code, state) {
   }
 }
 
-// dist/src/plugin/cli.js
+// src/plugin/cli.ts
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-// dist/src/plugin/ui/ansi.js
+// src/plugin/ui/ansi.ts
 var ANSI = {
   // Cursor control
   hide: "\x1B[?25l",
@@ -15327,23 +15381,18 @@ var ANSI = {
 };
 function parseKey(data) {
   const s = data.toString();
-  if (s === "\x1B[A" || s === "\x1BOA")
-    return "up";
-  if (s === "\x1B[B" || s === "\x1BOB")
-    return "down";
-  if (s === "\r" || s === "\n")
-    return "enter";
-  if (s === "")
-    return "escape";
-  if (s === "\x1B")
-    return "escape-start";
+  if (s === "\x1B[A" || s === "\x1BOA") return "up";
+  if (s === "\x1B[B" || s === "\x1BOB") return "down";
+  if (s === "\r" || s === "\n") return "enter";
+  if (s === "") return "escape";
+  if (s === "\x1B") return "escape-start";
   return null;
 }
 function isTTY() {
   return Boolean(process.stdin.isTTY);
 }
 
-// dist/src/plugin/ui/select.js
+// src/plugin/ui/select.ts
 var ESCAPE_TIMEOUT_MS = 50;
 var ANSI_REGEX = new RegExp("\\x1b\\[[0-9;]*m", "g");
 var ANSI_LEADING_REGEX = new RegExp("^\\x1b\\[[0-9;]*m");
@@ -15351,11 +15400,9 @@ function stripAnsi(input2) {
   return input2.replace(ANSI_REGEX, "");
 }
 function truncateAnsi(input2, maxVisibleChars) {
-  if (maxVisibleChars <= 0)
-    return "";
+  if (maxVisibleChars <= 0) return "";
   const visible = stripAnsi(input2);
-  if (visible.length <= maxVisibleChars)
-    return input2;
+  if (visible.length <= maxVisibleChars) return input2;
   const suffix = maxVisibleChars >= 3 ? "..." : ".".repeat(maxVisibleChars);
   const keep = Math.max(0, maxVisibleChars - suffix.length);
   let out = "";
@@ -15411,8 +15458,7 @@ async function select(items, options) {
   const { message, subtitle } = options;
   const { stdin, stdout } = process;
   let cursor2 = items.findIndex(isSelectable);
-  if (cursor2 === -1)
-    cursor2 = 0;
+  if (cursor2 === -1) cursor2 = 0;
   let escapeTimeout = null;
   let isCleanedUp = false;
   let renderedLines = 0;
@@ -15454,8 +15500,7 @@ async function select(items, options) {
     for (let i = 0; i < visibleItems.length; i++) {
       const itemIndex = windowStart + i;
       const item = visibleItems[i];
-      if (!item)
-        continue;
+      if (!item) continue;
       if (item.separator) {
         writeLine(`${ANSI.dim}\u2502${ANSI.reset}`);
         continue;
@@ -15472,12 +15517,10 @@ async function select(items, options) {
         labelText = `${ANSI.dim}${item.label} (unavailable)${ANSI.reset}`;
       } else if (isSelected) {
         labelText = colorCode ? `${colorCode}${item.label}${ANSI.reset}` : item.label;
-        if (item.hint)
-          labelText += ` ${ANSI.dim}${item.hint}${ANSI.reset}`;
+        if (item.hint) labelText += ` ${ANSI.dim}${item.hint}${ANSI.reset}`;
       } else {
         labelText = colorCode ? `${ANSI.dim}${colorCode}${item.label}${ANSI.reset}` : `${ANSI.dim}${item.label}${ANSI.reset}`;
-        if (item.hint)
-          labelText += ` ${ANSI.dim}${item.hint}${ANSI.reset}`;
+        if (item.hint) labelText += ` ${ANSI.dim}${item.hint}${ANSI.reset}`;
       }
       labelText = truncateAnsi(labelText, Math.max(1, columns - 8));
       if (isSelected) {
@@ -15502,8 +15545,7 @@ async function select(items, options) {
   return new Promise((resolve) => {
     const wasRaw = stdin.isRaw ?? false;
     const cleanup = () => {
-      if (isCleanedUp)
-        return;
+      if (isCleanedUp) return;
       isCleanedUp = true;
       if (escapeTimeout) {
         clearTimeout(escapeTimeout);
@@ -15528,8 +15570,7 @@ async function select(items, options) {
       resolve(value);
     };
     const findNextSelectable = (from, direction) => {
-      if (items.length === 0)
-        return from;
+      if (items.length === 0) return from;
       let next = from;
       do {
         next = (next + direction + items.length) % items.length;
@@ -15582,7 +15623,7 @@ async function select(items, options) {
   });
 }
 
-// dist/src/plugin/ui/confirm.js
+// src/plugin/ui/confirm.ts
 async function confirm(message, defaultYes = false) {
   const items = defaultYes ? [
     { label: "Yes", value: true },
@@ -15595,24 +15636,18 @@ async function confirm(message, defaultYes = false) {
   return result ?? false;
 }
 
-// dist/src/plugin/ui/auth-menu.js
+// src/plugin/ui/auth-menu.ts
 function formatRelativeTime(timestamp) {
-  if (!timestamp)
-    return "never";
+  if (!timestamp) return "never";
   const days = Math.floor((Date.now() - timestamp) / 864e5);
-  if (days === 0)
-    return "today";
-  if (days === 1)
-    return "yesterday";
-  if (days < 7)
-    return `${days}d ago`;
-  if (days < 30)
-    return `${Math.floor(days / 7)}w ago`;
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return new Date(timestamp).toLocaleDateString();
 }
 function formatDate(timestamp) {
-  if (!timestamp)
-    return "unknown";
+  if (!timestamp) return "unknown";
   return new Date(timestamp).toLocaleDateString();
 }
 function getStatusBadge(status) {
@@ -15662,12 +15697,10 @@ async function showAuthMenu(accounts) {
       subtitle: "Select an action or account",
       clearScreen: true
     });
-    if (!result)
-      return { type: "cancel" };
+    if (!result) return { type: "cancel" };
     if (result.type === "delete-all") {
       const confirmed = await confirm("Delete ALL accounts? This cannot be undone.");
-      if (!confirmed)
-        continue;
+      if (!confirmed) continue;
     }
     return result;
   }
@@ -15695,24 +15728,22 @@ async function showAccountDetails(account) {
     });
     if (result === "delete") {
       const confirmed = await confirm(`Delete ${label}?`);
-      if (!confirmed)
-        continue;
+      if (!confirmed) continue;
     }
     if (result === "refresh") {
       const confirmed = await confirm(`Re-authenticate ${label}?`);
-      if (!confirmed)
-        continue;
+      if (!confirmed) continue;
     }
     return result ?? "cancel";
   }
 }
 
-// dist/src/plugin/config/updater.js
+// src/plugin/config/updater.ts
 import { existsSync as existsSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2, mkdirSync as mkdirSync3 } from "node:fs";
 import { join as join3, dirname as dirname2 } from "node:path";
 import { homedir as homedir3 } from "node:os";
 
-// dist/src/plugin/config/models.js
+// src/plugin/config/models.ts
 var DEFAULT_MODALITIES = {
   input: ["text", "image", "pdf"],
   output: ["text"]
@@ -15814,8 +15845,7 @@ var OPENCODE_MODEL_DEFINITIONS = {
   }
 };
 function modelIdFromGeminiName(name) {
-  if (!name)
-    return null;
+  if (!name) return null;
   const id = name.replace(/^models\//, "").trim();
   return id || null;
 }
@@ -15834,8 +15864,7 @@ function defaultLimitForModel(modelId) {
 }
 function mergeWithStaticDefinition(modelId, discovered) {
   const existing = OPENCODE_MODEL_DEFINITIONS[modelId];
-  if (!existing)
-    return discovered;
+  if (!existing) return discovered;
   return {
     ...existing,
     ...discovered,
@@ -15846,19 +15875,16 @@ function mergeWithStaticDefinition(modelId, discovered) {
 }
 function antigravityModelIdFromEntry(sourceId, entry) {
   const rawId = (entry.modelName || sourceId).trim();
-  if (!rawId)
-    return null;
+  if (!rawId) return null;
   const modelId = rawId.replace(/^models\//, "");
   return modelId.startsWith("antigravity-") ? modelId : `antigravity-${modelId}`;
 }
 function modelsFromGeminiApi(models) {
   const definitions = {};
   for (const model of models) {
-    if (!supportsGeminiGeneration(model))
-      continue;
+    if (!supportsGeminiGeneration(model)) continue;
     const modelId = modelIdFromGeminiName(model.name) || model.baseModelId;
-    if (!modelId)
-      continue;
+    if (!modelId) continue;
     const discovered = {
       name: model.displayName ? `${model.displayName} (Gemini API)` : `${titleFromModelId(modelId)} (Gemini API)`,
       limit: {
@@ -15875,8 +15901,7 @@ function modelsFromAntigravityAvailableModels(models) {
   const definitions = {};
   for (const [sourceId, entry] of Object.entries(models)) {
     const modelId = antigravityModelIdFromEntry(sourceId, entry);
-    if (!modelId)
-      continue;
+    if (!modelId) continue;
     const tierMatch = modelId.match(/-(minimal|low|medium|high|max)$/);
     let baseModelId = modelId;
     let variantName = void 0;
@@ -15917,13 +15942,16 @@ function mergeModelDefinitions(...definitions) {
   return Object.assign({}, ...definitions);
 }
 
-// dist/src/plugin/config/updater.js
+// src/plugin/config/updater.ts
 var PLUGIN_NAME = "opencode-antigravity-auth@latest";
 var SCHEMA_URL = "https://opencode.ai/config.json";
 var OPENCODE_JSON_FILENAME = "opencode.json";
 var OPENCODE_JSONC_FILENAME = "opencode.jsonc";
 function stripJsonCommentsAndTrailingCommas(json3) {
-  return json3.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (match, group) => group ? "" : match).replace(/,(\s*[}\]])/g, "$1");
+  return json3.replace(
+    /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g,
+    (match, group) => group ? "" : match
+  ).replace(/,(\s*[}\]])/g, "$1");
 }
 function getOpencodeConfigDir() {
   const xdgConfig = process.env.XDG_CONFIG_HOME || join3(homedir3(), ".config");
@@ -15961,7 +15989,9 @@ async function updateOpencodeConfig(options = {}) {
     if (!Array.isArray(config3.plugin)) {
       config3.plugin = [];
     }
-    const hasPlugin = config3.plugin.some((p) => p.includes("opencode-antigravity-auth"));
+    const hasPlugin = config3.plugin.some(
+      (p) => p.includes("opencode-antigravity-auth")
+    );
     if (!hasPlugin) {
       config3.plugin.push(PLUGIN_NAME);
     }
@@ -15990,7 +16020,7 @@ async function updateOpencodeConfig(options = {}) {
   }
 }
 
-// dist/src/plugin/cli.js
+// src/plugin/cli.ts
 async function promptProjectId() {
   const rl = createInterface({ input, output });
   try {
@@ -16001,8 +16031,7 @@ async function promptProjectId() {
   }
 }
 async function pressEnterToContinue(message = "Press Enter to return to the menu... ") {
-  if (!input.isTTY)
-    return;
+  if (!input.isTTY) return;
   const rl = createInterface({ input, output });
   try {
     await rl.question(message);
@@ -16117,13 +16146,13 @@ async function promptLoginMode(existingAccounts) {
   }
 }
 
-// dist/src/plugin/project.js
+// src/plugin/project.ts
 var log3 = createLogger("project");
 var projectContextResultCache = /* @__PURE__ */ new Map();
 var projectContextPendingCache = /* @__PURE__ */ new Map();
 var CODE_ASSIST_METADATA = {
   ideType: "ANTIGRAVITY",
-  platform: process.platform === "win32" ? "WINDOWS" : "MACOS",
+  platform: "PLATFORM_UNSPECIFIED",
   pluginType: "GEMINI"
 };
 function buildMetadata(projectId) {
@@ -16188,14 +16217,19 @@ async function loadManagedProject(accessToken, projectId) {
     "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
     "Client-Metadata": getAntigravityHeaders()["Client-Metadata"]
   };
-  const loadEndpoints = Array.from(/* @__PURE__ */ new Set([...ANTIGRAVITY_LOAD_ENDPOINTS, ...ANTIGRAVITY_ENDPOINT_FALLBACKS]));
+  const loadEndpoints = Array.from(
+    /* @__PURE__ */ new Set([...ANTIGRAVITY_LOAD_ENDPOINTS, ...ANTIGRAVITY_ENDPOINT_FALLBACKS])
+  );
   for (const baseEndpoint of loadEndpoints) {
     try {
-      const response = await fetch(`${baseEndpoint}/v1internal:loadCodeAssist`, {
-        method: "POST",
-        headers: loadHeaders,
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `${baseEndpoint}/v1internal:loadCodeAssist`,
+        {
+          method: "POST",
+          headers: loadHeaders,
+          body: JSON.stringify(requestBody)
+        }
+      );
       if (!response.ok) {
         continue;
       }
@@ -16216,15 +16250,18 @@ async function onboardManagedProject(accessToken, tierId, projectId, attempts = 
   for (const baseEndpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       try {
-        const response = await fetch(`${baseEndpoint}/v1internal:onboardUser`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-            ...getAntigravityHeaders()
-          },
-          body: JSON.stringify(requestBody)
-        });
+        const response = await fetch(
+          `${baseEndpoint}/v1internal:onboardUser`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+              ...getAntigravityHeaders()
+            },
+            body: JSON.stringify(requestBody)
+          }
+        );
         if (!response.ok) {
           break;
         }
@@ -16285,7 +16322,11 @@ async function ensureProjectContext(auth) {
     }
     const tierId = getDefaultTierId(loadPayload?.allowedTiers) ?? "FREE";
     log3.debug("Auto-provisioning managed project", { tierId, projectId: parts.projectId });
-    const provisionedProjectId = await onboardManagedProject(accessToken, tierId, parts.projectId);
+    const provisionedProjectId = await onboardManagedProject(
+      accessToken,
+      tierId,
+      parts.projectId
+    );
     if (provisionedProjectId) {
       log3.debug("Successfully provisioned managed project", { provisionedProjectId });
       return persistManagedProject(provisionedProjectId);
@@ -16317,20 +16358,20 @@ async function ensureProjectContext(auth) {
   return promise3;
 }
 
-// dist/src/plugin/request.js
+// src/plugin/request.ts
 import crypto3 from "node:crypto";
 
-// dist/src/plugin/cache.js
+// src/plugin/cache.ts
 import { createHash } from "node:crypto";
 
-// dist/src/plugin/cache/signature-cache.js
+// src/plugin/cache/signature-cache.ts
 import { existsSync as existsSync3, mkdirSync as mkdirSync4, readFileSync as readFileSync3, writeFileSync as writeFileSync3, renameSync as renameSync2, unlinkSync as unlinkSync3 } from "node:fs";
 import { join as join4, dirname as dirname3 } from "node:path";
 import { homedir as homedir4 } from "node:os";
 import { tmpdir } from "node:os";
 function getConfigDir3() {
-  const platform2 = process.platform;
-  if (platform2 === "win32") {
+  const platform = process.platform;
+  if (platform === "win32") {
     return join4(process.env.APPDATA || join4(homedir4(), "AppData", "Roaming"), "opencode");
   }
   const xdgConfig = process.env.XDG_CONFIG_HOME || join4(homedir4(), ".config");
@@ -16383,8 +16424,7 @@ var SignatureCache = class {
    * Store a signature in the cache.
    */
   store(key, signature) {
-    if (!this.enabled)
-      return;
+    if (!this.enabled) return;
     this.cache.set(key, {
       value: signature,
       timestamp: Date.now()
@@ -16396,8 +16436,7 @@ var SignatureCache = class {
    * Returns null if not found or expired.
    */
   retrieve(key) {
-    if (!this.enabled)
-      return null;
+    if (!this.enabled) return null;
     const entry = this.cache.get(key);
     if (entry) {
       const age = Date.now() - entry.timestamp;
@@ -16414,11 +16453,9 @@ var SignatureCache = class {
    * Check if a key exists in the cache (without updating stats).
    */
   has(key) {
-    if (!this.enabled)
-      return false;
+    if (!this.enabled) return false;
     const entry = this.cache.get(key);
-    if (!entry)
-      return false;
+    if (!entry) return false;
     const age = Date.now() - entry.timestamp;
     return age <= this.memoryTtlMs;
   }
@@ -16428,12 +16465,11 @@ var SignatureCache = class {
   /**
    * Store full thinking content with signature.
    * This enables recovery even after thinking text is stripped by compaction.
-   *
+   * 
    * Port of LLM-API-Key-Proxy's _cache_thinking()
    */
   storeThinking(key, thinkingText, signature, toolIds) {
-    if (!this.enabled || !thinkingText || !signature)
-      return;
+    if (!this.enabled || !thinkingText || !signature) return;
     this.cache.set(key, {
       value: signature,
       timestamp: Date.now(),
@@ -16448,11 +16484,9 @@ var SignatureCache = class {
    * Returns null if not found or expired.
    */
   retrieveThinking(key) {
-    if (!this.enabled)
-      return null;
+    if (!this.enabled) return null;
     const entry = this.cache.get(key);
-    if (!entry || !entry.thinkingText)
-      return null;
+    if (!entry || !entry.thinkingText) return null;
     const age = Date.now() - entry.timestamp;
     if (age > this.memoryTtlMs) {
       this.cache.delete(key);
@@ -16469,11 +16503,9 @@ var SignatureCache = class {
    * Check if full thinking content exists for a key.
    */
   hasThinking(key) {
-    if (!this.enabled)
-      return false;
+    if (!this.enabled) return false;
     const entry = this.cache.get(key);
-    if (!entry || !entry.thinkingText)
-      return false;
+    if (!entry || !entry.thinkingText) return false;
     const age = Date.now() - entry.timestamp;
     return age <= this.memoryTtlMs;
   }
@@ -16492,8 +16524,7 @@ var SignatureCache = class {
    * Manually trigger a disk save.
    */
   async flush() {
-    if (!this.enabled)
-      return true;
+    if (!this.enabled) return true;
     return this.saveToDisk();
   }
   /**
@@ -16650,7 +16681,7 @@ function createSignatureCache(config3) {
   return new SignatureCache(config3);
 }
 
-// dist/src/plugin/cache.js
+// src/plugin/cache.ts
 var authCache = /* @__PURE__ */ new Map();
 function normalizeRefreshKey(refresh) {
   const key = refresh?.trim();
@@ -16689,8 +16720,7 @@ function makeDiskKey(sessionId, textHash) {
   return `${sessionId}:${textHash}`;
 }
 function cacheSignature(sessionId, text, signature) {
-  if (!sessionId || !text || !signature)
-    return;
+  if (!sessionId || !text || !signature) return;
   const textHash = hashText(text);
   let sessionMemCache = signatureCache.get(sessionId);
   if (!sessionMemCache) {
@@ -16719,8 +16749,7 @@ function cacheSignature(sessionId, text, signature) {
   }
 }
 function getCachedSignature(sessionId, text) {
-  if (!sessionId || !text)
-    return void 0;
+  if (!sessionId || !text) return void 0;
   const textHash = hashText(text);
   const sessionMemCache = signatureCache.get(sessionId);
   if (sessionMemCache) {
@@ -30517,7 +30546,7 @@ function date8(params) {
 // node_modules/zod/v4/classic/external.js
 config2(en_default2());
 
-// dist/src/plugin/config/schema.js
+// src/plugin/config/schema.ts
 var AccountSelectionStrategySchema = external_exports2.enum(["sticky", "round-robin", "hybrid"]);
 var ToastScopeSchema = external_exports2.enum(["root_only", "all"]);
 var SchedulingModeSchema = external_exports2.enum(["cache_first", "balance", "performance_first"]);
@@ -30561,7 +30590,7 @@ var AntigravityConfigSchema = external_exports2.object({
   // =========================================================================
   // General Settings
   // =========================================================================
-  /**
+  /** 
    * Suppress most toast notifications (rate limit, account switching, etc.)
    * Recovery toasts are always shown regardless of this setting.
    * Env override: OPENCODE_ANTIGRAVITY_QUIET=1
@@ -30570,11 +30599,11 @@ var AntigravityConfigSchema = external_exports2.object({
   quiet_mode: external_exports2.boolean().default(false),
   /**
    * Control which sessions show toast notifications.
-   *
+   * 
    * - `root_only` (default): Only root sessions show toasts.
    *   Subagents and background tasks will be silent (less spam).
    * - `all`: All sessions show toasts including subagents and background tasks.
-   *
+   * 
    * Debug logging captures all toasts regardless of this setting.
    * Env override: OPENCODE_ANTIGRAVITY_TOAST_SCOPE=all
    * @default "root_only"
@@ -30604,10 +30633,10 @@ var AntigravityConfigSchema = external_exports2.object({
   // =========================================================================
   /**
    * Preserve thinking blocks for Claude models using signature caching.
-   *
+   * 
    * When false (default): Thinking blocks are stripped for reliability.
    * When true: Full context preserved, but may encounter signature errors.
-   *
+   * 
    * Env override: OPENCODE_ANTIGRAVITY_KEEP_THINKING=1
    * @default false
    */
@@ -30618,24 +30647,24 @@ var AntigravityConfigSchema = external_exports2.object({
   /**
    * Enable automatic session recovery from tool_result_missing errors.
    * When enabled, shows a toast notification when recoverable errors occur.
-   *
+   * 
    * @default true
    */
   session_recovery: external_exports2.boolean().default(true),
   /**
    * Automatically send a "continue" prompt after successful recovery.
    * Only applies when session_recovery is enabled.
-   *
+   * 
    * When false: Only shows toast notification, user must manually continue.
    * When true: Automatically sends "continue" to resume the session.
-   *
+   * 
    * @default false
    */
   auto_resume: external_exports2.boolean().default(false),
   /**
    * Custom text to send when auto-resuming after recovery.
    * Only used when auto_resume is enabled.
-   *
+   * 
    * @default "continue"
    */
   resume_text: external_exports2.string().default("continue"),
@@ -30653,13 +30682,13 @@ var AntigravityConfigSchema = external_exports2.object({
   /**
    * Maximum retry attempts when Antigravity returns an empty response.
    * Empty responses occur when no candidates/choices are returned.
-   *
+   * 
    * @default 4
    */
   empty_response_max_attempts: external_exports2.number().min(1).max(10).default(4),
   /**
    * Delay in milliseconds between empty response retries.
-   *
+   * 
    * @default 2000
    */
   empty_response_retry_delay_ms: external_exports2.number().min(500).max(1e4).default(2e3),
@@ -30670,7 +30699,7 @@ var AntigravityConfigSchema = external_exports2.object({
    * Enable tool ID orphan recovery.
    * When tool responses have mismatched IDs (due to context compaction),
    * attempt to match them by function name or create placeholders.
-   *
+   * 
    * @default true
    */
   tool_id_recovery: external_exports2.boolean().default(true),
@@ -30682,10 +30711,10 @@ var AntigravityConfigSchema = external_exports2.object({
    * When enabled, injects:
    * - Parameter signatures into tool descriptions
    * - System instruction with strict tool usage rules
-   *
+   * 
    * This helps prevent Claude from using parameter names from its training
    * data instead of the actual schema.
-   *
+   * 
    * @default true
    */
   claude_tool_hardening: external_exports2.boolean().default(true),
@@ -30702,21 +30731,21 @@ var AntigravityConfigSchema = external_exports2.object({
    * Enable proactive background token refresh.
    * When enabled, tokens are refreshed in the background before they expire,
    * ensuring requests never block on token refresh.
-   *
+   * 
    * @default true
    */
   proactive_token_refresh: external_exports2.boolean().default(true),
   /**
    * Seconds before token expiry to trigger proactive refresh.
    * Default is 30 minutes (1800 seconds).
-   *
+   * 
    * @default 1800
    */
   proactive_refresh_buffer_seconds: external_exports2.number().min(60).max(7200).default(1800),
   /**
    * Interval between proactive refresh checks in seconds.
    * Default is 5 minutes (300 seconds).
-   *
+   * 
    * @default 300
    */
   proactive_refresh_check_interval_seconds: external_exports2.number().min(30).max(1800).default(300),
@@ -30727,9 +30756,9 @@ var AntigravityConfigSchema = external_exports2.object({
    * Maximum time in seconds to wait when all accounts are rate-limited.
    * If the minimum wait time across all accounts exceeds this threshold,
    * the plugin fails fast with an error instead of hanging.
-   *
+   * 
    * Set to 0 to disable (wait indefinitely).
-   *
+   * 
    * @default 300 (5 minutes)
    */
   max_rate_limit_wait_seconds: external_exports2.number().min(0).max(3600).default(300),
@@ -30743,10 +30772,10 @@ var AntigravityConfigSchema = external_exports2.object({
   quota_fallback: external_exports2.boolean().default(false),
   /**
    * Prefer gemini-cli routing before Antigravity for Gemini models.
-   *
+   * 
    * When false (default): Antigravity is tried first, then gemini-cli.
    * When true: gemini-cli is tried first, then Antigravity.
-   *
+   * 
    * @default false
    */
   cli_first: external_exports2.boolean().default(false),
@@ -30783,13 +30812,13 @@ var AntigravityConfigSchema = external_exports2.object({
   account_selection_strategy: AccountSelectionStrategySchema.default("hybrid"),
   /**
    * Enable PID-based account offset for multi-session distribution.
-   *
+   * 
    * When enabled, different sessions (PIDs) will prefer different starting
    * accounts, which helps distribute load when running multiple parallel agents.
-   *
+   * 
    * When disabled (default), accounts start from the same index, which preserves
    * Anthropic's prompt cache across restarts (recommended for single-session use).
-   *
+   * 
    * Env override: OPENCODE_ANTIGRAVITY_PID_OFFSET_ENABLED=1
    * @default false
    */
@@ -30797,17 +30826,17 @@ var AntigravityConfigSchema = external_exports2.object({
   /**
      * Switch to another account immediately on first rate limit (after 1s delay).
      * When disabled, retries same account first, then switches on second rate limit.
-     *
+     * 
      * @default true
      */
   switch_on_first_rate_limit: external_exports2.boolean().default(true),
   /**
    * Scheduling mode for rate limit behavior.
-   *
+   * 
    * - `cache_first`: Wait for same account to recover (preserves prompt cache). Default.
    * - `balance`: Switch account immediately on rate limit. Maximum availability.
    * - `performance_first`: Round-robin distribution for maximum throughput.
-   *
+   * 
    * Env override: OPENCODE_ANTIGRAVITY_SCHEDULING_MODE
    * @default "cache_first"
    */
@@ -30815,7 +30844,7 @@ var AntigravityConfigSchema = external_exports2.object({
   /**
    * Maximum seconds to wait for same account in cache_first mode.
    * If the account's rate limit reset time exceeds this, switch accounts.
-   *
+   * 
    * @default 60
    */
   max_cache_first_wait_seconds: external_exports2.number().min(5).max(300).default(60),
@@ -30823,21 +30852,21 @@ var AntigravityConfigSchema = external_exports2.object({
    * TTL in seconds for failure count expiration.
    * After this period of no failures, consecutiveFailures resets to 0.
    * This prevents old failures from permanently penalizing an account.
-   *
+   * 
    * @default 3600 (1 hour)
    */
   failure_ttl_seconds: external_exports2.number().min(60).max(7200).default(3600),
   /**
    * Default retry delay in seconds when API doesn't return a retry-after header.
    * Lower values allow faster retries but may trigger more 429 errors.
-   *
+   * 
    * @default 60
    */
   default_retry_after_seconds: external_exports2.number().min(1).max(300).default(60),
   /**
    * Maximum backoff delay in seconds for exponential retry.
    * This caps how long the exponential backoff can grow.
-   *
+   * 
    * @default 60
    */
   max_backoff_seconds: external_exports2.number().min(5).max(300).default(60),
@@ -30845,7 +30874,7 @@ var AntigravityConfigSchema = external_exports2.object({
    * Maximum random delay in milliseconds before each API request.
    * Adds timing jitter to break predictable request cadence patterns.
    * Set to 0 to disable request jitter.
-   *
+   * 
    * @default 0
    */
   request_jitter_max_ms: external_exports2.number().min(0).max(5e3).default(0),
@@ -30853,10 +30882,10 @@ var AntigravityConfigSchema = external_exports2.object({
    * Soft quota threshold percentage (1-100).
    * When an account's quota usage reaches this percentage, skip it during
    * account selection (same as if it were rate-limited).
-   *
+   * 
    * Example: 90 means skip account when 90% of quota is used (10% remaining).
    * Set to 100 to disable soft quota protection.
-   *
+   * 
    * @default 90
    */
   soft_quota_threshold_percent: external_exports2.number().min(1).max(100).default(90),
@@ -30864,16 +30893,16 @@ var AntigravityConfigSchema = external_exports2.object({
    * How often to refresh quota data in the background (in minutes).
    * Quota is refreshed opportunistically after successful API requests.
    * Set to 0 to disable automatic refresh (manual only via Check quotas).
-   *
+   * 
    * @default 15
    */
   quota_refresh_interval_minutes: external_exports2.number().min(0).max(60).default(15),
   /**
    * How long quota cache is considered fresh for threshold checks (in minutes).
    * After this time, cache is stale and account is allowed (fail-open).
-   *
+   * 
    * "auto" = derive from refresh interval: max(2 * refresh_interval, 10)
-   *
+   * 
    * @default "auto"
    */
   soft_quota_cache_ttl_minutes: external_exports2.union([
@@ -30975,7 +31004,7 @@ var DEFAULT_CONFIG = {
   }
 };
 
-// dist/src/plugin/config/loader.js
+// src/plugin/config/loader.ts
 import { existsSync as existsSync4, readFileSync as readFileSync4 } from "node:fs";
 import { join as join5 } from "node:path";
 import { homedir as homedir5 } from "node:os";
@@ -31051,7 +31080,7 @@ function getKeepThinking() {
   return runtimeConfig?.keep_thinking ?? false;
 }
 
-// dist/src/plugin/image-saver.js
+// src/plugin/image-saver.ts
 import * as fs2 from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -31106,7 +31135,7 @@ To view: \`open "${filePath}"\``;
   return `![Generated Image](data:${mimeType};base64,${data})`;
 }
 
-// dist/src/plugin/core/streaming/transformer.js
+// src/plugin/core/streaming/transformer.ts
 function hashString(str) {
   let hash3 = 5381;
   for (let i = 0; i < str.length; i++) {
@@ -31123,17 +31152,14 @@ function createThoughtBuffer() {
   };
 }
 function deduplicateThinkingText(response, sentBuffer, displayedThinkingHashes) {
-  if (!response || typeof response !== "object")
-    return response;
+  if (!response || typeof response !== "object") return response;
   const resp = response;
   if (Array.isArray(resp.candidates)) {
     const newCandidates = resp.candidates.map((candidate, index) => {
       const cand = candidate;
-      if (!cand?.content)
-        return candidate;
+      if (!cand?.content) return candidate;
       const content = cand.content;
-      if (!Array.isArray(content.parts))
-        return candidate;
+      if (!Array.isArray(content.parts)) return candidate;
       const newParts = content.parts.map((part) => {
         const p = part;
         if (p.inlineData) {
@@ -31226,9 +31252,19 @@ function transformSseLine(line, signatureStore, thoughtBuffer, sentThinkingBuffe
     const parsed = JSON.parse(json3);
     if (parsed.response !== void 0) {
       if (options.cacheSignatures && options.signatureSessionKey) {
-        cacheThinkingSignaturesFromResponse(parsed.response, options.signatureSessionKey, signatureStore, thoughtBuffer, callbacks.onCacheSignature);
+        cacheThinkingSignaturesFromResponse(
+          parsed.response,
+          options.signatureSessionKey,
+          signatureStore,
+          thoughtBuffer,
+          callbacks.onCacheSignature
+        );
       }
-      let response = deduplicateThinkingText(parsed.response, sentThinkingBuffer, options.displayedThinkingHashes);
+      let response = deduplicateThinkingText(
+        parsed.response,
+        sentThinkingBuffer,
+        options.displayedThinkingHashes
+      );
       if (options.debugText && callbacks.onInjectDebug && !debugState2.injected) {
         response = callbacks.onInjectDebug(response, options.debugText);
         debugState2.injected = true;
@@ -31241,17 +31277,14 @@ function transformSseLine(line, signatureStore, thoughtBuffer, sentThinkingBuffe
   return line;
 }
 function cacheThinkingSignaturesFromResponse(response, signatureSessionKey, signatureStore, thoughtBuffer, onCacheSignature) {
-  if (!response || typeof response !== "object")
-    return;
+  if (!response || typeof response !== "object") return;
   const resp = response;
   if (Array.isArray(resp.candidates)) {
     resp.candidates.forEach((candidate, index) => {
       const cand = candidate;
-      if (!cand?.content)
-        return;
+      if (!cand?.content) return;
       const content = cand.content;
-      if (!Array.isArray(content.parts))
-        return;
+      if (!Array.isArray(content.parts)) return;
       content.parts.forEach((part) => {
         const p = part;
         if (p.thought === true || p.type === "thinking") {
@@ -31311,7 +31344,15 @@ function createStreamingTransformer(signatureStore, callbacks, options = {}) {
         if (line.includes("usageMetadata")) {
           hasSeenUsageMetadata = true;
         }
-        const transformedLine = transformSseLine(line, signatureStore, thoughtBuffer, sentThinkingBuffer, callbacks, options, debugState2);
+        const transformedLine = transformSseLine(
+          line,
+          signatureStore,
+          thoughtBuffer,
+          sentThinkingBuffer,
+          callbacks,
+          options,
+          debugState2
+        );
         controller.enqueue(encoder2.encode(transformedLine + "\n"));
       }
     },
@@ -31321,7 +31362,15 @@ function createStreamingTransformer(signatureStore, callbacks, options = {}) {
         if (buffer.includes("usageMetadata")) {
           hasSeenUsageMetadata = true;
         }
-        const transformedLine = transformSseLine(buffer, signatureStore, thoughtBuffer, sentThinkingBuffer, callbacks, options, debugState2);
+        const transformedLine = transformSseLine(
+          buffer,
+          signatureStore,
+          thoughtBuffer,
+          sentThinkingBuffer,
+          callbacks,
+          options,
+          debugState2
+        );
         controller.enqueue(encoder2.encode(transformedLine));
       }
       if (!hasSeenUsageMetadata) {
@@ -31343,7 +31392,7 @@ data: ${JSON.stringify(syntheticUsage)}
   });
 }
 
-// dist/src/plugin/stores/signature-store.js
+// src/plugin/stores/signature-store.ts
 function createSignatureStore() {
   const store = /* @__PURE__ */ new Map();
   return {
@@ -31359,7 +31408,7 @@ function createSignatureStore() {
 }
 var defaultSignatureStore = createSignatureStore();
 
-// dist/src/plugin/request-helpers.js
+// src/plugin/request-helpers.ts
 var log5 = createLogger("request-helpers");
 var ANTIGRAVITY_PREVIEW_LINK = "https://goo.gle/enable-preview-features";
 var UNSUPPORTED_CONSTRAINTS = [
@@ -31502,8 +31551,7 @@ function mergeAllOf(schema) {
     const merged = {};
     const mergedRequired = [];
     for (const item of result.allOf) {
-      if (!item || typeof item !== "object")
-        continue;
+      if (!item || typeof item !== "object") continue;
       if (item.properties && typeof item.properties === "object") {
         merged.properties = { ...merged.properties, ...item.properties };
       }
@@ -31742,7 +31790,9 @@ function cleanupRequiredFields(schema) {
   }
   let result = { ...schema };
   if (Array.isArray(result.required) && result.properties && typeof result.properties === "object") {
-    const validRequired = result.required.filter((req) => Object.prototype.hasOwnProperty.call(result.properties, req));
+    const validRequired = result.required.filter(
+      (req) => Object.prototype.hasOwnProperty.call(result.properties, req)
+    );
     if (validRequired.length === 0) {
       delete result.required;
     } else if (validRequired.length !== result.required.length) {
@@ -31879,14 +31929,10 @@ function isToolBlock(part) {
 }
 function stripAllThinkingBlocks(contentArray) {
   return contentArray.filter((item) => {
-    if (!item || typeof item !== "object")
-      return true;
-    if (isToolBlock(item))
-      return true;
-    if (isThinkingPart(item))
-      return false;
-    if (hasSignatureField(item))
-      return false;
+    if (!item || typeof item !== "object") return true;
+    if (isToolBlock(item)) return true;
+    if (isThinkingPart(item)) return false;
+    if (hasSignatureField(item)) return false;
     return true;
   });
 }
@@ -31926,33 +31972,25 @@ function isOurCachedSignature(part, sessionId, getCachedSignatureFn) {
   return cachedSignature === partSignature;
 }
 function getThinkingText(part) {
-  if (typeof part.text === "string")
-    return part.text;
-  if (typeof part.thinking === "string")
-    return part.thinking;
+  if (typeof part.text === "string") return part.text;
+  if (typeof part.thinking === "string") return part.thinking;
   if (part.text && typeof part.text === "object") {
     const maybeText = part.text.text;
-    if (typeof maybeText === "string")
-      return maybeText;
+    if (typeof maybeText === "string") return maybeText;
   }
   if (part.thinking && typeof part.thinking === "object") {
     const maybeText = part.thinking.text ?? part.thinking.thinking;
-    if (typeof maybeText === "string")
-      return maybeText;
+    if (typeof maybeText === "string") return maybeText;
   }
   return "";
 }
 function stripCacheControlRecursively(obj) {
-  if (obj === null || obj === void 0)
-    return obj;
-  if (typeof obj !== "object")
-    return obj;
-  if (Array.isArray(obj))
-    return obj.map((item) => stripCacheControlRecursively(item));
+  if (obj === null || obj === void 0) return obj;
+  if (typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map((item) => stripCacheControlRecursively(item));
   const result = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (key === "cache_control" || key === "providerOptions")
-      continue;
+    if (key === "cache_control" || key === "providerOptions") continue;
     result[key] = stripCacheControlRecursively(value);
   }
   return result;
@@ -31969,10 +32007,8 @@ function sanitizeThinkingPart(part) {
       return null;
     }
     const sanitized = { thought: true };
-    if (textContent !== void 0)
-      sanitized.text = textContent;
-    if (part.thoughtSignature !== void 0)
-      sanitized.thoughtSignature = part.thoughtSignature;
+    if (textContent !== void 0) sanitized.text = textContent;
+    if (part.thoughtSignature !== void 0) sanitized.thoughtSignature = part.thoughtSignature;
     return sanitized;
   }
   if (part.type === "thinking" || part.type === "redacted_thinking" || part.thinking !== void 0) {
@@ -31986,10 +32022,8 @@ function sanitizeThinkingPart(part) {
       return null;
     }
     const sanitized = { type: part.type === "redacted_thinking" ? "redacted_thinking" : "thinking" };
-    if (thinkingContent !== void 0)
-      sanitized.thinking = thinkingContent;
-    if (part.signature !== void 0)
-      sanitized.signature = part.signature;
+    if (thinkingContent !== void 0) sanitized.thinking = thinkingContent;
+    if (part.signature !== void 0) sanitized.signature = part.signature;
     return sanitized;
   }
   if (part.type === "reasoning") {
@@ -32003,10 +32037,8 @@ function sanitizeThinkingPart(part) {
       return null;
     }
     const sanitized = { type: "reasoning" };
-    if (textContent !== void 0)
-      sanitized.text = textContent;
-    if (part.signature !== void 0)
-      sanitized.signature = part.signature;
+    if (textContent !== void 0) sanitized.text = textContent;
+    if (part.signature !== void 0) sanitized.signature = part.signature;
     return sanitized;
   }
   return stripCacheControlRecursively(part);
@@ -32062,8 +32094,7 @@ function filterContentArray(contentArray, sessionId, getCachedSignatureFn, isCla
     if (isLastAssistantMessage && (isThinking || hasSignature)) {
       if (isOurCachedSignature(item, sessionId, getCachedSignatureFn)) {
         const sanitized = sanitizeThinkingPart(item);
-        if (sanitized)
-          filtered.push(sanitized);
+        if (sanitized) filtered.push(sanitized);
         continue;
       }
       const thinkingText = getThinkingText(item) || "";
@@ -32080,8 +32111,7 @@ function filterContentArray(contentArray, sessionId, getCachedSignatureFn, isCla
     }
     if (isOurCachedSignature(item, sessionId, getCachedSignatureFn)) {
       const sanitized = sanitizeThinkingPart(item);
-      if (sanitized)
-        filtered.push(sanitized);
+      if (sanitized) filtered.push(sanitized);
       continue;
     }
     if (sessionId && getCachedSignatureFn) {
@@ -32096,8 +32126,7 @@ function filterContentArray(contentArray, sessionId, getCachedSignatureFn, isCla
             restoredPart.signature = cachedSignature;
           }
           const sanitized = sanitizeThinkingPart(restoredPart);
-          if (sanitized)
-            filtered.push(sanitized);
+          if (sanitized) filtered.push(sanitized);
           continue;
         }
       }
@@ -32113,14 +32142,26 @@ function filterUnsignedThinkingBlocks(contents, sessionId, getCachedSignatureFn,
     }
     const isLastAssistant = idx === lastAssistantIdx;
     if (Array.isArray(content.parts)) {
-      const filteredParts = filterContentArray(content.parts, sessionId, getCachedSignatureFn, isClaudeModel2, isLastAssistant);
+      const filteredParts = filterContentArray(
+        content.parts,
+        sessionId,
+        getCachedSignatureFn,
+        isClaudeModel2,
+        isLastAssistant
+      );
       const trimmedParts = content.role === "model" && !isClaudeModel2 ? removeTrailingThinkingBlocks(filteredParts, sessionId, getCachedSignatureFn) : filteredParts;
       return { ...content, parts: trimmedParts };
     }
     if (Array.isArray(content.content)) {
       const isAssistantRole = content.role === "assistant";
       const isLastAssistantContent = idx === lastAssistantIdx || isAssistantRole && idx === findLastAssistantIndex(contents, "assistant");
-      const filteredContent = filterContentArray(content.content, sessionId, getCachedSignatureFn, isClaudeModel2, isLastAssistantContent);
+      const filteredContent = filterContentArray(
+        content.content,
+        sessionId,
+        getCachedSignatureFn,
+        isClaudeModel2,
+        isLastAssistantContent
+      );
       const trimmedContent = isAssistantRole && !isClaudeModel2 ? removeTrailingThinkingBlocks(filteredContent, sessionId, getCachedSignatureFn) : filteredContent;
       return { ...content, content: trimmedContent };
     }
@@ -32136,7 +32177,13 @@ function filterMessagesThinkingBlocks(messages, sessionId, getCachedSignatureFn,
     if (Array.isArray(message.content)) {
       const isAssistantRole = message.role === "assistant";
       const isLastAssistant = isAssistantRole && idx === lastAssistantIdx;
-      const filteredContent = filterContentArray(message.content, sessionId, getCachedSignatureFn, isClaudeModel2, isLastAssistant);
+      const filteredContent = filterContentArray(
+        message.content,
+        sessionId,
+        getCachedSignatureFn,
+        isClaudeModel2,
+        isLastAssistant
+      );
       const trimmedContent = isAssistantRole && !isClaudeModel2 ? removeTrailingThinkingBlocks(filteredContent, sessionId, getCachedSignatureFn) : filteredContent;
       return { ...message, content: trimmedContent };
     }
@@ -32159,10 +32206,20 @@ function deepFilterThinkingBlocks(payload, sessionId, getCachedSignatureFn, isCl
     }
     const obj = value;
     if (Array.isArray(obj.contents)) {
-      obj.contents = filterUnsignedThinkingBlocks(obj.contents, sessionId, getCachedSignatureFn, isClaudeModel2);
+      obj.contents = filterUnsignedThinkingBlocks(
+        obj.contents,
+        sessionId,
+        getCachedSignatureFn,
+        isClaudeModel2
+      );
     }
     if (Array.isArray(obj.messages)) {
-      obj.messages = filterMessagesThinkingBlocks(obj.messages, sessionId, getCachedSignatureFn, isClaudeModel2);
+      obj.messages = filterMessagesThinkingBlocks(
+        obj.messages,
+        sessionId,
+        getCachedSignatureFn,
+        isClaudeModel2
+      );
     }
     Object.keys(obj).forEach((key) => walk(obj[key]));
   };
@@ -32186,8 +32243,7 @@ function transformGeminiCandidate(candidate) {
       const thinkingText = part.text || "";
       thinkingTexts.push(thinkingText);
       const transformed = { ...part, type: "reasoning" };
-      if (part.cache_control)
-        transformed.cache_control = part.cache_control;
+      if (part.cache_control) transformed.cache_control = part.cache_control;
       const sig = part.signature || part.thoughtSignature;
       if (sig) {
         transformed.providerMetadata = {
@@ -32207,8 +32263,7 @@ function transformGeminiCandidate(candidate) {
         text: thinkingText,
         thought: true
       };
-      if (part.cache_control)
-        transformed.cache_control = part.cache_control;
+      if (part.cache_control) transformed.cache_control = part.cache_control;
       const sig = part.signature || part.thoughtSignature;
       if (sig) {
         transformed.providerMetadata = {
@@ -32423,14 +32478,10 @@ function isEmptyResponseBody(text) {
         return true;
       }
       const hasContent = parts.some((part) => {
-        if (!part || typeof part !== "object")
-          return false;
-        if (typeof part.text === "string" && part.text.length > 0)
-          return true;
-        if (part.functionCall)
-          return true;
-        if (part.thought === true && typeof part.text === "string")
-          return true;
+        if (!part || typeof part !== "object") return false;
+        if (typeof part.text === "string" && part.text.length > 0) return true;
+        if (part.functionCall) return true;
+        if (part.thought === true && typeof part.text === "string") return true;
         return false;
       });
       if (!hasContent) {
@@ -32772,14 +32823,18 @@ function removeOrphanedToolUse(messages, orphanIds) {
     if (msg.role === "assistant" && Array.isArray(msg.content)) {
       return {
         ...msg,
-        content: msg.content.filter((block) => block.type !== "tool_use" || !orphanIds.has(block.id))
+        content: msg.content.filter(
+          (block) => block.type !== "tool_use" || !orphanIds.has(block.id)
+        )
       };
     }
     return msg;
-  }).filter((msg) => (
-    // Remove empty assistant messages
-    !(msg.role === "assistant" && Array.isArray(msg.content) && msg.content.length === 0)
-  ));
+  }).filter(
+    (msg) => (
+      // Remove empty assistant messages
+      !(msg.role === "assistant" && Array.isArray(msg.content) && msg.content.length === 0)
+    )
+  );
 }
 function validateAndFixClaudeToolPairing(messages) {
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -32843,23 +32898,19 @@ function formatTypeHint(propData, depth = 0) {
   return type;
 }
 function injectParameterSignatures(tools, promptTemplate = "\n\n\u26A0\uFE0F STRICT PARAMETERS: {params}.") {
-  if (!tools || !Array.isArray(tools))
-    return tools;
+  if (!tools || !Array.isArray(tools)) return tools;
   return tools.map((tool2) => {
     const declarations = tool2.functionDeclarations;
-    if (!Array.isArray(declarations))
-      return tool2;
+    if (!Array.isArray(declarations)) return tool2;
     const newDeclarations = declarations.map((decl) => {
       if (decl.description?.includes("STRICT PARAMETERS:")) {
         return decl;
       }
       const schema = decl.parameters || decl.parametersJsonSchema;
-      if (!schema)
-        return decl;
+      if (!schema) return decl;
       const required3 = schema.required ?? [];
       const properties = schema.properties ?? {};
-      if (Object.keys(properties).length === 0)
-        return decl;
+      if (Object.keys(properties).length === 0) return decl;
       const paramList = Object.entries(properties).map(([propName, propData]) => {
         const typeHint = formatTypeHint(propData);
         const isRequired = required3.includes(propName);
@@ -32875,8 +32926,7 @@ function injectParameterSignatures(tools, promptTemplate = "\n\n\u26A0\uFE0F STR
   });
 }
 function injectToolHardeningInstruction(payload, instructionText) {
-  if (!instructionText)
-    return;
+  if (!instructionText) return;
   const existing = payload.systemInstruction;
   if (existing && typeof existing === "object" && "parts" in existing) {
     const parts = existing.parts;
@@ -32969,7 +33019,9 @@ function applyToolPairingFixes(payload, isClaude) {
     return { contentsFixed, messagesFixed };
   }
   if (Array.isArray(payload.contents)) {
-    const { contents: contentsWithIds, pendingCallIdsByName } = assignToolIdsToContents(payload.contents);
+    const { contents: contentsWithIds, pendingCallIdsByName } = assignToolIdsToContents(
+      payload.contents
+    );
     const contentsWithMatchedIds = matchResponseIdsToContents(contentsWithIds, pendingCallIdsByName);
     payload.contents = fixToolResponseGrouping(contentsWithMatchedIds);
     contentsFixed = true;
@@ -33086,10 +33138,9 @@ data: ${JSON.stringify({ type: "message_stop" })}
   });
 }
 
-// dist/src/plugin/thinking-recovery.js
+// src/plugin/thinking-recovery.ts
 function isThinkingPart2(part) {
-  if (!part || typeof part !== "object")
-    return false;
+  if (!part || typeof part !== "object") return false;
   return part.thought === true || part.type === "thinking" || part.type === "redacted_thinking";
 }
 function isFunctionResponsePart(part) {
@@ -33099,25 +33150,24 @@ function isFunctionCallPart(part) {
   return part && typeof part === "object" && "functionCall" in part;
 }
 function isToolResultMessage(msg) {
-  if (!msg || msg.role !== "user")
-    return false;
+  if (!msg || msg.role !== "user") return false;
   const parts = msg.parts || [];
   return parts.some(isFunctionResponsePart);
 }
 function messageHasThinking(msg) {
-  if (!msg || typeof msg !== "object")
-    return false;
+  if (!msg || typeof msg !== "object") return false;
   if (Array.isArray(msg.parts)) {
     return msg.parts.some(isThinkingPart2);
   }
   if (Array.isArray(msg.content)) {
-    return msg.content.some((block) => block?.type === "thinking" || block?.type === "redacted_thinking");
+    return msg.content.some(
+      (block) => block?.type === "thinking" || block?.type === "redacted_thinking"
+    );
   }
   return false;
 }
 function messageHasToolCalls(msg) {
-  if (!msg || typeof msg !== "object")
-    return false;
+  if (!msg || typeof msg !== "object") return false;
   if (Array.isArray(msg.parts)) {
     return msg.parts.some(isFunctionCallPart);
   }
@@ -33170,17 +33220,20 @@ function analyzeConversationState(contents) {
 }
 function stripAllThinkingBlocks2(contents) {
   return contents.map((content) => {
-    if (!content || typeof content !== "object")
-      return content;
+    if (!content || typeof content !== "object") return content;
     if (Array.isArray(content.parts)) {
-      const filteredParts = content.parts.filter((part) => !isThinkingPart2(part));
+      const filteredParts = content.parts.filter(
+        (part) => !isThinkingPart2(part)
+      );
       if (filteredParts.length === 0 && content.parts.length > 0) {
         return content;
       }
       return { ...content, parts: filteredParts };
     }
     if (Array.isArray(content.content)) {
-      const filteredContent = content.content.filter((block) => block?.type !== "thinking" && block?.type !== "redacted_thinking");
+      const filteredContent = content.content.filter(
+        (block) => block?.type !== "thinking" && block?.type !== "redacted_thinking"
+      );
       if (filteredContent.length === 0 && content.content.length > 0) {
         return content;
       }
@@ -33232,7 +33285,7 @@ function needsThinkingRecovery(state) {
   return state.inToolLoop && !state.turnHasThinking;
 }
 
-// dist/src/plugin/transform/claude.js
+// src/plugin/transform/claude.ts
 var CLAUDE_THINKING_MAX_OUTPUT_TOKENS = 64e3;
 function isClaudeModel(model) {
   return model.toLowerCase().includes("claude");
@@ -33242,7 +33295,7 @@ function isClaudeThinkingModel(model) {
   return lower.includes("claude") && lower.includes("thinking");
 }
 
-// dist/src/plugin/transform/gemini.js
+// src/plugin/transform/gemini.ts
 var UNSUPPORTED_SCHEMA_FIELDS = /* @__PURE__ */ new Set([
   "additionalProperties",
   "$schema",
@@ -33301,7 +33354,9 @@ function toGeminiSchema(schema) {
       result[key] = value;
     } else if (key === "required" && Array.isArray(value)) {
       if (propertyNames.size > 0) {
-        const validRequired = value.filter((prop) => typeof prop === "string" && propertyNames.has(prop));
+        const validRequired = value.filter(
+          (prop) => typeof prop === "string" && propertyNames.has(prop)
+        );
         if (validRequired.length > 0) {
           result[key] = validRequired;
         }
@@ -33421,7 +33476,9 @@ function normalizeGeminiTools(payload) {
       };
       toolDebugMissing += 1;
     }
-    toolDebugSummaries.push(`idx=${toolIndex}, hasCustom=${!!newTool.custom}, customSchema=${!!newTool.custom?.input_schema}, hasFunction=${!!newTool.function}, functionSchema=${!!newTool.function?.input_schema}`);
+    toolDebugSummaries.push(
+      `idx=${toolIndex}, hasCustom=${!!newTool.custom}, customSchema=${!!newTool.custom?.input_schema}, hasFunction=${!!newTool.function}, functionSchema=${!!newTool.function?.input_schema}`
+    );
     if (newTool.custom) {
       delete newTool.custom;
     }
@@ -33434,10 +33491,16 @@ function applyGeminiTransforms(payload, options) {
   if (normalizedThinking) {
     let thinkingConfig;
     if (tierThinkingLevel && isGemini3Model(model)) {
-      thinkingConfig = buildGemini3ThinkingConfig(normalizedThinking.includeThoughts ?? true, tierThinkingLevel);
+      thinkingConfig = buildGemini3ThinkingConfig(
+        normalizedThinking.includeThoughts ?? true,
+        tierThinkingLevel
+      );
     } else {
       const thinkingBudget = tierThinkingBudget ?? normalizedThinking.thinkingBudget;
-      thinkingConfig = buildGemini25ThinkingConfig(normalizedThinking.includeThoughts ?? true, thinkingBudget);
+      thinkingConfig = buildGemini25ThinkingConfig(
+        normalizedThinking.includeThoughts ?? true,
+        thinkingBudget
+      );
     }
     const generationConfig = payload.generationConfig ?? {};
     generationConfig.thinkingConfig = thinkingConfig;
@@ -33503,8 +33566,12 @@ function wrapToolsAsFunctionDeclarations(payload) {
     }
     const fn = tool2.function;
     const custom3 = tool2.custom;
-    const name = String(tool2.name || fn?.name || custom3?.name || `tool-${functionDeclarations.length}`);
-    const description = String(tool2.description || fn?.description || custom3?.description || "");
+    const name = String(
+      tool2.name || fn?.name || custom3?.name || `tool-${functionDeclarations.length}`
+    );
+    const description = String(
+      tool2.description || fn?.description || custom3?.description || ""
+    );
     const schema = fn?.input_schema || fn?.parameters || fn?.inputSchema || custom3?.input_schema || custom3?.parameters || tool2.parameters || tool2.input_schema || tool2.inputSchema || { type: "OBJECT", properties: {} };
     functionDeclarations.push({
       name,
@@ -33520,7 +33587,9 @@ function wrapToolsAsFunctionDeclarations(payload) {
   if (hasWebSearchTool && functionDeclarations.length === 0) {
     finalTools.push({ googleSearch: {} });
   } else if (hasWebSearchTool && functionDeclarations.length > 0) {
-    console.warn("[gemini] web_search tool detected but cannot be combined with function declarations. Use the explicit google_search() tool call instead.");
+    console.warn(
+      "[gemini] web_search tool detected but cannot be combined with function declarations. Use the explicit google_search() tool call instead."
+    );
   }
   payload.tools = finalTools;
   return {
@@ -33529,14 +33598,12 @@ function wrapToolsAsFunctionDeclarations(payload) {
   };
 }
 
-// dist/src/plugin/transform/cross-model-sanitizer.js
+// src/plugin/transform/cross-model-sanitizer.ts
 var GEMINI_SIGNATURE_FIELDS = ["thoughtSignature", "thinkingMetadata"];
 var CLAUDE_SIGNATURE_FIELDS = ["signature"];
 function getModelFamily(model) {
-  if (isClaudeModel(model))
-    return "claude";
-  if (isGeminiModel(model))
-    return "gemini";
+  if (isClaudeModel(model)) return "claude";
+  if (isGeminiModel(model)) return "gemini";
   return "unknown";
 }
 function isPlainObject3(value) {
@@ -33599,13 +33666,17 @@ function sanitizeCrossModelPayloadInPlace(payload, options) {
   let totalStripped = 0;
   const sanitizePartsInPlace = (parts) => {
     for (const part of parts) {
-      if (!isPlainObject3(part))
-        continue;
+      if (!isPlainObject3(part)) continue;
       if (targetFamily === "claude") {
-        const result = stripGeminiThinkingMetadata(part, preserveNonSignature);
+        const result = stripGeminiThinkingMetadata(
+          part,
+          preserveNonSignature
+        );
         totalStripped += result.stripped;
       } else if (targetFamily === "gemini") {
-        const result = stripClaudeThinkingFields(part);
+        const result = stripClaudeThinkingFields(
+          part
+        );
         totalStripped += result.stripped;
       }
     }
@@ -33637,7 +33708,7 @@ function sanitizeCrossModelPayloadInPlace(payload, options) {
   return totalStripped;
 }
 
-// dist/src/plugin/transform/model-resolver.js
+// src/plugin/transform/model-resolver.ts
 var THINKING_TIER_BUDGETS = {
   claude: { low: 8192, medium: 16384, high: 32768 },
   "gemini-2.5-pro": { low: 8192, medium: 16384, high: 32768 },
@@ -33857,16 +33928,16 @@ function resolveModelForHeaderStyle(requestedModel, headerStyle) {
   return resolveModelWithTier(requestedModel);
 }
 
-// dist/src/plugin/recovery/storage.js
+// src/plugin/recovery/storage.ts
 import { existsSync as existsSync6, mkdirSync as mkdirSync6, readdirSync as readdirSync2, readFileSync as readFileSync5, unlinkSync as unlinkSync4, writeFileSync as writeFileSync5 } from "node:fs";
 import { join as join8 } from "node:path";
 
-// dist/src/plugin/recovery/constants.js
+// src/plugin/recovery/constants.ts
 import { join as join7 } from "node:path";
 import { homedir as homedir7 } from "node:os";
 function getXdgData() {
-  const platform2 = process.platform;
-  if (platform2 === "win32") {
+  const platform = process.platform;
+  if (platform === "win32") {
     return process.env.APPDATA || join7(homedir7(), "AppData", "Roaming");
   }
   return process.env.XDG_DATA_HOME || join7(homedir7(), ".local", "share");
@@ -33876,10 +33947,9 @@ var MESSAGE_STORAGE = join7(OPENCODE_STORAGE, "message");
 var PART_STORAGE = join7(OPENCODE_STORAGE, "part");
 var THINKING_TYPES = /* @__PURE__ */ new Set(["thinking", "redacted_thinking", "reasoning"]);
 
-// dist/src/plugin/recovery/storage.js
+// src/plugin/recovery/storage.ts
 function getMessageDir(sessionID) {
-  if (!existsSync6(MESSAGE_STORAGE))
-    return "";
+  if (!existsSync6(MESSAGE_STORAGE)) return "";
   const directPath = join8(MESSAGE_STORAGE, sessionID);
   if (existsSync6(directPath)) {
     return directPath;
@@ -33897,13 +33967,11 @@ function getMessageDir(sessionID) {
 }
 function readMessages(sessionID) {
   const messageDir = getMessageDir(sessionID);
-  if (!messageDir || !existsSync6(messageDir))
-    return [];
+  if (!messageDir || !existsSync6(messageDir)) return [];
   const messages = [];
   try {
     for (const file3 of readdirSync2(messageDir)) {
-      if (!file3.endsWith(".json"))
-        continue;
+      if (!file3.endsWith(".json")) continue;
       try {
         const content = readFileSync5(join8(messageDir, file3), "utf-8");
         messages.push(JSON.parse(content));
@@ -33917,20 +33985,17 @@ function readMessages(sessionID) {
   return messages.sort((a, b) => {
     const aTime = a.time?.created ?? 0;
     const bTime = b.time?.created ?? 0;
-    if (aTime !== bTime)
-      return aTime - bTime;
+    if (aTime !== bTime) return aTime - bTime;
     return a.id.localeCompare(b.id);
   });
 }
 function readParts(messageID) {
   const partDir = join8(PART_STORAGE, messageID);
-  if (!existsSync6(partDir))
-    return [];
+  if (!existsSync6(partDir)) return [];
   const parts = [];
   try {
     for (const file3 of readdirSync2(partDir)) {
-      if (!file3.endsWith(".json"))
-        continue;
+      if (!file3.endsWith(".json")) continue;
       try {
         const content = readFileSync5(join8(partDir, file3), "utf-8");
         parts.push(JSON.parse(content));
@@ -33947,8 +34012,7 @@ function findMessagesWithThinkingBlocks(sessionID) {
   const messages = readMessages(sessionID);
   const result = [];
   for (const msg of messages) {
-    if (msg.role !== "assistant")
-      continue;
+    if (msg.role !== "assistant") continue;
     const parts = readParts(msg.id);
     const hasThinking = parts.some((p) => THINKING_TYPES.has(p.type));
     if (hasThinking) {
@@ -33962,15 +34026,12 @@ function findMessagesWithOrphanThinking(sessionID) {
   const result = [];
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
-    if (!msg || msg.role !== "assistant")
-      continue;
+    if (!msg || msg.role !== "assistant") continue;
     const parts = readParts(msg.id);
-    if (parts.length === 0)
-      continue;
+    if (parts.length === 0) continue;
     const sortedParts = [...parts].sort((a, b) => a.id.localeCompare(b.id));
     const firstPart = sortedParts[0];
-    if (!firstPart)
-      continue;
+    if (!firstPart) continue;
     const firstIsThinking = THINKING_TYPES.has(firstPart.type);
     if (!firstIsThinking) {
       result.push(msg.id);
@@ -34001,13 +34062,11 @@ function prependThinkingPart(sessionID, messageID) {
 }
 function stripThinkingParts(messageID) {
   const partDir = join8(PART_STORAGE, messageID);
-  if (!existsSync6(partDir))
-    return false;
+  if (!existsSync6(partDir)) return false;
   let anyRemoved = false;
   try {
     for (const file3 of readdirSync2(partDir)) {
-      if (!file3.endsWith(".json"))
-        continue;
+      if (!file3.endsWith(".json")) continue;
       try {
         const filePath = join8(partDir, file3);
         const content = readFileSync5(filePath, "utf-8");
@@ -34027,18 +34086,14 @@ function stripThinkingParts(messageID) {
 }
 function findMessageByIndexNeedingThinking(sessionID, targetIndex) {
   const messages = readMessages(sessionID);
-  if (targetIndex < 0 || targetIndex >= messages.length)
-    return null;
+  if (targetIndex < 0 || targetIndex >= messages.length) return null;
   const targetMsg = messages[targetIndex];
-  if (!targetMsg || targetMsg.role !== "assistant")
-    return null;
+  if (!targetMsg || targetMsg.role !== "assistant") return null;
   const parts = readParts(targetMsg.id);
-  if (parts.length === 0)
-    return null;
+  if (parts.length === 0) return null;
   const sortedParts = [...parts].sort((a, b) => a.id.localeCompare(b.id));
   const firstPart = sortedParts[0];
-  if (!firstPart)
-    return null;
+  if (!firstPart) return null;
   const firstIsThinking = THINKING_TYPES.has(firstPart.type);
   if (!firstIsThinking) {
     return targetMsg.id;
@@ -34046,13 +34101,11 @@ function findMessageByIndexNeedingThinking(sessionID, targetIndex) {
   return null;
 }
 
-// dist/src/plugin/recovery.js
+// src/plugin/recovery.ts
 var RECOVERY_RESUME_TEXT = "[session recovered - continuing previous task]";
 function getErrorMessage(error92) {
-  if (!error92)
-    return "";
-  if (typeof error92 === "string")
-    return error92.toLowerCase();
+  if (!error92) return "";
+  if (typeof error92 === "string") return error92.toLowerCase();
   const errorObj = error92;
   const paths = [
     errorObj.data,
@@ -34077,8 +34130,7 @@ function getErrorMessage(error92) {
 function extractMessageIndex(error92) {
   const message = getErrorMessage(error92);
   const match = message.match(/messages\.(\d+)/);
-  if (!match || !match[1])
-    return null;
+  if (!match || !match[1]) return null;
   return parseInt(match[1], 10);
 }
 function detectErrorType(error92) {
@@ -34239,14 +34291,11 @@ function createSessionRecoveryHook(ctx, config3) {
     onRecoveryCompleteCallback = callback;
   };
   const handleSessionRecovery = async (info) => {
-    if (!info || info.role !== "assistant" || !info.error)
-      return false;
+    if (!info || info.role !== "assistant" || !info.error) return false;
     const errorType = detectErrorType(info.error);
-    if (!errorType)
-      return false;
+    if (!errorType) return false;
     const sessionID = info.sessionID;
-    if (!sessionID)
-      return false;
+    if (!sessionID) return false;
     let assistantMsgID = info.id;
     let msgs;
     const log11 = createLogger("session-recovery");
@@ -34282,8 +34331,7 @@ function createSessionRecoveryHook(ctx, config3) {
       log11.debug("No assistant message ID found, cannot recover");
       return false;
     }
-    if (processingErrors.has(assistantMsgID))
-      return false;
+    if (processingErrors.has(assistantMsgID)) return false;
     processingErrors.add(assistantMsgID);
     try {
       const failedMsg = msgs?.find((m) => m.info?.id === assistantMsgID);
@@ -34337,9 +34385,8 @@ function createSessionRecoveryHook(ctx, config3) {
   };
 }
 
-// dist/src/plugin/fingerprint.js
+// src/plugin/fingerprint.ts
 import * as crypto2 from "node:crypto";
-import * as os2 from "node:os";
 var OS_VERSIONS = {
   darwin: ["10.15.7", "11.6.8", "12.6.3", "13.5.2", "14.2.1", "14.5"],
   win32: ["10.0.19041", "10.0.19042", "10.0.19043", "10.0.22000", "10.0.22621", "10.0.22631"],
@@ -34360,8 +34407,8 @@ var PLATFORM_CHOICES = ["darwin", "win32"];
 function randomFrom2(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-function platformToDisplayName(platform2) {
-  return platform2 === "win32" ? "WINDOWS" : "MACOS";
+function platformToDisplayName(platform) {
+  return platform === "win32" ? "WINDOWS" : "MACOS";
 }
 function generateDeviceId() {
   return crypto2.randomUUID();
@@ -34370,17 +34417,17 @@ function generateSessionToken() {
   return crypto2.randomBytes(16).toString("hex");
 }
 function generateFingerprint() {
-  const platform2 = randomFrom2(PLATFORM_CHOICES);
-  const arch2 = randomFrom2(ARCHITECTURES);
-  const osVersion = randomFrom2(OS_VERSIONS[platform2] ?? OS_VERSIONS.darwin);
+  const platform = randomFrom2(PLATFORM_CHOICES);
+  const arch = randomFrom2(ARCHITECTURES);
+  const osVersion = randomFrom2(OS_VERSIONS[platform] ?? OS_VERSIONS.darwin);
   return {
     deviceId: generateDeviceId(),
     sessionToken: generateSessionToken(),
-    userAgent: `antigravity/${getAntigravityVersion()} ${platform2}/${arch2}`,
+    userAgent: `antigravity/${getAntigravityVersion()} ${platform}/${arch}`,
     apiClient: randomFrom2(SDK_CLIENTS),
     clientMetadata: {
       ideType: randomFrom2(IDE_TYPES),
-      platform: platformToDisplayName(platform2),
+      platform: platformToDisplayName(platform),
       pluginType: "GEMINI"
     },
     createdAt: Date.now()
@@ -34412,7 +34459,7 @@ function getSessionFingerprint() {
   return sessionFingerprint;
 }
 
-// dist/src/plugin/request.js
+// src/plugin/request.ts
 var log6 = createLogger("request");
 var PLUGIN_SESSION_ID = `-${crypto3.randomUUID()}`;
 var sessionDisplayedThinkingHashes = /* @__PURE__ */ new Set();
@@ -34424,8 +34471,7 @@ function buildSignatureSessionKey(sessionId, model, conversationKey, projectKey)
   return `${sessionId}:${modelKey}:${projectPart}:${conversationPart}`;
 }
 function shouldCacheThinkingSignatures(model) {
-  if (typeof model !== "string")
-    return false;
+  if (typeof model !== "string") return false;
   const lower = model.toLowerCase();
   return lower.includes("claude") || lower.includes("gemini-3");
 }
@@ -34503,7 +34549,9 @@ function resolveConversationKey(requestPayload) {
       return candidate.trim();
     }
   }
-  const systemSeed = extractTextFromContent(anyPayload.systemInstruction?.parts ?? anyPayload.systemInstruction ?? anyPayload.system ?? anyPayload.system_instruction);
+  const systemSeed = extractTextFromContent(
+    anyPayload.systemInstruction?.parts ?? anyPayload.systemInstruction ?? anyPayload.system ?? anyPayload.system_instruction
+  );
   const messageSeed = Array.isArray(anyPayload.messages) ? extractConversationSeedFromMessages(anyPayload.messages) : Array.isArray(anyPayload.contents) ? extractConversationSeedFromContents(anyPayload.contents) : "";
   const seed = [systemSeed, messageSeed].filter(Boolean).join("|");
   if (!seed) {
@@ -34837,7 +34885,9 @@ function hasToolUseInMessages(messages) {
     if (!message || typeof message !== "object" || !Array.isArray(message.content)) {
       return false;
     }
-    return message.content.some((block) => block && typeof block === "object" && (block.type === "tool_use" || block.type === "tool_result"));
+    return message.content.some(
+      (block) => block && typeof block === "object" && (block.type === "tool_use" || block.type === "tool_result")
+    );
   });
 }
 function hasSignedThinkingInMessages(messages, sessionId) {
@@ -34912,8 +34962,7 @@ function ensureDefaultGemini3ThinkingLevel(requestPayload, effectiveModel, think
 }
 var STREAM_ACTION = "streamGenerateContent";
 function mergeRequestHeaders(requestHeaders, initHeaders) {
-  if (!requestHeaders && !initHeaders)
-    return void 0;
+  if (!requestHeaders && !initHeaders) return void 0;
   const headers = new Headers(requestHeaders);
   if (initHeaders) {
     new Headers(initHeaders).forEach((value, key) => {
@@ -34923,8 +34972,7 @@ function mergeRequestHeaders(requestHeaders, initHeaders) {
   return headers;
 }
 function initFromRequest(request, init, body) {
-  if (!request)
-    return { ...init };
+  if (!request) return { ...init };
   const merged = {
     method: request.method,
     body: body ?? request.body,
@@ -34953,14 +35001,31 @@ function isGenerativeLanguageRequest(input2) {
   }
 }
 function requestInfoUrl(input2) {
-  if (typeof input2 === "string")
-    return input2;
+  if (typeof input2 === "string") return input2;
   return input2.url || input2.toString();
 }
 function prepareAntigravityRequest(input2, init, accessToken, projectId, endpointOverride, headerStyle = "antigravity", forceThinkingRecovery = false, options) {
   if (typeof input2 !== "string" && init?.body === void 0 && input2.body) {
     const requestInput2 = input2;
-    return requestInput2.clone().text().then((body2) => prepareAntigravityRequest(requestInput2.url, initFromRequest(requestInput2, init, body2), accessToken, projectId, endpointOverride, headerStyle, forceThinkingRecovery, options)).catch(() => prepareAntigravityRequest(requestInput2.url, initFromRequest(requestInput2, init), accessToken, projectId, endpointOverride, headerStyle, forceThinkingRecovery, options));
+    return requestInput2.clone().text().then((body2) => prepareAntigravityRequest(
+      requestInput2.url,
+      initFromRequest(requestInput2, init, body2),
+      accessToken,
+      projectId,
+      endpointOverride,
+      headerStyle,
+      forceThinkingRecovery,
+      options
+    )).catch(() => prepareAntigravityRequest(
+      requestInput2.url,
+      initFromRequest(requestInput2, init),
+      accessToken,
+      projectId,
+      endpointOverride,
+      headerStyle,
+      forceThinkingRecovery,
+      options
+    ));
   }
   const requestUrl = requestInfoUrl(input2);
   const requestInput = typeof input2 === "string" ? void 0 : input2;
@@ -35008,7 +35073,12 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
   const enableClaudePromptAutoCaching = options?.claudePromptAutoCaching ?? false;
   let tierThinkingBudget = resolved.thinkingBudget;
   let tierThinkingLevel = resolved.thinkingLevel;
-  let signatureSessionKey = buildSignatureSessionKey(PLUGIN_SESSION_ID, effectiveModel, void 0, signatureCacheProjectKey(effectiveModel, resolveProjectKey(projectId)));
+  let signatureSessionKey = buildSignatureSessionKey(
+    PLUGIN_SESSION_ID,
+    effectiveModel,
+    void 0,
+    signatureCacheProjectKey(effectiveModel, resolveProjectKey(projectId))
+  );
   let body = baseInit.body;
   if (typeof baseInit.body === "string" && baseInit.body) {
     try {
@@ -35030,7 +35100,10 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
         }
         if (effectiveModel.toLowerCase().includes("gemini-3")) {
           for (const req of requestObjects) {
-            const variantConfig = extractVariantThinkingConfig(req.providerOptions, req.generationConfig);
+            const variantConfig = extractVariantThinkingConfig(
+              req.providerOptions,
+              req.generationConfig
+            );
             if (variantConfig?.thinkingLevel) {
               tierThinkingLevel = variantConfig.thinkingLevel;
               tierThinkingBudget = void 0;
@@ -35044,7 +35117,10 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
           }
         }
         if (headerStyle === "antigravity") {
-          const gemini35FlashBackendModel = resolveAntigravityGemini35FlashBackendModel(rawModel, tierThinkingLevel);
+          const gemini35FlashBackendModel = resolveAntigravityGemini35FlashBackendModel(
+            rawModel,
+            tierThinkingLevel
+          );
           if (gemini35FlashBackendModel) {
             effectiveModel = gemini35FlashBackendModel;
             wrappedBody.model = gemini35FlashBackendModel;
@@ -35076,8 +35152,12 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
           }
         }
         if (isClaudeThinking && keepThinkingEnabled && sessionId) {
-          const hasToolUse = requestObjects.some((req) => Array.isArray(req.contents) && hasToolUseInContents(req.contents) || Array.isArray(req.messages) && hasToolUseInMessages(req.messages));
-          const hasSignedThinking = requestObjects.some((req) => Array.isArray(req.contents) && hasSignedThinkingInContents(req.contents, signatureSessionKey) || Array.isArray(req.messages) && hasSignedThinkingInMessages(req.messages, signatureSessionKey));
+          const hasToolUse = requestObjects.some(
+            (req) => Array.isArray(req.contents) && hasToolUseInContents(req.contents) || Array.isArray(req.messages) && hasToolUseInMessages(req.messages)
+          );
+          const hasSignedThinking = requestObjects.some(
+            (req) => Array.isArray(req.contents) && hasSignedThinkingInContents(req.contents, signatureSessionKey) || Array.isArray(req.messages) && hasSignedThinkingInMessages(req.messages, signatureSessionKey)
+          );
           const hasCachedThinking = defaultSignatureStore.has(signatureSessionKey);
           needsSignedThinkingWarmup = hasToolUse && !hasSignedThinking && !hasCachedThinking;
         }
@@ -35086,7 +35166,10 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
         const requestPayload = { ...parsedBody };
         const rawGenerationConfig = requestPayload.generationConfig;
         const extraBody = requestPayload.extra_body;
-        const variantConfig = extractVariantThinkingConfig(requestPayload.providerOptions, rawGenerationConfig);
+        const variantConfig = extractVariantThinkingConfig(
+          requestPayload.providerOptions,
+          rawGenerationConfig
+        );
         const isGemini3 = effectiveModel.toLowerCase().includes("gemini-3");
         log6.debug(`[ThinkingResolution] rawModel=${rawModel} resolvedModel=${effectiveModel} resolvedTier=${tierThinkingLevel ?? "none"} variantLevel=${variantConfig?.thinkingLevel ?? "none"} variantBudget=${variantConfig?.thinkingBudget ?? "none"} providerOptions.google=${JSON.stringify(requestPayload.providerOptions?.google ?? null)} generationConfig.thinkingConfig=${JSON.stringify(rawGenerationConfig?.thinkingConfig ?? null)}`);
         if (variantConfig?.thinkingLevel && isGemini3) {
@@ -35103,7 +35186,10 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
           }
         }
         if (headerStyle === "antigravity") {
-          const gemini35FlashBackendModel = resolveAntigravityGemini35FlashBackendModel(rawModel, tierThinkingLevel);
+          const gemini35FlashBackendModel = resolveAntigravityGemini35FlashBackendModel(
+            rawModel,
+            tierThinkingLevel
+          );
           if (gemini35FlashBackendModel) {
             effectiveModel = gemini35FlashBackendModel;
           }
@@ -35152,7 +35238,12 @@ function prepareAntigravityRequest(input2, init, accessToken, projectId, endpoin
             parts: [{ text: "You are an AI image generator. Generate images based on user descriptions. Focus on creating high-quality, visually appealing images that match the user's request." }]
           };
         } else {
-          const finalThinkingConfig = resolveThinkingConfig(effectiveUserThinkingConfig, isClaudeSonnetNonThinking ? false : resolved.isThinkingModel ?? isThinkingCapableModel(effectiveModel), isClaude, hasAssistantHistory);
+          const finalThinkingConfig = resolveThinkingConfig(
+            effectiveUserThinkingConfig,
+            isClaudeSonnetNonThinking ? false : resolved.isThinkingModel ?? isThinkingCapableModel(effectiveModel),
+            isClaude,
+            hasAssistantHistory
+          );
           const normalizedThinking = normalizeThinkingConfig(finalThinkingConfig);
           if (normalizedThinking) {
             const thinkingBudget = tierThinkingBudget ?? normalizedThinking.thinkingBudget;
@@ -35309,7 +35400,9 @@ ${hint}`;
                   description: String(description || ""),
                   parameters: normalizeSchema(schema)
                 });
-                toolDebugSummaries.push(`decl=${name},src=${source},hasSchema=${schema ? "y" : "n"}`);
+                toolDebugSummaries.push(
+                  `decl=${name},src=${source},hasSchema=${schema ? "y" : "n"}`
+                );
               };
               if (Array.isArray(tool2.functionDeclarations) && tool2.functionDeclarations.length > 0) {
                 tool2.functionDeclarations.forEach((decl) => {
@@ -35346,8 +35439,14 @@ ${hint}`;
           }
           const enableToolHardening = options?.claudeToolHardening ?? true;
           if (enableToolHardening && isClaude && Array.isArray(requestPayload.tools) && requestPayload.tools.length > 0) {
-            requestPayload.tools = injectParameterSignatures(requestPayload.tools, CLAUDE_DESCRIPTION_PROMPT);
-            injectToolHardeningInstruction(requestPayload, CLAUDE_TOOL_SYSTEM_INSTRUCTION);
+            requestPayload.tools = injectParameterSignatures(
+              requestPayload.tools,
+              CLAUDE_DESCRIPTION_PROMPT
+            );
+            injectToolHardeningInstruction(
+              requestPayload,
+              CLAUDE_TOOL_SYSTEM_INSTRUCTION
+            );
           }
         }
         const conversationKey = resolveConversationKey(requestPayload);
@@ -35432,7 +35531,10 @@ ${hint}`;
         }
         stripInjectedDebugFromRequestPayload(requestPayload);
         const restoreGeminiThoughtSignatures = !isClaude && shouldCacheThinkingSignatures(effectiveModel);
-        sanitizeRequestPayloadForAntigravity(requestPayload, restoreGeminiThoughtSignatures ? { sessionKey: signatureSessionKey, getSignature: getCachedSignature } : void 0);
+        sanitizeRequestPayloadForAntigravity(
+          requestPayload,
+          restoreGeminiThoughtSignatures ? { sessionKey: signatureSessionKey, getSignature: getCachedSignature } : void 0
+        );
         const effectiveProjectId = projectId?.trim() || (headerStyle === "antigravity" ? generateSyntheticProjectId() : "");
         resolvedProjectId = effectiveProjectId;
         if (headerStyle === "antigravity") {
@@ -35578,18 +35680,22 @@ async function transformAntigravityResponse(response, streaming, debugContext, r
     logAntigravityDebugResponse(debugContext, response, {
       note: "Streaming SSE response (real-time transform)"
     });
-    const streamingTransformer = createStreamingTransformer(defaultSignatureStore, {
-      onCacheSignature: cacheSignature,
-      onInjectDebug: injectDebugThinking,
-      // onInjectSyntheticThinking removed - keep_thinking now uses debugText path
-      transformThinkingParts
-    }, {
-      signatureSessionKey: sessionId,
-      debugText,
-      cacheSignatures,
-      displayedThinkingHashes: effectiveModel && isGemini3Model(effectiveModel) ? sessionDisplayedThinkingHashes : void 0
-      // injectSyntheticThinking removed - keep_thinking now unified with debug via debugText
-    });
+    const streamingTransformer = createStreamingTransformer(
+      defaultSignatureStore,
+      {
+        onCacheSignature: cacheSignature,
+        onInjectDebug: injectDebugThinking,
+        // onInjectSyntheticThinking removed - keep_thinking now uses debugText path
+        transformThinkingParts
+      },
+      {
+        signatureSessionKey: sessionId,
+        debugText,
+        cacheSignatures,
+        displayedThinkingHashes: effectiveModel && isGemini3Model(effectiveModel) ? sessionDisplayedThinkingHashes : void 0
+        // injectSyntheticThinking removed - keep_thinking now unified with debug via debugText
+      }
+    );
     return new Response(response.body.pipeThrough(streamingTransformer), {
       status: response.status,
       statusText: response.statusText,
@@ -35647,7 +35753,9 @@ ${debugText}` : "";
         });
       }
       if (errorBody?.error?.details && Array.isArray(errorBody.error.details)) {
-        const retryInfo = errorBody.error.details.find((detail) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo");
+        const retryInfo = errorBody.error.details.find(
+          (detail) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo"
+        );
         if (typeof retryInfo?.retryDelay === "string") {
           const match = retryInfo.retryDelay.match(/^([\d.]+)s$/);
           if (match && match[1]) {
@@ -35725,13 +35833,15 @@ ${debugText}` : "";
   }
 }
 
-// dist/src/plugin/errors.js
+// src/plugin/errors.ts
 var EmptyResponseError = class extends Error {
   provider;
   model;
   attempts;
   constructor(provider, model, attempts, message) {
-    super(message ?? `The model returned an empty response after ${attempts} attempts. This may indicate a temporary service issue. Please try again.`);
+    super(
+      message ?? `The model returned an empty response after ${attempts} attempts. This may indicate a temporary service issue. Please try again.`
+    );
     this.name = "EmptyResponseError";
     this.provider = provider;
     this.model = model;
@@ -35739,7 +35849,7 @@ var EmptyResponseError = class extends Error {
   }
 };
 
-// dist/src/plugin/token.js
+// src/plugin/token.ts
 var log7 = createLogger("token");
 function parseOAuthErrorPayload(text) {
   if (!text) {
@@ -35853,7 +35963,7 @@ async function refreshAccessToken(auth, client, providerId) {
   }
 }
 
-// dist/src/plugin/server.js
+// src/plugin/server.ts
 import { createServer } from "node:http";
 import { readFileSync as readFileSync6, existsSync as existsSync7 } from "node:fs";
 var redirectUri = new URL(ANTIGRAVITY_REDIRECT_URI);
@@ -35889,8 +35999,7 @@ function isOrbStackDockerHost() {
   return false;
 }
 function isWSL() {
-  if (process.platform !== "linux")
-    return false;
+  if (process.platform !== "linux") return false;
   try {
     const release = readFileSync6("/proc/version", "utf8").toLowerCase();
     return release.includes("microsoft") || release.includes("wsl");
@@ -35929,19 +36038,15 @@ async function startOAuthListener({ timeoutMs = 5 * 60 * 1e3 } = {}) {
   let timeoutHandle;
   const callbackPromise = new Promise((resolve, reject) => {
     resolveCallback = (url3) => {
-      if (settled)
-        return;
+      if (settled) return;
       settled = true;
-      if (timeoutHandle)
-        clearTimeout(timeoutHandle);
+      if (timeoutHandle) clearTimeout(timeoutHandle);
       resolve(url3);
     };
     rejectCallback = (error92) => {
-      if (settled)
-        return;
+      if (settled) return;
       settled = true;
-      if (timeoutHandle)
-        clearTimeout(timeoutHandle);
+      if (timeoutHandle) clearTimeout(timeoutHandle);
       reject(error92);
     };
   });
@@ -36098,7 +36203,9 @@ async function startOAuthListener({ timeoutMs = 5 * 60 * 1e3 } = {}) {
     const handleError = (error92) => {
       server.off("error", handleError);
       if (error92.code === "EADDRINUSE") {
-        reject(new Error(`Port ${port} is already in use. Another process is occupying this port. Please terminate the process or try again later.`));
+        reject(new Error(
+          `Port ${port} is already in use. Another process is occupying this port. Please terminate the process or try again later.`
+        ));
         return;
       }
       reject(error92);
@@ -36129,7 +36236,7 @@ async function startOAuthListener({ timeoutMs = 5 * 60 * 1e3 } = {}) {
   };
 }
 
-// dist/src/plugin/rotation.js
+// src/plugin/rotation.ts
 var DEFAULT_HEALTH_SCORE_CONFIG = {
   initial: 70,
   successReward: 1,
@@ -36156,7 +36263,10 @@ var HealthScoreTracker = class {
     const now = Date.now();
     const hoursSinceUpdate = (now - state.lastUpdated) / (1e3 * 60 * 60);
     const recoveredPoints = Math.floor(hoursSinceUpdate * this.config.recoveryRatePerHour);
-    return Math.min(this.config.maxScore, state.score + recoveredPoints);
+    return Math.min(
+      this.config.maxScore,
+      state.score + recoveredPoints
+    );
   }
   /**
    * Record a successful request - improves health score.
@@ -36234,7 +36344,9 @@ var HealthScoreTracker = class {
 var STICKINESS_BONUS = 150;
 var SWITCH_THRESHOLD = 100;
 function selectHybridAccount(accounts, tokenTracker, currentAccountIndex = null, minHealthScore = 50) {
-  const candidates = accounts.filter((acc) => !acc.isRateLimited && !acc.isCoolingDown && acc.healthScore >= minHealthScore && tokenTracker.hasTokens(acc.index)).map((acc) => ({
+  const candidates = accounts.filter(
+    (acc) => !acc.isRateLimited && !acc.isCoolingDown && acc.healthScore >= minHealthScore && tokenTracker.hasTokens(acc.index)
+  ).map((acc) => ({
     ...acc,
     tokens: tokenTracker.getTokens(acc.index)
   }));
@@ -36294,7 +36406,10 @@ var TokenBucketTracker = class {
     const now = Date.now();
     const minutesSinceUpdate = (now - state.lastUpdated) / (1e3 * 60);
     const recoveredTokens = minutesSinceUpdate * this.config.regenerationRatePerMinute;
-    return Math.min(this.config.maxTokens, state.tokens + recoveredTokens);
+    return Math.min(
+      this.config.maxTokens,
+      state.tokens + recoveredTokens
+    );
   }
   /**
    * Check if account has enough tokens for a request.
@@ -36355,7 +36470,7 @@ function initHealthTracker(config3) {
   return globalHealthTracker;
 }
 
-// dist/src/plugin/accounts.js
+// src/plugin/accounts.ts
 var QUOTA_EXHAUSTED_BACKOFFS = [6e4, 3e5, 18e5, 72e5];
 var RATE_LIMIT_EXCEEDED_BACKOFF = 3e4;
 var MODEL_CAPACITY_EXHAUSTED_BASE_BACKOFF = 45e3;
@@ -36367,10 +36482,8 @@ function generateJitter(maxJitterMs) {
   return Math.random() * maxJitterMs - maxJitterMs / 2;
 }
 function parseRateLimitReason(reason, message, status) {
-  if (status === 529 || status === 503)
-    return "MODEL_CAPACITY_EXHAUSTED";
-  if (status === 500)
-    return "SERVER_ERROR";
+  if (status === 529 || status === 503) return "MODEL_CAPACITY_EXHAUSTED";
+  if (status === 500) return "SERVER_ERROR";
   if (reason) {
     switch (reason.toUpperCase()) {
       case "QUOTA_EXHAUSTED":
@@ -36485,19 +36598,14 @@ function resolveQuotaGroup(family, model) {
   }
 }
 function isOverSoftQuotaThreshold(account, family, thresholdPercent, cacheTtlMs, model) {
-  if (thresholdPercent >= 100)
-    return false;
-  if (!account.cachedQuota)
-    return false;
-  if (account.cachedQuotaUpdatedAt == null)
-    return false;
+  if (thresholdPercent >= 100) return false;
+  if (!account.cachedQuota) return false;
+  if (account.cachedQuotaUpdatedAt == null) return false;
   const age = nowMs() - account.cachedQuotaUpdatedAt;
-  if (age > cacheTtlMs)
-    return false;
+  if (age > cacheTtlMs) return false;
   const quotaGroup = resolveQuotaGroup(family, model);
   const groupData = account.cachedQuota[quotaGroup];
-  if (groupData?.remainingFraction == null)
-    return false;
+  if (groupData?.remainingFraction == null) return false;
   const remainingFraction = Math.max(0, Math.min(1, groupData.remainingFraction));
   const usedPercent = (1 - remainingFraction) * 100;
   const isOverThreshold = usedPercent >= thresholdPercent;
@@ -36587,8 +36695,14 @@ var AccountManager = class _AccountManager {
       if (this.accounts.length > 0) {
         this.cursor = this.cursor % this.accounts.length;
         const defaultIndex = this.cursor;
-        this.currentAccountIndexByFamily.claude = clampNonNegativeInt(stored.activeIndexByFamily?.claude, defaultIndex) % this.accounts.length;
-        this.currentAccountIndexByFamily.gemini = clampNonNegativeInt(stored.activeIndexByFamily?.gemini, defaultIndex) % this.accounts.length;
+        this.currentAccountIndexByFamily.claude = clampNonNegativeInt(
+          stored.activeIndexByFamily?.claude,
+          defaultIndex
+        ) % this.accounts.length;
+        this.currentAccountIndexByFamily.gemini = clampNonNegativeInt(
+          stored.activeIndexByFamily?.gemini,
+          defaultIndex
+        ) % this.accounts.length;
       }
       if (fingerprintVersionChanged) {
         this.requestSaveToDisk();
@@ -36833,11 +36947,9 @@ var AccountManager = class _AccountManager {
   }
   isFreshForQuota(account, quotaKey) {
     const touchedAt = account.touchedForQuota[quotaKey];
-    if (!touchedAt)
-      return true;
+    if (!touchedAt) return true;
     const resetTime = account.rateLimitResetTimes[quotaKey];
-    if (resetTime && touchedAt < resetTime)
-      return true;
+    if (resetTime && touchedAt < resetTime) return true;
     return false;
   }
   getFreshAccountsForQuota(quotaKey, family, model) {
@@ -36864,11 +36976,11 @@ var AccountManager = class _AccountManager {
   }
   /**
    * Check if any OTHER account has antigravity quota available for the given family/model.
-   *
+   * 
    * Used to determine whether to switch accounts vs fall back to gemini-cli:
    * - If true: Switch to another account (preserve antigravity priority)
    * - If false: All accounts exhausted antigravity, safe to fall back to gemini-cli
-   *
+   * 
    * @param currentAccountIndex - Index of the current account (will be excluded from check)
    * @param family - Model family ("gemini" or "claude")
    * @param model - Optional model name for model-specific rate limits
@@ -37015,21 +37127,21 @@ var AccountManager = class _AccountManager {
     for (const a of this.accounts) {
       if (family === "claude") {
         const t = a.rateLimitResetTimes.claude;
-        if (t !== void 0)
-          waitTimes.push(Math.max(0, t - nowMs()));
+        if (t !== void 0) waitTimes.push(Math.max(0, t - nowMs()));
       } else if (strict && headerStyle) {
         const key = getQuotaKey(family, headerStyle, model);
         const t = a.rateLimitResetTimes[key];
-        if (t !== void 0)
-          waitTimes.push(Math.max(0, t - nowMs()));
+        if (t !== void 0) waitTimes.push(Math.max(0, t - nowMs()));
       } else {
         const antigravityKey = getQuotaKey(family, "antigravity", model);
         const cliKey = getQuotaKey(family, "gemini-cli", model);
         const t1 = a.rateLimitResetTimes[antigravityKey];
         const t2 = a.rateLimitResetTimes[cliKey];
-        const accountWait = Math.min(t1 !== void 0 ? Math.max(0, t1 - nowMs()) : Infinity, t2 !== void 0 ? Math.max(0, t2 - nowMs()) : Infinity);
-        if (accountWait !== Infinity)
-          waitTimes.push(accountWait);
+        const accountWait = Math.min(
+          t1 !== void 0 ? Math.max(0, t1 - nowMs()) : Infinity,
+          t2 !== void 0 ? Math.max(0, t2 - nowMs()) : Infinity
+        );
+        if (accountWait !== Infinity) waitTimes.push(accountWait);
       }
     }
     return waitTimes.length > 0 ? Math.min(...waitTimes) : 0;
@@ -37110,8 +37222,7 @@ var AccountManager = class _AccountManager {
    */
   regenerateAccountFingerprint(accountIndex) {
     const account = this.accounts[accountIndex];
-    if (!account)
-      return null;
+    if (!account) return null;
     if (account.fingerprint) {
       const historyEntry = {
         fingerprint: account.fingerprint,
@@ -37138,8 +37249,7 @@ var AccountManager = class _AccountManager {
    */
   restoreAccountFingerprint(accountIndex, historyIndex) {
     const account = this.accounts[accountIndex];
-    if (!account)
-      return null;
+    if (!account) return null;
     const history = account.fingerprintHistory;
     if (!history || historyIndex < 0 || historyIndex >= history.length) {
       return null;
@@ -37196,22 +37306,17 @@ var AccountManager = class _AccountManager {
   getOldestQuotaCacheAge() {
     let oldest = null;
     for (const acc of this.accounts) {
-      if (acc.enabled === false)
-        continue;
-      if (acc.cachedQuotaUpdatedAt == null)
-        return null;
+      if (acc.enabled === false) continue;
+      if (acc.cachedQuotaUpdatedAt == null) return null;
       const age = nowMs() - acc.cachedQuotaUpdatedAt;
-      if (oldest === null || age > oldest)
-        oldest = age;
+      if (oldest === null || age > oldest) oldest = age;
     }
     return oldest;
   }
   areAllAccountsOverSoftQuota(family, thresholdPercent, cacheTtlMs, model) {
-    if (thresholdPercent >= 100)
-      return false;
+    if (thresholdPercent >= 100) return false;
     const enabled = this.accounts.filter((a) => a.enabled !== false);
-    if (enabled.length === 0)
-      return false;
+    if (enabled.length === 0) return false;
     return enabled.every((a) => isOverSoftQuotaThreshold(a, family, thresholdPercent, cacheTtlMs, model));
   }
   /**
@@ -37221,16 +37326,12 @@ var AccountManager = class _AccountManager {
    * Returns null if no resetTime data is available.
    */
   getMinWaitTimeForSoftQuota(family, thresholdPercent, cacheTtlMs, model) {
-    if (thresholdPercent >= 100)
-      return 0;
+    if (thresholdPercent >= 100) return 0;
     const enabled = this.accounts.filter((a) => a.enabled !== false);
-    if (enabled.length === 0)
-      return null;
+    if (enabled.length === 0) return null;
     const available = enabled.filter((a) => !isOverSoftQuotaThreshold(a, family, thresholdPercent, cacheTtlMs, model));
-    if (available.length > 0)
-      return 0;
-    if (!model && family !== "claude")
-      return null;
+    if (available.length > 0) return 0;
+    if (!model && family !== "claude") return null;
     const quotaGroup = resolveQuotaGroup(family, model);
     const now = nowMs();
     const waitTimes = [];
@@ -37243,43 +37344,47 @@ var AccountManager = class _AccountManager {
         }
       }
     }
-    if (waitTimes.length === 0)
-      return null;
+    if (waitTimes.length === 0) return null;
     const minWait = Math.min(...waitTimes);
     return minWait === 0 ? null : minWait;
   }
 };
 
-// dist/src/hooks/auto-update-checker/checker.js
+// src/hooks/auto-update-checker/checker.ts
 import * as fs3 from "node:fs";
 import * as path3 from "node:path";
 import { fileURLToPath } from "node:url";
 
-// dist/src/hooks/auto-update-checker/constants.js
+// src/hooks/auto-update-checker/constants.ts
 import * as path2 from "node:path";
-import * as os3 from "node:os";
+import * as os2 from "node:os";
 var PACKAGE_NAME = "opencode-antigravity-auth";
 var NPM_REGISTRY_URL = `https://registry.npmjs.org/-/package/${PACKAGE_NAME}/dist-tags`;
 var NPM_FETCH_TIMEOUT = 5e3;
 function getCacheDir() {
   if (process.platform === "win32") {
-    return path2.join(process.env.LOCALAPPDATA ?? os3.homedir(), "opencode");
+    return path2.join(process.env.LOCALAPPDATA ?? os2.homedir(), "opencode");
   }
-  return path2.join(os3.homedir(), ".cache", "opencode");
+  return path2.join(os2.homedir(), ".cache", "opencode");
 }
 var CACHE_DIR = getCacheDir();
-var INSTALLED_PACKAGE_JSON = path2.join(CACHE_DIR, "node_modules", PACKAGE_NAME, "package.json");
+var INSTALLED_PACKAGE_JSON = path2.join(
+  CACHE_DIR,
+  "node_modules",
+  PACKAGE_NAME,
+  "package.json"
+);
 function getUserConfigDir() {
   if (process.platform === "win32") {
-    return process.env.APPDATA ?? path2.join(os3.homedir(), "AppData", "Roaming");
+    return process.env.APPDATA ?? path2.join(os2.homedir(), "AppData", "Roaming");
   }
-  return process.env.XDG_CONFIG_HOME ?? path2.join(os3.homedir(), ".config");
+  return process.env.XDG_CONFIG_HOME ?? path2.join(os2.homedir(), ".config");
 }
 var USER_CONFIG_DIR = getUserConfigDir();
 var USER_OPENCODE_CONFIG = path2.join(USER_CONFIG_DIR, "opencode", "opencode.json");
 var USER_OPENCODE_CONFIG_JSONC = path2.join(USER_CONFIG_DIR, "opencode", "opencode.jsonc");
 
-// dist/src/hooks/auto-update-checker/logging.js
+// src/hooks/auto-update-checker/logging.ts
 var AUTO_UPDATE_LOG_PREFIX = "[auto-update-checker]";
 function formatAutoUpdateLogMessage(message) {
   return `${AUTO_UPDATE_LOG_PREFIX} ${message}`;
@@ -37288,7 +37393,7 @@ function logAutoUpdate(message) {
   debugLogToFile(formatAutoUpdateLogMessage(message));
 }
 
-// dist/src/hooks/auto-update-checker/checker.js
+// src/hooks/auto-update-checker/checker.ts
 function stripJsonComments(json3) {
   return json3.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m).replace(/,(\s*[}\]])/g, "$1");
 }
@@ -37304,8 +37409,7 @@ function getConfigPaths(directory) {
 function getLocalDevPath(directory) {
   for (const configPath of getConfigPaths(directory)) {
     try {
-      if (!fs3.existsSync(configPath))
-        continue;
+      if (!fs3.existsSync(configPath)) continue;
       const content = fs3.readFileSync(configPath, "utf-8");
       const config3 = JSON.parse(stripJsonComments(content));
       const plugins = config3.plugin ?? [];
@@ -37334,15 +37438,13 @@ function findPackageJsonUp(startPath) {
         try {
           const content = fs3.readFileSync(pkgPath, "utf-8");
           const pkg = JSON.parse(content);
-          if (pkg.name === PACKAGE_NAME)
-            return pkgPath;
+          if (pkg.name === PACKAGE_NAME) return pkgPath;
         } catch {
           continue;
         }
       }
       const parent = path3.dirname(dir);
-      if (parent === dir)
-        break;
+      if (parent === dir) break;
       dir = parent;
     }
   } catch {
@@ -37352,12 +37454,10 @@ function findPackageJsonUp(startPath) {
 }
 function getLocalDevVersion(directory) {
   const localPath = getLocalDevPath(directory);
-  if (!localPath)
-    return null;
+  if (!localPath) return null;
   try {
     const pkgPath = findPackageJsonUp(localPath);
-    if (!pkgPath)
-      return null;
+    if (!pkgPath) return null;
     const content = fs3.readFileSync(pkgPath, "utf-8");
     const pkg = JSON.parse(content);
     return pkg.version ?? null;
@@ -37368,8 +37468,7 @@ function getLocalDevVersion(directory) {
 function findPluginEntry(directory) {
   for (const configPath of getConfigPaths(directory)) {
     try {
-      if (!fs3.existsSync(configPath))
-        continue;
+      if (!fs3.existsSync(configPath)) continue;
       const content = fs3.readFileSync(configPath, "utf-8");
       const config3 = JSON.parse(stripJsonComments(content));
       const plugins = config3.plugin ?? [];
@@ -37397,8 +37496,7 @@ function getCachedVersion() {
     if (fs3.existsSync(INSTALLED_PACKAGE_JSON)) {
       const content = fs3.readFileSync(INSTALLED_PACKAGE_JSON, "utf-8");
       const pkg = JSON.parse(content);
-      if (pkg.version)
-        return pkg.version;
+      if (pkg.version) return pkg.version;
     }
   } catch {
     return null;
@@ -37409,8 +37507,7 @@ function getCachedVersion() {
     if (pkgPath) {
       const content = fs3.readFileSync(pkgPath, "utf-8");
       const pkg = JSON.parse(content);
-      if (pkg.version)
-        return pkg.version;
+      if (pkg.version) return pkg.version;
     }
   } catch (err) {
     logAutoUpdate(`Failed to resolve version from current directory: ${err}`);
@@ -37430,10 +37527,8 @@ function updatePinnedVersion(configPath, oldEntry, newVersion) {
     let bracketCount = 1;
     let endIdx = startIdx;
     for (let i = startIdx; i < content.length && bracketCount > 0; i++) {
-      if (content[i] === "[")
-        bracketCount++;
-      else if (content[i] === "]")
-        bracketCount--;
+      if (content[i] === "[") bracketCount++;
+      else if (content[i] === "]") bracketCount--;
       endIdx = i;
     }
     const before = content.slice(0, startIdx);
@@ -37467,8 +37562,7 @@ async function getLatestVersion() {
       signal: controller.signal,
       headers: { Accept: "application/json" }
     });
-    if (!response.ok)
-      return null;
+    if (!response.ok) return null;
     const data = await response.json();
     return data.latest ?? null;
   } catch {
@@ -37478,7 +37572,7 @@ async function getLatestVersion() {
   }
 }
 
-// dist/src/hooks/auto-update-checker/cache.js
+// src/hooks/auto-update-checker/cache.ts
 import * as fs4 from "node:fs";
 import * as path4 from "node:path";
 function stripTrailingCommas(json3) {
@@ -37486,8 +37580,7 @@ function stripTrailingCommas(json3) {
 }
 function removeFromBunLock(packageName) {
   const lockPath = path4.join(CACHE_DIR, "bun.lock");
-  if (!fs4.existsSync(lockPath))
-    return false;
+  if (!fs4.existsSync(lockPath)) return false;
   try {
     const content = fs4.readFileSync(lockPath, "utf-8");
     const lock = JSON.parse(stripTrailingCommas(content));
@@ -37543,19 +37636,16 @@ function invalidatePackage(packageName = PACKAGE_NAME) {
   }
 }
 
-// dist/src/hooks/auto-update-checker/index.js
+// src/hooks/auto-update-checker/index.ts
 function createAutoUpdateCheckerHook(client, directory, options = {}) {
   const { showStartupToast = true, autoUpdate = true } = options;
   let hasChecked = false;
   return {
     event: ({ event }) => {
-      if (event.type !== "session.created")
-        return;
-      if (hasChecked)
-        return;
+      if (event.type !== "session.created") return;
+      if (hasChecked) return;
       const props = event.properties;
-      if (props?.info?.parentID)
-        return;
+      if (props?.info?.parentID) return;
       hasChecked = true;
       setTimeout(() => {
         const localDevVersion = getLocalDevVersion(directory);
@@ -37657,7 +37747,7 @@ async function showLocalDevToast(client, version3) {
   logAutoUpdate(`Local dev toast shown: v${version3}`);
 }
 
-// dist/src/plugin/quota.js
+// src/plugin/quota.ts
 var FETCH_TIMEOUT_MS2 = 1e4;
 function buildAuthFromAccount(account) {
   return {
@@ -37675,15 +37765,12 @@ function normalizeRemainingFraction(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return 0;
   }
-  if (value < 0)
-    return 0;
-  if (value > 1)
-    return 1;
+  if (value < 0) return 0;
+  if (value > 1) return 1;
   return value;
 }
 function parseResetTime(resetTime) {
-  if (!resetTime)
-    return null;
+  if (!resetTime) return null;
   const timestamp = Date.parse(resetTime);
   if (!Number.isFinite(timestamp)) {
     return null;
@@ -37691,11 +37778,9 @@ function parseResetTime(resetTime) {
   return timestamp;
 }
 function isWeeklyQuota(resetTime) {
-  if (!resetTime)
-    return false;
+  if (!resetTime) return false;
   const resetTimestamp = Date.parse(resetTime);
-  if (!Number.isFinite(resetTimestamp))
-    return false;
+  if (!Number.isFinite(resetTimestamp)) return false;
   const diffMs = resetTimestamp - Date.now();
   return diffMs > 24 * 60 * 60 * 1e3;
 }
@@ -37770,14 +37855,16 @@ async function fetchAvailableModels(accessToken, projectId) {
   }
   const message = await response.text().catch(() => "");
   const snippet = message.trim().slice(0, 200);
-  errors.push(`fetchAvailableModels ${response.status} at ${endpoint}${snippet ? `: ${snippet}` : ""}`);
+  errors.push(
+    `fetchAvailableModels ${response.status} at ${endpoint}${snippet ? `: ${snippet}` : ""}`
+  );
   throw new Error(errors.join("; ") || "fetchAvailableModels failed");
 }
 async function fetchGeminiCliQuota(accessToken, projectId) {
   const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
-  const platform2 = process.platform || "darwin";
-  const arch2 = process.arch || "arm64";
-  const geminiCliUserAgent = `GeminiCLI/1.0.0/gemini-2.5-pro (${platform2}; ${arch2})`;
+  const platform = process.platform || "darwin";
+  const arch = process.arch || "arm64";
+  const geminiCliUserAgent = `GeminiCLI/1.0.0/gemini-2.5-pro (${platform}; ${arch})`;
   const body = projectId ? { project: projectId } : {};
   try {
     const response = await fetchWithTimeout2(`${endpoint}/v1internal:retrieveUserQuota`, {
@@ -37835,6 +37922,56 @@ function applyAccountUpdates(account, auth) {
   const changed = updated.refreshToken !== account.refreshToken || updated.projectId !== account.projectId || updated.managedProjectId !== account.managedProjectId;
   return changed ? updated : void 0;
 }
+async function fetchUserQuotaSummary(accessToken, projectId) {
+  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
+  const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
+  const body = projectId ? { project: projectId } : {};
+  const response = await fetchWithTimeout2(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "User-Agent": quotaUserAgent
+    },
+    body: JSON.stringify(body)
+  });
+  if (response.ok) {
+    return await response.json();
+  }
+  throw new Error(`fetchUserQuotaSummary failed: ${response.status}`);
+}
+function aggregateQuotaSummary(summary) {
+  const groups = {};
+  if (!summary.groups) {
+    return { groups, modelCount: 0 };
+  }
+  let totalCount = 0;
+  for (const group of summary.groups) {
+    const isClaude = group.displayName?.toLowerCase().includes("claude");
+    const isGemini = group.displayName?.toLowerCase().includes("gemini");
+    if (!isClaude && !isGemini) continue;
+    if (!group.buckets) continue;
+    for (const bucket of group.buckets) {
+      if (bucket.disabled) {
+        continue;
+      }
+      const isWeekly = bucket.window === "weekly" || bucket.bucketId?.toLowerCase().includes("weekly");
+      let quotaKey;
+      if (isClaude) {
+        quotaKey = isWeekly ? "claude-weekly" : "claude-nonweekly";
+      } else {
+        quotaKey = isWeekly ? "gemini-weekly" : "gemini-nonweekly";
+      }
+      groups[quotaKey] = {
+        remainingFraction: normalizeRemainingFraction(bucket.remainingFraction),
+        resetTime: bucket.resetTime,
+        modelCount: 1
+      };
+      totalCount += 1;
+    }
+  }
+  return { groups, modelCount: totalCount };
+}
 async function checkAccountsQuota(accounts, client, providerId = ANTIGRAVITY_PROVIDER_ID) {
   const results = [];
   logQuotaFetch("start", accounts.length);
@@ -37854,18 +37991,21 @@ async function checkAccountsQuota(accounts, client, providerId = ANTIGRAVITY_PRO
       const updatedAccount = applyAccountUpdates(account, auth);
       let quotaResult;
       let geminiCliQuotaResult;
-      const [antigravityResponse, geminiCliResponse] = await Promise.all([
+      const [antigravitySummaryResponse, antigravityModelsResponse, geminiCliResponse] = await Promise.all([
+        fetchUserQuotaSummary(auth.access ?? "", projectContext.effectiveProjectId).catch(() => ({ groups: void 0 })),
         fetchAvailableModels(auth.access ?? "", projectContext.effectiveProjectId).catch(() => ({ models: void 0 })),
         fetchGeminiCliQuota(auth.access ?? "", projectContext.effectiveProjectId)
       ]);
-      if (antigravityResponse.models === void 0) {
+      if (antigravitySummaryResponse.groups !== void 0) {
+        quotaResult = aggregateQuotaSummary(antigravitySummaryResponse);
+      } else if (antigravityModelsResponse.models !== void 0) {
+        quotaResult = aggregateQuota(antigravityModelsResponse.models);
+      } else {
         quotaResult = {
           groups: {},
           modelCount: 0,
           error: "Failed to fetch Antigravity quota"
         };
-      } else {
-        quotaResult = aggregateQuota(antigravityResponse.models);
       }
       geminiCliQuotaResult = aggregateGeminiCliQuota(geminiCliResponse);
       if (geminiCliResponse.buckets === void 0 || geminiCliResponse.buckets.length === 0) {
@@ -37899,7 +38039,7 @@ async function checkAccountsQuota(accounts, client, providerId = ANTIGRAVITY_PRO
   return results;
 }
 
-// dist/src/plugin/refresh-queue.js
+// src/plugin/refresh-queue.ts
 var log8 = createLogger("refresh-queue");
 var DEFAULT_PROACTIVE_REFRESH_CONFIG = {
   enabled: true,
@@ -38103,7 +38243,7 @@ function createProactiveRefreshQueue(client, providerId, config3) {
   return new ProactiveRefreshQueue(client, providerId, config3);
 }
 
-// dist/src/plugin/version.js
+// src/plugin/version.ts
 var VERSION_URL = "https://antigravity-auto-updater-974169037036.us-central1.run.app";
 var CHANGELOG_URL = "https://antigravity.google/changelog";
 var FETCH_TIMEOUT_MS3 = 5e3;
@@ -38118,11 +38258,9 @@ async function tryFetchVersion(url3, maxChars) {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS3);
   try {
     const response = await fetch(url3, { signal: controller.signal });
-    if (!response.ok)
-      return null;
+    if (!response.ok) return null;
     let text = await response.text();
-    if (maxChars)
-      text = text.slice(0, maxChars);
+    if (maxChars) text = text.slice(0, maxChars);
     return parseVersion(text);
   } catch {
     return null;
@@ -38157,7 +38295,7 @@ async function initAntigravityVersion() {
   setAntigravityVersion(version3);
 }
 
-// dist/src/plugin/search.js
+// src/plugin/search.ts
 var log9 = createLogger("search");
 var sessionCounter = 0;
 var sessionPrefix = `search-${Date.now().toString(36)}`;
@@ -38331,14 +38469,13 @@ Failed to execute search: ${message}. Please try again with a different query.`;
   }
 }
 
-// dist/src/plugin/api-key.js
+// src/plugin/api-key.ts
 var rateLimitedUntilByKey = /* @__PURE__ */ new Map();
 var cursor = 0;
 var GEMINI_MODELS_LIST_TIMEOUT_MS = 1e4;
 var GEMINI_MODELS_LIST_MAX_PAGES = 20;
 async function requestBodyText(request) {
-  if (!request.body)
-    return void 0;
+  if (!request.body) return void 0;
   try {
     return await request.clone().text();
   } catch {
@@ -38346,31 +38483,27 @@ async function requestBodyText(request) {
   }
 }
 function splitEnvList(value) {
-  if (!value)
-    return [];
+  if (!value) return [];
   return value.split(",").map((part) => part.trim()).filter(Boolean);
 }
 function dedupeCredentials(credentials) {
   const seen = /* @__PURE__ */ new Set();
   const result = [];
   for (const credential of credentials) {
-    if (seen.has(credential.apiKey))
-      continue;
+    if (seen.has(credential.apiKey)) continue;
     seen.add(credential.apiKey);
     result.push(credential);
   }
   return result;
 }
 function getAgySdkCredentials(config3, auth) {
-  if (!config3.agy_sdk.enabled)
-    return [];
+  if (!config3.agy_sdk.enabled) return [];
   const credentials = [];
   if (auth?.key?.trim()) {
     credentials.push({ label: "opencode api key", apiKey: auth.key.trim() });
   }
   for (const project of config3.agy_sdk.cloud_projects) {
-    if (project.enabled === false)
-      continue;
+    if (project.enabled === false) continue;
     credentials.push({
       label: project.label?.trim() || project.project_id?.trim() || "cloud project",
       apiKey: project.api_key.trim(),
@@ -38389,15 +38522,13 @@ function getAgySdkCredentials(config3, auth) {
   return dedupeCredentials(credentials);
 }
 function selectAgySdkCredential(credentials) {
-  if (credentials.length === 0)
-    return null;
+  if (credentials.length === 0) return null;
   const now = Date.now();
   for (let attempts = 0; attempts < credentials.length; attempts += 1) {
     const index = cursor % credentials.length;
     cursor += 1;
     const credential = credentials[index];
-    if (!credential)
-      continue;
+    if (!credential) continue;
     const limitedUntil = rateLimitedUntilByKey.get(credential.apiKey) ?? 0;
     if (limitedUntil <= now) {
       return credential;
@@ -38410,8 +38541,7 @@ function markAgySdkCredentialRateLimited(credential, retryAfterMs) {
 }
 function retryAfterMsFromResponse(response, fallbackMs) {
   const retryAfter = response.headers.get("retry-after");
-  if (!retryAfter)
-    return fallbackMs;
+  if (!retryAfter) return fallbackMs;
   const parsed = Number.parseInt(retryAfter, 10);
   if (Number.isFinite(parsed) && parsed > 0) {
     return parsed * 1e3;
@@ -38419,19 +38549,16 @@ function retryAfterMsFromResponse(response, fallbackMs) {
   return fallbackMs;
 }
 function isApiKeyAuth(auth) {
-  if (!auth || typeof auth !== "object")
-    return false;
+  if (!auth || typeof auth !== "object") return false;
   const candidate = auth;
   return (candidate.type === "api" || candidate.type === "api_key") && typeof candidate.key === "string";
 }
 function canRouteAsPublicGeminiApiModel(model) {
   const m = model.toLowerCase();
-  if (m.includes("claude"))
-    return false;
+  if (m.includes("claude")) return false;
   const isAntigravityPrefixed = m.startsWith("antigravity-");
   const stripped = m.replace(/^antigravity-/, "").replace(/-(minimal|low|medium|high)$/, "");
-  if (mapAntigravityModelToPublicApi(stripped))
-    return true;
+  if (mapAntigravityModelToPublicApi(stripped)) return true;
   if (isAntigravityPrefixed) {
     return /^gemini-/.test(stripped) && !ANTIGRAVITY_ONLY_BARE_GEMINI_IDS.has(stripped);
   }
@@ -38444,11 +38571,9 @@ function isAgySdkSupportedRequest(urlString) {
   } catch {
     return false;
   }
-  if (url3.hostname !== "generativelanguage.googleapis.com")
-    return false;
+  if (url3.hostname !== "generativelanguage.googleapis.com") return false;
   const model = extractGeminiModelFromUrl(url3.toString());
-  if (!model || !model.toLowerCase().includes("gemini"))
-    return false;
+  if (!model || !model.toLowerCase().includes("gemini")) return false;
   return canRouteAsPublicGeminiApiModel(model);
 }
 function isAntigravityOnlyGenerativeLanguageRequest(urlString) {
@@ -38458,11 +38583,9 @@ function isAntigravityOnlyGenerativeLanguageRequest(urlString) {
   } catch {
     return false;
   }
-  if (url3.hostname !== "generativelanguage.googleapis.com")
-    return false;
+  if (url3.hostname !== "generativelanguage.googleapis.com") return false;
   const model = extractGeminiModelFromUrl(url3.toString());
-  if (!model)
-    return false;
+  if (!model) return false;
   return isLikelyAntigravityOnlyModel(model) && !canRouteAsPublicGeminiApiModel(model);
 }
 function extractRequestedGeminiModel(urlString) {
@@ -38483,10 +38606,8 @@ var ANTIGRAVITY_ONLY_BARE_GEMINI_IDS = /* @__PURE__ */ new Set([
 ]);
 function isLikelyAntigravityOnlyModel(model) {
   const m = model.toLowerCase();
-  if (m.startsWith("antigravity-"))
-    return true;
-  if (m.includes("claude"))
-    return true;
+  if (m.startsWith("antigravity-")) return true;
+  if (m.includes("claude")) return true;
   return ANTIGRAVITY_ONLY_BARE_GEMINI_IDS.has(m);
 }
 function buildAntigravityModelGuidanceMessage(requestedModel, originalMessage) {
@@ -38496,9 +38617,23 @@ function buildAntigravityModelGuidanceMessage(requestedModel, originalMessage) {
     `Model '${requestedModel}' was sent to the public Gemini API (v1beta) and rejected as NOT_FOUND.`
   ];
   if (antigravityOnly) {
-    lines.push("", "This model id is served by the Antigravity Code Assist backend, not the public Gemini API.", "The plugin's API-key path forwarded the request unchanged because either:", "  \u2022 opencode's 'google' provider is in API-key mode (no OAuth session), or", "  \u2022 all OAuth Antigravity accounts were rate-limited and `agy_sdk.api_key_fallback` kicked in.", "", "To reach this model, re-authenticate with OAuth:", "  opencode auth logout google", "  opencode auth login   # choose Google \u2192 OAuth with Google (Antigravity)");
+    lines.push(
+      "",
+      "This model id is served by the Antigravity Code Assist backend, not the public Gemini API.",
+      "The plugin's API-key path forwarded the request unchanged because either:",
+      "  \u2022 opencode's 'google' provider is in API-key mode (no OAuth session), or",
+      "  \u2022 all OAuth Antigravity accounts were rate-limited and `agy_sdk.api_key_fallback` kicked in.",
+      "",
+      "To reach this model, re-authenticate with OAuth:",
+      "  opencode auth logout google",
+      "  opencode auth login   # choose Google \u2192 OAuth with Google (Antigravity)"
+    );
   } else {
-    lines.push("", "The model id was forwarded to the public Gemini API verbatim. Double-check the spelling,", "or pick a model that's actually published on v1beta.");
+    lines.push(
+      "",
+      "The model id was forwarded to the public Gemini API verbatim. Double-check the spelling,",
+      "or pick a model that's actually published on v1beta."
+    );
   }
   lines.push("", `Public-API models known to work: ${suggestions}.`);
   if (originalMessage) {
@@ -38507,8 +38642,7 @@ function buildAntigravityModelGuidanceMessage(requestedModel, originalMessage) {
   return lines.join("\n");
 }
 async function enhanceAgySdkErrorResponse(response, requestedModel) {
-  if (response.status !== 404 || !requestedModel)
-    return response;
+  if (response.status !== 404 || !requestedModel) return response;
   let body;
   try {
     body = JSON.parse(await response.clone().text());
@@ -38517,8 +38651,7 @@ async function enhanceAgySdkErrorResponse(response, requestedModel) {
   }
   const originalMessage = body.error?.message ?? "";
   const looksLikeModelNotFound = /not (?:found|supported)/i.test(originalMessage) && originalMessage.toLowerCase().includes("model");
-  if (!looksLikeModelNotFound)
-    return response;
+  if (!looksLikeModelNotFound) return response;
   const enhanced = {
     error: {
       code: body.error?.code ?? 404,
@@ -38561,21 +38694,17 @@ function isRecord(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 function toThinkingTier(value) {
-  if (value === "low" || value === "medium" || value === "high")
-    return value;
+  if (value === "low" || value === "medium" || value === "high") return value;
   return void 0;
 }
 function thinkingLevelFromBudget(budget) {
-  if (budget <= 8192)
-    return "low";
-  if (budget <= 16384)
-    return "medium";
+  if (budget <= 8192) return "low";
+  if (budget <= 16384) return "medium";
   return "high";
 }
 function mergeExtraBody(payload) {
   const extraBody = isRecord(payload.extra_body) ? payload.extra_body : isRecord(payload.extraBody) ? payload.extraBody : void 0;
-  if (!extraBody)
-    return void 0;
+  if (!extraBody) return void 0;
   if (isRecord(extraBody.generationConfig)) {
     const generationConfig = isRecord(payload.generationConfig) ? payload.generationConfig : {};
     for (const [key, value] of Object.entries(extraBody.generationConfig)) {
@@ -38595,7 +38724,10 @@ function mergeExtraBody(payload) {
 function applyAgySdkGeminiBodyTransforms(payload, model, thinkingLevel) {
   const generationConfig = isRecord(payload.generationConfig) ? payload.generationConfig : {};
   const extraBody = mergeExtraBody(payload);
-  const variantConfig = extractVariantThinkingConfig(isRecord(payload.providerOptions) ? payload.providerOptions : void 0, generationConfig);
+  const variantConfig = extractVariantThinkingConfig(
+    isRecord(payload.providerOptions) ? payload.providerOptions : void 0,
+    generationConfig
+  );
   const extraThinkingConfig = isRecord(extraBody?.thinkingConfig) ? extraBody.thinkingConfig : void 0;
   const existingThinkingConfig = isRecord(generationConfig.thinkingConfig) ? generationConfig.thinkingConfig : extraThinkingConfig ? { ...extraThinkingConfig } : {};
   if (isGemini3Model(model)) {
@@ -38717,13 +38849,12 @@ async function fetchGeminiApiModels(credential) {
     const payload = await response.json();
     models.push(...payload.models ?? []);
     pageToken = payload.nextPageToken;
-    if (!pageToken)
-      return models;
+    if (!pageToken) return models;
   }
   throw new Error(`Gemini models.list exceeded ${GEMINI_MODELS_LIST_MAX_PAGES} pages for ${credential.label}`);
 }
 
-// dist/src/plugin.js
+// src/plugin.ts
 var MAX_OAUTH_ACCOUNTS = 10;
 var MAX_WARMUP_SESSIONS = 1e3;
 var MAX_WARMUP_RETRIES = 2;
@@ -38771,8 +38902,7 @@ function defaultRetryMsForConfig(config3) {
   return (config3.default_retry_after_seconds ?? 60) * 1e3;
 }
 async function tryFetchWithAgySdkCredentials(input2, init, credentials, fallbackRetryAfterMs) {
-  if (credentials.length === 0)
-    return null;
+  if (credentials.length === 0) return null;
   const attempted = /* @__PURE__ */ new Set();
   let lastResponse = null;
   while (attempted.size < credentials.length) {
@@ -38787,17 +38917,18 @@ async function tryFetchWithAgySdkCredentials(input2, init, credentials, fallback
     }
     lastResponse = response;
   }
-  return lastResponse ?? new Response(JSON.stringify({ error: { message: "All Gemini API keys are temporarily rate-limited" } }), {
-    status: 429,
-    headers: { "content-type": "application/json" }
-  });
+  return lastResponse ?? new Response(
+    JSON.stringify({ error: { message: "All Gemini API keys are temporarily rate-limited" } }),
+    {
+      status: 429,
+      headers: { "content-type": "application/json" }
+    }
+  );
 }
 async function modelsFromAgySdkCredentials(config3, auth) {
-  if (!config3.model_discovery.enabled || !config3.model_discovery.gemini_api)
-    return {};
+  if (!config3.model_discovery.enabled || !config3.model_discovery.gemini_api) return {};
   const credentials = getAgySdkCredentials(config3, isApiKeyAuth(auth) ? auth : null);
-  if (credentials.length === 0)
-    return {};
+  if (credentials.length === 0) return {};
   const errors = [];
   for (const credential of credentials) {
     try {
@@ -38812,15 +38943,13 @@ async function modelsFromAgySdkCredentials(config3, auth) {
   return {};
 }
 async function modelsFromOAuthAuth(config3, auth, client, providerId) {
-  if (!config3.model_discovery.enabled || !config3.model_discovery.antigravity || !auth || !isOAuthAuth(auth))
-    return {};
+  if (!config3.model_discovery.enabled || !config3.model_discovery.antigravity || !auth || !isOAuthAuth(auth)) return {};
   let accessToken = auth.access;
   if (!accessToken || accessTokenExpired(auth)) {
     const refreshed = await refreshAccessToken(auth, client, providerId);
     accessToken = refreshed?.access;
   }
-  if (!accessToken)
-    return {};
+  if (!accessToken) return {};
   const parts = parseRefreshParts(auth.refresh);
   const projectId = parts.managedProjectId || parts.projectId || ANTIGRAVITY_DEFAULT_PROJECT_ID;
   const response = await fetchAvailableModels(accessToken, projectId);
@@ -38909,22 +39038,23 @@ async function tryAgySdkFallbackForRequest(input2, init, config3, credentials, u
   if (!config3.agy_sdk.api_key_fallback || credentials.length === 0 || !isAgySdkSupportedRequest(urlString)) {
     return null;
   }
-  return tryFetchWithAgySdkCredentials(input2, init, credentials, defaultRetryMsForConfig(config3));
+  return tryFetchWithAgySdkCredentials(
+    input2,
+    init,
+    credentials,
+    defaultRetryMsForConfig(config3)
+  );
 }
 async function triggerAsyncQuotaRefreshForAccount(accountManager, accountIndex, client, providerId, intervalMinutes) {
-  if (intervalMinutes <= 0)
-    return;
+  if (intervalMinutes <= 0) return;
   const accounts = accountManager.getAccounts();
   const account = accounts[accountIndex];
-  if (!account || account.enabled === false)
-    return;
+  if (!account || account.enabled === false) return;
   const accountKey = account.email ?? `idx-${accountIndex}`;
-  if (quotaRefreshInProgressByEmail.has(accountKey))
-    return;
+  if (quotaRefreshInProgressByEmail.has(accountKey)) return;
   const intervalMs = intervalMinutes * 60 * 1e3;
   const age = account.cachedQuotaUpdatedAt != null ? Date.now() - account.cachedQuotaUpdatedAt : Infinity;
-  if (age < intervalMs)
-    return;
+  if (age < intervalMs) return;
   quotaRefreshInProgressByEmail.add(accountKey);
   try {
     const accountsForCheck = accountManager.getAccountsForQuotaCheck();
@@ -38969,16 +39099,14 @@ function markWarmupSuccess(sessionId) {
   warmupSucceededSessionIds.add(sessionId);
   if (warmupSucceededSessionIds.size >= MAX_WARMUP_SESSIONS) {
     const first = warmupSucceededSessionIds.values().next().value;
-    if (first)
-      warmupSucceededSessionIds.delete(first);
+    if (first) warmupSucceededSessionIds.delete(first);
   }
 }
 function clearWarmupAttempt(sessionId) {
   warmupAttemptedSessionIds.delete(sessionId);
 }
 function isWSL2() {
-  if (process.platform !== "linux")
-    return false;
+  if (process.platform !== "linux") return false;
   try {
     const { readFileSync: readFileSync9 } = __require("node:fs");
     const release = readFileSync9("/proc/version", "utf8").toLowerCase();
@@ -38988,8 +39116,7 @@ function isWSL2() {
   }
 }
 function isWSL22() {
-  if (!isWSL2())
-    return false;
+  if (!isWSL2()) return false;
   try {
     const { readFileSync: readFileSync9 } = __require("node:fs");
     const version3 = readFileSync9("/proc/version", "utf8").toLowerCase();
@@ -39065,14 +39192,10 @@ function selectBestVerificationUrl(urls) {
   unique.sort((a, b) => {
     const score = (value) => {
       let total = 0;
-      if (value.includes("plt="))
-        total += 4;
-      if (value.includes("/signin/continue"))
-        total += 3;
-      if (value.includes("continue="))
-        total += 2;
-      if (value.includes("service=cloudcode"))
-        total += 1;
+      if (value.includes("plt=")) total += 4;
+      if (value.includes("/signin/continue")) total += 3;
+      if (value.includes("continue=")) total += 2;
+      if (value.includes("service=cloudcode")) total += 1;
       return total;
     };
     return score(b) - score(a);
@@ -39390,7 +39513,9 @@ async function promptManualOAuthInput(fallbackState) {
   console.log("1. Open the URL above in your browser and complete Google sign-in.");
   console.log("2. After approving, copy the full redirected localhost URL from the address bar.");
   console.log("3. Paste it back here.\n");
-  const callbackInput = await promptOAuthCallbackValue("Paste the redirect URL (or just the code) here: ");
+  const callbackInput = await promptOAuthCallbackValue(
+    "Paste the redirect URL (or just the code) here: "
+  );
   const params = parseOAuthCallbackInput(callbackInput, fallbackState);
   if ("error" in params) {
     return { type: "failed", error: params.error };
@@ -39564,8 +39689,7 @@ function extractRateLimitBodyInfo(body) {
   let reason;
   if (Array.isArray(details)) {
     for (const detail of details) {
-      if (!detail || typeof detail !== "object")
-        continue;
+      if (!detail || typeof detail !== "object") continue;
       const type = detail["@type"];
       if (typeof type === "string" && type.includes("google.rpc.ErrorInfo")) {
         const detailReason = detail.reason;
@@ -39576,8 +39700,7 @@ function extractRateLimitBodyInfo(body) {
       }
     }
     for (const detail of details) {
-      if (!detail || typeof detail !== "object")
-        continue;
+      if (!detail || typeof detail !== "object") continue;
       const type = detail["@type"];
       if (typeof type === "string" && type.includes("google.rpc.RetryInfo")) {
         const retryDelay = detail.retryDelay;
@@ -39590,8 +39713,7 @@ function extractRateLimitBodyInfo(body) {
       }
     }
     for (const detail of details) {
-      if (!detail || typeof detail !== "object")
-        continue;
+      if (!detail || typeof detail !== "object") continue;
       const metadata = detail.metadata;
       if (metadata && typeof metadata === "object") {
         const quotaResetDelay = metadata.quotaResetDelay;
@@ -39631,11 +39753,9 @@ async function extractRetryInfoFromBody(response) {
   }
 }
 function formatWaitTime(ms) {
-  if (ms < 1e3)
-    return `${ms}ms`;
+  if (ms < 1e3) return `${ms}ms`;
   const seconds = Math.ceil(ms / 1e3);
-  if (seconds < 60)
-    return `${seconds}s`;
+  if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   if (minutes < 60) {
@@ -39690,8 +39810,7 @@ function resetRateLimitState(accountIndex, quotaKey) {
   rateLimitStateByAccountQuota.delete(stateKey);
 }
 function headerStyleToQuotaKey(headerStyle, family) {
-  if (family === "claude")
-    return "claude";
+  if (family === "claude") return "claude";
   return headerStyle === "antigravity" ? "gemini-antigravity" : "gemini-cli";
 }
 var accountFailureState = /* @__PURE__ */ new Map();
@@ -39841,11 +39960,16 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
       if (!accessToken) {
         return "Error: No valid access token available. Please run `opencode auth login` to re-authenticate.";
       }
-      return executeSearch({
-        query: args.query,
-        urls: args.urls,
-        thinking: args.thinking
-      }, accessToken, projectId, ctx.abort);
+      return executeSearch(
+        {
+          query: args.query,
+          urls: args.urls,
+          thinking: args.thinking
+        },
+        accessToken,
+        projectId,
+        ctx.abort
+      );
     }
   });
   return {
@@ -39856,7 +39980,11 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
     provider: {
       id: providerId,
       async models(provider, context) {
-        const fallbackModels = normalizeProviderHookModels(providerId, provider, mergeModelDefinitions(OPENCODE_MODEL_DEFINITIONS, provider.models ?? {}));
+        const fallbackModels = normalizeProviderHookModels(
+          providerId,
+          provider,
+          mergeModelDefinitions(OPENCODE_MODEL_DEFINITIONS, provider.models ?? {})
+        );
         if (!config3.model_discovery.enabled) {
           return fallbackModels;
         }
@@ -39879,7 +40007,12 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
             antigravityError: antigravityResult.status === "rejected" ? String(antigravityResult.reason) : void 0
           });
         }
-        return normalizeProviderHookModels(providerId, provider, mergeModelDefinitions(fallbackModels, geminiModels, antigravityModels), fallbackModels);
+        return normalizeProviderHookModels(
+          providerId,
+          provider,
+          mergeModelDefinitions(fallbackModels, geminiModels, antigravityModels),
+          fallbackModels
+        );
       }
     },
     auth: {
@@ -39932,9 +40065,13 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
               }
               const latest = await getAuth();
               const latestCredentials = getAgySdkCredentials(config3, isApiKeyAuth(latest) ? latest : apiKeyAuth);
-              const response = await tryFetchWithAgySdkCredentials(input2, init, latestCredentials, (config3.default_retry_after_seconds ?? 60) * 1e3);
-              if (response)
-                return response;
+              const response = await tryFetchWithAgySdkCredentials(
+                input2,
+                init,
+                latestCredentials,
+                (config3.default_retry_after_seconds ?? 60) * 1e3
+              );
+              if (response) return response;
               return fetch(input2, init);
             }
           };
@@ -39991,9 +40128,13 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 }
               }
               if (isAgySdkSupportedRequest(urlString2)) {
-                const response = await tryFetchWithAgySdkCredentials(input2, init, latestCredentials, (config3.default_retry_after_seconds ?? 60) * 1e3);
-                if (response)
-                  return response;
+                const response = await tryFetchWithAgySdkCredentials(
+                  input2,
+                  init,
+                  latestCredentials,
+                  (config3.default_retry_after_seconds ?? 60) * 1e3
+                );
+                if (response) return response;
               }
               return fetch(input2, init);
             }
@@ -40003,8 +40144,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
             const agySdkCredentials = getAgySdkCredentials(config3, apiKeyAuth);
             const debugLines = [];
             const pushDebug = (line) => {
-              if (!isDebugEnabled())
-                return;
+              if (!isDebugEnabled()) return;
               debugLines.push(line);
             };
             pushDebug(`request=${sanitizeUrlForLog(urlString)}`);
@@ -40022,10 +40162,8 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
             const toastScope = config3.toast_scope;
             const showToast = async (message, variant) => {
               log10.debug("toast", { message, variant, isChildSession, toastScope });
-              if (quietMode)
-                return;
-              if (abortSignal?.aborted)
-                return;
+              if (quietMode) return;
+              if (abortSignal?.aborted) return;
               if (toastScope === "root_only" && isChildSession) {
                 log10.debug("toast-suppressed-child-session", { message, variant, parentID: childSessionParentID });
                 return;
@@ -40043,8 +40181,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
               }
             };
             const hasOtherAccountWithAntigravity = (currentAccount) => {
-              if (family !== "gemini")
-                return false;
+              if (family !== "gemini") return false;
               return accountManager.hasOtherAccountWithAntigravityAvailable(currentAccount.index, family, model);
             };
             while (true) {
@@ -40052,53 +40189,102 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
               const accountCount = accountManager.getAccountCount();
               if (++loopGuard > Math.max(50, accountCount * 8)) {
                 const guardFallback = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                if (guardFallback)
-                  return guardFallback;
-                throw lastError || new Error(`Antigravity request routing did not converge for ${model ?? family}. All ${accountCount} account(s) appear rate-limited or exhausted for this model. Run \`opencode auth login\` to add accounts or wait for quota reset.`);
+                if (guardFallback) return guardFallback;
+                throw lastError || new Error(
+                  `Antigravity request routing did not converge for ${model ?? family}. All ${accountCount} account(s) appear rate-limited or exhausted for this model. Run \`opencode auth login\` to add accounts or wait for quota reset.`
+                );
               }
               const routingDecision = resolveHeaderRoutingDecision(urlString, family, config3);
-              const { cliFirst, preferredHeaderStyle, explicitQuota, allowQuotaFallback } = routingDecision;
+              const {
+                cliFirst,
+                preferredHeaderStyle,
+                explicitQuota,
+                allowQuotaFallback
+              } = routingDecision;
               if (family === "gemini" && config3.agy_sdk.prefer_for_gemini && !explicitQuota && agySdkCredentials.length > 0 && isAgySdkSupportedRequest(urlString)) {
-                const response = await tryFetchWithAgySdkCredentials(input2, init, agySdkCredentials, (config3.default_retry_after_seconds ?? 60) * 1e3);
+                const response = await tryFetchWithAgySdkCredentials(
+                  input2,
+                  init,
+                  agySdkCredentials,
+                  (config3.default_retry_after_seconds ?? 60) * 1e3
+                );
                 if (response && !isRetryableAgySdkCapacityStatus(response.status)) {
                   return response;
                 }
               }
               if (accountCount === 0) {
                 const response = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                if (response)
-                  return response;
+                if (response) return response;
                 throw new Error("No Antigravity accounts available. Run `opencode auth login`.");
               }
-              const softQuotaCacheTtlMs = computeSoftQuotaCacheTtlMs(config3.soft_quota_cache_ttl_minutes, config3.quota_refresh_interval_minutes);
-              let account = accountManager.getCurrentOrNextForFamily(family, model, config3.account_selection_strategy, preferredHeaderStyle, config3.pid_offset_enabled, config3.soft_quota_threshold_percent, softQuotaCacheTtlMs, triedSwitchIndices);
+              const softQuotaCacheTtlMs = computeSoftQuotaCacheTtlMs(
+                config3.soft_quota_cache_ttl_minutes,
+                config3.quota_refresh_interval_minutes
+              );
+              let account = accountManager.getCurrentOrNextForFamily(
+                family,
+                model,
+                config3.account_selection_strategy,
+                preferredHeaderStyle,
+                config3.pid_offset_enabled,
+                config3.soft_quota_threshold_percent,
+                softQuotaCacheTtlMs,
+                triedSwitchIndices
+              );
               if (!account && allowQuotaFallback) {
                 const alternateHeaderStyle = preferredHeaderStyle === "antigravity" ? "gemini-cli" : "antigravity";
-                account = accountManager.getCurrentOrNextForFamily(family, model, config3.account_selection_strategy, alternateHeaderStyle, config3.pid_offset_enabled, config3.soft_quota_threshold_percent, softQuotaCacheTtlMs, triedSwitchIndices);
+                account = accountManager.getCurrentOrNextForFamily(
+                  family,
+                  model,
+                  config3.account_selection_strategy,
+                  alternateHeaderStyle,
+                  config3.pid_offset_enabled,
+                  config3.soft_quota_threshold_percent,
+                  softQuotaCacheTtlMs,
+                  triedSwitchIndices
+                );
                 if (account) {
-                  pushDebug(`selected-by-fallback idx=${account.index} preferred=${preferredHeaderStyle} alternate=${alternateHeaderStyle}`);
+                  pushDebug(
+                    `selected-by-fallback idx=${account.index} preferred=${preferredHeaderStyle} alternate=${alternateHeaderStyle}`
+                  );
                 }
               }
               if (!account) {
                 if (accountCount > 0 && triedSwitchIndices.size >= accountCount) {
                   const exhaustedFallback = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                  if (exhaustedFallback)
-                    return exhaustedFallback;
+                  if (exhaustedFallback) return exhaustedFallback;
                   if (lastFailure) {
-                    return transformAntigravityResponse(lastFailure.response, lastFailure.streaming, lastFailure.debugContext, lastFailure.requestedModel, lastFailure.projectId, lastFailure.endpoint, lastFailure.effectiveModel, lastFailure.sessionId, lastFailure.toolDebugMissing, lastFailure.toolDebugSummary, lastFailure.toolDebugPayload, debugLines);
+                    return transformAntigravityResponse(
+                      lastFailure.response,
+                      lastFailure.streaming,
+                      lastFailure.debugContext,
+                      lastFailure.requestedModel,
+                      lastFailure.projectId,
+                      lastFailure.endpoint,
+                      lastFailure.effectiveModel,
+                      lastFailure.sessionId,
+                      lastFailure.toolDebugMissing,
+                      lastFailure.toolDebugSummary,
+                      lastFailure.toolDebugPayload,
+                      debugLines
+                    );
                   }
-                  throw lastError || new Error(`All ${accountCount} Antigravity account(s) are rate-limited for ${model ?? family}. Run \`opencode auth login\` to add accounts or wait for quota reset.`);
+                  throw lastError || new Error(
+                    `All ${accountCount} Antigravity account(s) are rate-limited for ${model ?? family}. Run \`opencode auth login\` to add accounts or wait for quota reset.`
+                  );
                 }
                 if (accountManager.areAllAccountsOverSoftQuota(family, config3.soft_quota_threshold_percent, softQuotaCacheTtlMs, model)) {
                   const threshold = config3.soft_quota_threshold_percent;
                   const softQuotaWaitMs = accountManager.getMinWaitTimeForSoftQuota(family, threshold, softQuotaCacheTtlMs, model);
                   const maxWaitMs2 = (config3.max_rate_limit_wait_seconds ?? 300) * 1e3;
                   const response2 = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                  if (response2)
-                    return response2;
+                  if (response2) return response2;
                   if (softQuotaWaitMs === null || maxWaitMs2 > 0 && softQuotaWaitMs > maxWaitMs2) {
                     const waitTimeFormatted = softQuotaWaitMs ? formatWaitTime(softQuotaWaitMs) : "unknown";
-                    await showToast(`All accounts over ${threshold}% quota threshold. Resets in ${waitTimeFormatted}.`, "error");
+                    await showToast(
+                      `All accounts over ${threshold}% quota threshold. Resets in ${waitTimeFormatted}.`,
+                      "error"
+                    );
                     return createSoftQuotaBlockedResponse({
                       accountCount,
                       family,
@@ -40118,7 +40304,12 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                   continue;
                 }
                 const strictWait = !allowQuotaFallback;
-                const waitMs = accountManager.getMinWaitTimeForFamily(family, model, preferredHeaderStyle, strictWait) || 6e4;
+                const waitMs = accountManager.getMinWaitTimeForFamily(
+                  family,
+                  model,
+                  preferredHeaderStyle,
+                  strictWait
+                ) || 6e4;
                 const waitSecValue = Math.max(1, Math.ceil(waitMs / 1e3));
                 pushDebug(`all-rate-limited family=${family} accounts=${accountCount} waitMs=${waitMs}`);
                 if (isDebugEnabled()) {
@@ -40131,12 +40322,16 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 }
                 const maxWaitMs = (config3.max_rate_limit_wait_seconds ?? 300) * 1e3;
                 const response = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                if (response)
-                  return response;
+                if (response) return response;
                 if (maxWaitMs > 0 && waitMs > maxWaitMs) {
                   const waitTimeFormatted = formatWaitTime(waitMs);
-                  await showToast(`Rate limited for ${waitTimeFormatted}. Try again later or add another account.`, "error");
-                  throw new Error(`All ${accountCount} account(s) rate-limited for ${family}. Quota resets in ${waitTimeFormatted}. Add more accounts with \`opencode auth login\` or wait and retry.`);
+                  await showToast(
+                    `Rate limited for ${waitTimeFormatted}. Try again later or add another account.`,
+                    "error"
+                  );
+                  throw new Error(
+                    `All ${accountCount} account(s) rate-limited for ${family}. Quota resets in ${waitTimeFormatted}. Add more accounts with \`opencode auth login\` or wait and retry.`
+                  );
                 }
                 if (!rateLimitToastShown) {
                   await showToast(`All ${accountCount} account(s) rate-limited for ${family}. Waiting ${waitSecValue}s...`, "warning");
@@ -40147,7 +40342,9 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 continue;
               }
               resetAllAccountsBlockedToasts();
-              pushDebug(`selected idx=${account.index} email=${account.email ?? ""} family=${family} accounts=${accountCount} strategy=${config3.account_selection_strategy}`);
+              pushDebug(
+                `selected idx=${account.index} email=${account.email ?? ""} family=${family} accounts=${accountCount} strategy=${config3.account_selection_strategy}`
+              );
               if (isDebugEnabled()) {
                 logAccountContext("Selected", {
                   index: account.index,
@@ -40161,7 +40358,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 const accountLabel = account.email || `Account ${account.index + 1}`;
                 const enabledAccounts = accountManager.getEnabledAccounts();
                 const enabledPosition = enabledAccounts.findIndex((a) => a.index === account.index) + 1;
-                await showToast(`Using ${accountLabel} (${enabledPosition}/${accountCount})`, "info");
+                await showToast(
+                  `Using ${accountLabel} (${enabledPosition}/${accountCount})`,
+                  "info"
+                );
                 accountManager.markToastShown(account.index);
               }
               accountManager.requestSaveToDisk();
@@ -40210,10 +40410,17 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                           log10.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
                         }
                       }
-                      const fallback = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                      if (fallback)
-                        return fallback;
-                      throw new Error("All Antigravity accounts have invalid refresh tokens. Run `opencode auth login` and reauthenticate.");
+                      const fallback = await tryAgySdkFallbackForRequest(
+                        input2,
+                        init,
+                        config3,
+                        agySdkCredentials,
+                        urlString
+                      );
+                      if (fallback) return fallback;
+                      throw new Error(
+                        "All Antigravity accounts have invalid refresh tokens. Run `opencode auth login` and reauthenticate."
+                      );
                     }
                     lastError = error92;
                     continue;
@@ -40268,7 +40475,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 if (!trackWarmupAttempt(prepared.sessionId)) {
                   return;
                 }
-                const warmupBody = buildThinkingWarmupBody(typeof prepared.init.body === "string" ? prepared.init.body : void 0, Boolean(prepared.effectiveModel?.toLowerCase().includes("claude") && prepared.effectiveModel?.toLowerCase().includes("thinking")));
+                const warmupBody = buildThinkingWarmupBody(
+                  typeof prepared.init.body === "string" ? prepared.init.body : void 0,
+                  Boolean(prepared.effectiveModel?.toLowerCase().includes("claude") && prepared.effectiveModel?.toLowerCase().includes("thinking"))
+                );
                 if (!warmupBody) {
                   return;
                 }
@@ -40293,13 +40503,24 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 try {
                   pushDebug("thinking-warmup: start");
                   const warmupResponse = await fetch(warmupUrl, warmupInit);
-                  const transformed = await transformAntigravityResponse(warmupResponse, true, warmupDebugContext, prepared.requestedModel, projectId, warmupUrl, prepared.effectiveModel, prepared.sessionId);
+                  const transformed = await transformAntigravityResponse(
+                    warmupResponse,
+                    true,
+                    warmupDebugContext,
+                    prepared.requestedModel,
+                    projectId,
+                    warmupUrl,
+                    prepared.effectiveModel,
+                    prepared.sessionId
+                  );
                   await transformed.text();
                   markWarmupSuccess(prepared.sessionId);
                   pushDebug("thinking-warmup: done");
                 } catch (error92) {
                   clearWarmupAttempt(prepared.sessionId);
-                  pushDebug(`thinking-warmup: failed ${error92 instanceof Error ? error92.message : String(error92)}`);
+                  pushDebug(
+                    `thinking-warmup: failed ${error92 instanceof Error ? error92.message : String(error92)}`
+                  );
                 }
               };
               let shouldSwitchAccount = false;
@@ -40321,7 +40542,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                       alternateStyle
                     });
                     if (fallbackStyle) {
-                      await showToast(`Antigravity quota exhausted on all accounts. Using Gemini CLI quota.`, "warning");
+                      await showToast(
+                        `Antigravity quota exhausted on all accounts. Using Gemini CLI quota.`,
+                        "warning"
+                      );
                       headerStyle = fallbackStyle;
                       pushDebug(`all-accounts antigravity exhausted, quota fallback: ${headerStyle}`);
                     } else {
@@ -40338,7 +40562,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                   if (fallbackStyle) {
                     const quotaName = headerStyle === "gemini-cli" ? "Gemini CLI" : "Antigravity";
                     const altQuotaName = fallbackStyle === "gemini-cli" ? "Gemini CLI" : "Antigravity";
-                    await showToast(`${quotaName} quota exhausted, using ${altQuotaName} quota`, "warning");
+                    await showToast(
+                      `${quotaName} quota exhausted, using ${altQuotaName} quota`,
+                      "warning"
+                    );
                     headerStyle = fallbackStyle;
                     pushDebug(`quota fallback: ${headerStyle}`);
                   } else {
@@ -40364,11 +40591,20 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                     continue;
                   }
                   try {
-                    const prepared = await prepareAntigravityRequest(input2, init, accessToken, projectContext.effectiveProjectId, currentEndpoint, headerStyle, forceThinkingRecovery, {
-                      claudeToolHardening: config3.claude_tool_hardening,
-                      claudePromptAutoCaching: config3.claude_prompt_auto_caching,
-                      fingerprint: account.fingerprint
-                    });
+                    const prepared = await prepareAntigravityRequest(
+                      input2,
+                      init,
+                      accessToken,
+                      projectContext.effectiveProjectId,
+                      currentEndpoint,
+                      headerStyle,
+                      forceThinkingRecovery,
+                      {
+                        claudeToolHardening: config3.claude_tool_hardening,
+                        claudePromptAutoCaching: config3.claude_prompt_auto_caching,
+                        fingerprint: account.fingerprint
+                      }
+                    );
                     const originalUrl = toUrlString(input2);
                     const resolvedUrl = toUrlString(prepared.request);
                     pushDebug(`endpoint=${currentEndpoint}`);
@@ -40426,7 +40662,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                         const waitMs = Math.round(jitter);
                         const waitSec = Math.round(waitMs / 1e3);
                         pushDebug(`Server busy (${rateLimitReason}) on account ${account.index}, exponential backoff ${waitMs}ms (attempt ${capacityRetryCount + 1})`);
-                        await showToast(`\u23F3 Server busy (${response.status}). Retrying in ${waitSec}s...`, "warning");
+                        await showToast(
+                          `\u23F3 Server busy (${response.status}). Retrying in ${waitSec}s...`,
+                          "warning"
+                        );
                         await sleep(waitMs, abortSignal);
                         if (capacityRetryCount < 3) {
                           capacityRetryCount++;
@@ -40445,7 +40684,9 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                       const { attempt, delayMs, isDuplicate } = getRateLimitBackoff(account.index, quotaKey2, serverRetryMs);
                       const smartBackoffMs = calculateBackoffMs(rateLimitReason, account.consecutiveFailures ?? 0, serverRetryMs);
                       const effectiveDelayMs = Math.max(delayMs, smartBackoffMs);
-                      pushDebug(`429 idx=${account.index} email=${account.email ?? ""} family=${family} delayMs=${effectiveDelayMs} attempt=${attempt} reason=${rateLimitReason}`);
+                      pushDebug(
+                        `429 idx=${account.index} email=${account.email ?? ""} family=${family} delayMs=${effectiveDelayMs} attempt=${attempt} reason=${rateLimitReason}`
+                      );
                       if (bodyInfo.message) {
                         pushDebug(`429 message=${bodyInfo.message}`);
                       }
@@ -40455,7 +40696,14 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                       if (bodyInfo.reason) {
                         pushDebug(`429 reason=${bodyInfo.reason}`);
                       }
-                      logRateLimitEvent(account.index, account.email, family, response.status, effectiveDelayMs, bodyInfo);
+                      logRateLimitEvent(
+                        account.index,
+                        account.email,
+                        family,
+                        response.status,
+                        effectiveDelayMs,
+                        bodyInfo
+                      );
                       await logResponseBody(debugContext, response, 429);
                       getHealthTracker().recordRateLimit(account.index);
                       const accountLabel = account.email || `Account ${account.index + 1}`;
@@ -40502,7 +40750,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                             });
                             if (fallbackStyle) {
                               const safeModelName = model || "this model";
-                              await showToast(`Antigravity quota exhausted for ${safeModelName}. Switching to Gemini CLI quota...`, "warning");
+                              await showToast(
+                                `Antigravity quota exhausted for ${safeModelName}. Switching to Gemini CLI quota...`,
+                                "warning"
+                              );
                               headerStyle = fallbackStyle;
                               pushDebug(`quota fallback: ${headerStyle}`);
                               continue;
@@ -40518,7 +40769,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                             });
                             if (fallbackStyle) {
                               const safeModelName = model || "this model";
-                              await showToast(`Gemini CLI quota exhausted for ${safeModelName}. Switching to Antigravity quota...`, "warning");
+                              await showToast(
+                                `Gemini CLI quota exhausted for ${safeModelName}. Switching to Antigravity quota...`,
+                                "warning"
+                              );
                               headerStyle = fallbackStyle;
                               pushDebug(`quota fallback: ${headerStyle}`);
                               continue;
@@ -40526,9 +40780,14 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                           }
                         }
                       }
-                      const agySdkFallbackResponse = await tryAgySdkFallbackForRequest(input2, init, config3, agySdkCredentials, urlString);
-                      if (agySdkFallbackResponse)
-                        return agySdkFallbackResponse;
+                      const agySdkFallbackResponse = await tryAgySdkFallbackForRequest(
+                        input2,
+                        init,
+                        config3,
+                        agySdkCredentials,
+                        urlString
+                      );
+                      if (agySdkFallbackResponse) return agySdkFallbackResponse;
                       const quotaName = headerStyle === "antigravity" ? "Antigravity" : "Gemini CLI";
                       if (accountCount > 1) {
                         const quotaMsg = bodyInfo.quotaResetTime ? ` (quota resets ${bodyInfo.quotaResetTime})` : ``;
@@ -40558,7 +40817,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                         accountManager.markRateLimited(account, cooldownMs, family, headerStyle, model);
                         const label = account.email || `Account ${account.index + 1}`;
                         if (accountManager.shouldShowAccountToast(account.index, 6e4)) {
-                          await showToast(`\u26A0 ${label} needs verification. Run 'opencode auth login' and use Verify accounts.`, "warning");
+                          await showToast(
+                            `\u26A0 ${label} needs verification. Run 'opencode auth login' and use Verify accounts.`,
+                            "warning"
+                          );
                           accountManager.markToastShown(account.index);
                         }
                         pushDebug(`verification-required: disabled account ${account.index}`);
@@ -40578,7 +40840,13 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                       account.consecutiveFailures = 0;
                       getHealthTracker().recordSuccess(account.index);
                       accountManager.markAccountUsed(account.index);
-                      void triggerAsyncQuotaRefreshForAccount(accountManager, account.index, client, providerId, config3.quota_refresh_interval_minutes);
+                      void triggerAsyncQuotaRefreshForAccount(
+                        accountManager,
+                        account.index,
+                        client,
+                        providerId,
+                        config3.quota_refresh_interval_minutes
+                      );
                     }
                     logAntigravityDebugResponse(debugContext, response, {
                       note: response.ok ? "Success" : `Error ${response.status}`
@@ -40592,7 +40860,10 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                         const cloned = response.clone();
                         const bodyText = await cloned.text();
                         if (bodyText.includes("Prompt is too long") || bodyText.includes("prompt_too_long")) {
-                          await showToast("Context too long - use /compact to reduce size", "warning");
+                          await showToast(
+                            "Context too long - use /compact to reduce size",
+                            "warning"
+                          );
                           const errorMessage = `[Antigravity Error] Context is too long for this model.
 
 Please use /compact to reduce context size, then retry your request.
@@ -40616,23 +40887,49 @@ Alternatively, you can:
                         emptyResponseAttempts.set(emptyAttemptKey, currentAttempts);
                         pushDebug(`empty-response: attempt ${currentAttempts}/${maxAttempts}`);
                         if (currentAttempts < maxAttempts) {
-                          await showToast(`Empty response received. Retrying (${currentAttempts}/${maxAttempts})...`, "warning");
+                          await showToast(
+                            `Empty response received. Retrying (${currentAttempts}/${maxAttempts})...`,
+                            "warning"
+                          );
                           await sleep(retryDelayMs, abortSignal);
                           continue;
                         }
                         emptyResponseAttempts.delete(emptyAttemptKey);
-                        throw new EmptyResponseError("antigravity", prepared.effectiveModel ?? "unknown", currentAttempts);
+                        throw new EmptyResponseError(
+                          "antigravity",
+                          prepared.effectiveModel ?? "unknown",
+                          currentAttempts
+                        );
                       }
                       const emptyAttemptKeyClean = `${prepared.sessionId ?? "none"}:${prepared.effectiveModel ?? "unknown"}`;
                       emptyResponseAttempts.delete(emptyAttemptKeyClean);
                     }
-                    const transformedResponse = await transformAntigravityResponse(response, prepared.streaming, debugContext, prepared.requestedModel, prepared.projectId, prepared.endpoint, prepared.effectiveModel, prepared.sessionId, prepared.toolDebugMissing, prepared.toolDebugSummary, prepared.toolDebugPayload, debugLines);
+                    const transformedResponse = await transformAntigravityResponse(
+                      response,
+                      prepared.streaming,
+                      debugContext,
+                      prepared.requestedModel,
+                      prepared.projectId,
+                      prepared.endpoint,
+                      prepared.effectiveModel,
+                      prepared.sessionId,
+                      prepared.toolDebugMissing,
+                      prepared.toolDebugSummary,
+                      prepared.toolDebugPayload,
+                      debugLines
+                    );
                     const contextError = transformedResponse.headers.get("x-antigravity-context-error");
                     if (contextError) {
                       if (contextError === "prompt_too_long") {
-                        await showToast("Context too long - use /compact to reduce size, or trim your request", "warning");
+                        await showToast(
+                          "Context too long - use /compact to reduce size, or trim your request",
+                          "warning"
+                        );
                       } else if (contextError === "tool_pairing") {
-                        await showToast("Tool call/result mismatch - use /compact to fix, or /undo last message", "warning");
+                        await showToast(
+                          "Tool call/result mismatch - use /compact to fix, or /undo last message",
+                          "warning"
+                        );
                       }
                     }
                     return transformedResponse;
@@ -40684,14 +40981,40 @@ Alternatively, you can:
                 triedSwitchIndices.add(account.index);
                 if (accountCount <= 1) {
                   if (lastFailure) {
-                    return transformAntigravityResponse(lastFailure.response, lastFailure.streaming, lastFailure.debugContext, lastFailure.requestedModel, lastFailure.projectId, lastFailure.endpoint, lastFailure.effectiveModel, lastFailure.sessionId, lastFailure.toolDebugMissing, lastFailure.toolDebugSummary, lastFailure.toolDebugPayload, debugLines);
+                    return transformAntigravityResponse(
+                      lastFailure.response,
+                      lastFailure.streaming,
+                      lastFailure.debugContext,
+                      lastFailure.requestedModel,
+                      lastFailure.projectId,
+                      lastFailure.endpoint,
+                      lastFailure.effectiveModel,
+                      lastFailure.sessionId,
+                      lastFailure.toolDebugMissing,
+                      lastFailure.toolDebugSummary,
+                      lastFailure.toolDebugPayload,
+                      debugLines
+                    );
                   }
                   throw lastError || new Error("All Antigravity endpoints failed");
                 }
                 continue;
               }
               if (lastFailure) {
-                return transformAntigravityResponse(lastFailure.response, lastFailure.streaming, lastFailure.debugContext, lastFailure.requestedModel, lastFailure.projectId, lastFailure.endpoint, lastFailure.effectiveModel, lastFailure.sessionId, lastFailure.toolDebugMissing, lastFailure.toolDebugSummary, lastFailure.toolDebugPayload, debugLines);
+                return transformAntigravityResponse(
+                  lastFailure.response,
+                  lastFailure.streaming,
+                  lastFailure.debugContext,
+                  lastFailure.requestedModel,
+                  lastFailure.projectId,
+                  lastFailure.endpoint,
+                  lastFailure.effectiveModel,
+                  lastFailure.sessionId,
+                  lastFailure.toolDebugMissing,
+                  lastFailure.toolDebugSummary,
+                  lastFailure.toolDebugPayload,
+                  debugLines
+                );
               }
               throw lastError || new Error("All Antigravity accounts failed");
             }
@@ -40722,7 +41045,9 @@ Alternatively, you can:
                     } else {
                       const rateLimits = acc.rateLimitResetTimes;
                       if (rateLimits) {
-                        const isRateLimited = Object.values(rateLimits).some((resetTime) => typeof resetTime === "number" && resetTime > now);
+                        const isRateLimited = Object.values(rateLimits).some(
+                          (resetTime) => typeof resetTime === "number" && resetTime > now
+                        );
                         if (isRateLimited) {
                           status = "rate-limited";
                         } else {
@@ -40769,17 +41094,13 @@ Alternatively, you can:
                         reset: "\x1B[0m"
                       };
                       const getColor = (remaining) => {
-                        if (typeof remaining !== "number")
-                          return colors.reset;
-                        if (remaining < 0.2)
-                          return colors.red;
-                        if (remaining < 0.6)
-                          return colors.orange;
+                        if (typeof remaining !== "number") return colors.reset;
+                        if (remaining < 0.2) return colors.red;
+                        if (remaining < 0.6) return colors.orange;
                         return colors.green;
                       };
                       const createProgressBar = (remaining, width = 20) => {
-                        if (typeof remaining !== "number")
-                          return "\u2591".repeat(width) + " ???";
+                        if (typeof remaining !== "number") return "\u2591".repeat(width) + " ???";
                         const filled = Math.round(remaining * width);
                         const empty = width - filled;
                         const color = getColor(remaining);
@@ -40788,11 +41109,9 @@ Alternatively, you can:
                         return `${bar} ${pct}`;
                       };
                       const formatReset = (resetTime) => {
-                        if (!resetTime)
-                          return "";
+                        if (!resetTime) return "";
                         const ms = Date.parse(resetTime) - Date.now();
-                        if (ms <= 0)
-                          return " (resetting...)";
+                        if (ms <= 0) return " (resetting...)";
                         const hours = ms / (1e3 * 60 * 60);
                         if (hours >= 24) {
                           const days = Math.floor(hours / 24);
@@ -40830,19 +41149,23 @@ Alternatively, you can:
                       } else {
                         const groups = res.quota.groups;
                         const groupEntries = [
-                          { name: "Claude (Non-Weekly)", data: groups["claude-nonweekly"] },
-                          { name: "Claude (Weekly)", data: groups["claude-weekly"] },
-                          { name: "Gemini (Non-Weekly)", data: groups["gemini-nonweekly"] },
-                          { name: "Gemini (Weekly)", data: groups["gemini-weekly"] }
+                          { name: "Claude (5-Hour Limit)", data: groups["claude-nonweekly"] },
+                          { name: "Claude (Weekly Limit)", data: groups["claude-weekly"] },
+                          { name: "Gemini (5-Hour Limit)", data: groups["gemini-nonweekly"] },
+                          { name: "Gemini (Weekly Limit)", data: groups["gemini-weekly"] }
                         ];
                         groupEntries.forEach((g, idx) => {
                           const isLast = idx === groupEntries.length - 1;
                           const connector = isLast ? "\u2514\u2500" : "\u251C\u2500";
-                          const remaining = g.data?.remainingFraction ?? 1;
-                          const bar = createProgressBar(remaining);
-                          const reset = formatReset(g.data?.resetTime);
                           const modelName = g.name.padEnd(29);
-                          console.log(`     ${connector} ${modelName} ${bar}${reset}`);
+                          if (!g.data) {
+                            console.log(`     ${connector} ${modelName} N/A (does not apply)`);
+                          } else {
+                            const remaining = g.data.remainingFraction ?? 0;
+                            const bar = createProgressBar(remaining);
+                            const reset = formatReset(g.data.resetTime);
+                            console.log(`     ${connector} ${modelName} ${bar}${reset}`);
+                          }
                         });
                       }
                       console.log("");
@@ -40903,8 +41226,7 @@ Checking verification status for ${existingStorage2.accounts.length} account(s).
                       const blockedResults = [];
                       for (let i = 0; i < existingStorage2.accounts.length; i++) {
                         const account2 = existingStorage2.accounts[i];
-                        if (!account2)
-                          continue;
+                        if (!account2) continue;
                         const label2 = account2.email || `Account ${i + 1}`;
                         process.stdout.write(`- [${i + 1}/${existingStorage2.accounts.length}] ${label2} ... `);
                         const verification2 = await verifyAccountAccess(account2, client, providerId);
@@ -40919,7 +41241,11 @@ Checking verification status for ${existingStorage2.accounts.length} account(s).
                           continue;
                         }
                         if (verification2.status === "blocked") {
-                          const changed = markStoredAccountVerificationRequired(account2, verification2.message, verification2.verifyUrl);
+                          const changed = markStoredAccountVerificationRequired(
+                            account2,
+                            verification2.message,
+                            verification2.verifyUrl
+                          );
                           if (changed) {
                             storageUpdated = true;
                           }
@@ -41000,11 +41326,19 @@ Checking verification status for ${label}...
                       continue;
                     }
                     if (verification.status === "blocked") {
-                      const changed = markStoredAccountVerificationRequired(account, verification.message, verification.verifyUrl);
+                      const changed = markStoredAccountVerificationRequired(
+                        account,
+                        verification.message,
+                        verification.verifyUrl
+                      );
                       if (changed) {
                         await saveAccounts(existingStorage2);
                       }
-                      activeAccountManager?.markAccountVerificationRequired(verifyAccountIndex, verification.message, verification.verifyUrl);
+                      activeAccountManager?.markAccountVerificationRequired(
+                        verifyAccountIndex,
+                        verification.message,
+                        verification.verifyUrl
+                      );
                       const verifyUrl = verification.verifyUrl ?? account.verificationUrl;
                       console.log(`\u26A0 ${label} needs Google verification before it can be used.`);
                       if (verification.message) {
@@ -41046,7 +41380,9 @@ ${verifyUrl}
                   };
                 }
                 if (menuResult.deleteAccountIndex !== void 0) {
-                  const updatedAccounts = existingStorage2.accounts.filter((_, idx) => idx !== menuResult.deleteAccountIndex);
+                  const updatedAccounts = existingStorage2.accounts.filter(
+                    (_, idx) => idx !== menuResult.deleteAccountIndex
+                  );
                   await saveAccountsReplace({
                     version: 4,
                     accounts: updatedAccounts,
@@ -41154,7 +41490,9 @@ Re-authenticating ${refreshEmail || "account"}...
                     try {
                       const SOFT_TIMEOUT_MS = 3e4;
                       const callbackPromise = listener2.waitForCallback();
-                      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("SOFT_TIMEOUT")), SOFT_TIMEOUT_MS));
+                      const timeoutPromise = new Promise(
+                        (_, reject) => setTimeout(() => reject(new Error("SOFT_TIMEOUT")), SOFT_TIMEOUT_MS)
+                      );
                       let callbackUrl;
                       try {
                         callbackUrl = await Promise.race([callbackPromise, timeoutPromise]);
@@ -41206,7 +41544,9 @@ Re-authenticating ${refreshEmail || "account"}...
                       callback: async () => result
                     };
                   }
-                  console.warn(`[opencode-antigravity-auth] Skipping failed account ${accounts.length + 1}: ${result.error}`);
+                  console.warn(
+                    `[opencode-antigravity-auth] Skipping failed account ${accounts.length + 1}: ${result.error}`
+                  );
                   break;
                 }
                 accounts.push(result);
@@ -41323,7 +41663,9 @@ Re-authenticating ${refreshEmail || "account"}...
                   const CALLBACK_TIMEOUT_MS = 3e4;
                   try {
                     const callbackPromise = listener.waitForCallback();
-                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("CALLBACK_TIMEOUT")), CALLBACK_TIMEOUT_MS));
+                    const timeoutPromise = new Promise(
+                      (_, reject) => setTimeout(() => reject(new Error("CALLBACK_TIMEOUT")), CALLBACK_TIMEOUT_MS)
+                    );
                     let callbackUrl;
                     try {
                       callbackUrl = await Promise.race([callbackPromise, timeoutPromise]);

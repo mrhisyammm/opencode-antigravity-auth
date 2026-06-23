@@ -3144,20 +3144,24 @@ export const createAntigravityPlugin = (providerId: string) => async (
                     } else {
                       const groups = res.quota!.groups;
                       const groupEntries = [
-                        { name: "Claude (Non-Weekly)", data: groups["claude-nonweekly"] },
-                        { name: "Claude (Weekly)", data: groups["claude-weekly"] },
-                        { name: "Gemini (Non-Weekly)", data: groups["gemini-nonweekly"] },
-                        { name: "Gemini (Weekly)", data: groups["gemini-weekly"] },
+                        { name: "Claude (5-Hour Limit)", data: groups["claude-nonweekly"] },
+                        { name: "Claude (Weekly Limit)", data: groups["claude-weekly"] },
+                        { name: "Gemini (5-Hour Limit)", data: groups["gemini-nonweekly"] },
+                        { name: "Gemini (Weekly Limit)", data: groups["gemini-weekly"] },
                       ];
                       
                       groupEntries.forEach((g, idx) => {
                         const isLast = idx === groupEntries.length - 1;
                         const connector = isLast ? "└─" : "├─";
-                        const remaining = g.data?.remainingFraction ?? 1;
-                        const bar = createProgressBar(remaining);
-                        const reset = formatReset(g.data?.resetTime);
                         const modelName = g.name.padEnd(29);
-                        console.log(`     ${connector} ${modelName} ${bar}${reset}`);
+                        if (!g.data) {
+                          console.log(`     ${connector} ${modelName} N/A (does not apply)`);
+                        } else {
+                          const remaining = g.data.remainingFraction ?? 0;
+                          const bar = createProgressBar(remaining);
+                          const reset = formatReset(g.data.resetTime);
+                          console.log(`     ${connector} ${modelName} ${bar}${reset}`);
+                        }
                       });
                     }
                     console.log("");

@@ -307,6 +307,84 @@ function applyAccountUpdates(account: AccountMetadataV3, auth: OAuthAuthDetails)
   return changed ? updated : undefined;
 }
 
+export interface RetrieveUserQuotaSummaryResponse {
+  groups?: {
+    displayName?: string;
+    description?: string;
+    buckets?: {
+      bucketId?: string;
+      window?: string;
+      remainingFraction?: number;
+      resetTime?: string;
+      displayName?: string;
+      description?: string;
+      disabled?: boolean;
+    }[];
+  }[];
+}
+
+export async function fetchUserQuotaSummary(
+  accessToken: string,
+  projectId: string,
+): Promise<RetrieveUserQuotaSummaryResponse> {
+  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
+  const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
+
+  const body = projectId ? { project: projectId } : {};
+  const response = await fetchWithTimeout(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "User-Agent": quotaUserAgent,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (response.ok) {
+    return (await response.json()) as RetrieveUserQuotaSummaryResponse;
+  }
+  throw new Error(`fetchUserQuotaSummary failed: ${response.status}`);
+}
+
+function aggregateQuotaSummary(summary: RetrieveUserQuotaSummaryResponse): QuotaSummary {
+  const groups: Partial<Record<QuotaGroup, QuotaGroupSummary>> = {};
+  if (!summary.groups) {
+    return { groups, modelCount: 0 };
+  }
+
+  let totalCount = 0;
+  for (const group of summary.groups) {
+    const isClaude = group.displayName?.toLowerCase().includes("claude");
+    const isGemini = group.displayName?.toLowerCase().includes("gemini");
+    if (!isClaude && !isGemini) continue;
+
+    if (!group.buckets) continue;
+    for (const bucket of group.buckets) {
+      if (bucket.disabled) {
+        continue;
+      }
+
+      const isWeekly = bucket.window === "weekly" || bucket.bucketId?.toLowerCase().includes("weekly");
+      let quotaKey: QuotaGroup;
+      if (isClaude) {
+        quotaKey = isWeekly ? "claude-weekly" : "claude-nonweekly";
+      } else {
+        quotaKey = isWeekly ? "gemini-weekly" : "gemini-nonweekly";
+      }
+
+      groups[quotaKey] = {
+        remainingFraction: normalizeRemainingFraction(bucket.remainingFraction),
+        resetTime: bucket.resetTime,
+        modelCount: 1,
+      };
+      totalCount += 1;
+    }
+  }
+
+  return { groups, modelCount: totalCount };
+}
+
 export async function checkAccountsQuota(
   accounts: AccountMetadataV3[],
   client: PluginClient,
@@ -337,22 +415,26 @@ export async function checkAccountsQuota(
       let quotaResult: QuotaSummary;
       let geminiCliQuotaResult: GeminiCliQuotaSummary;
       
-      // Fetch both Antigravity and Gemini CLI quotas in parallel
-      const [antigravityResponse, geminiCliResponse] = await Promise.all([
+      // Fetch Antigravity summary, fallback models, and Gemini CLI quotas in parallel
+      const [antigravitySummaryResponse, antigravityModelsResponse, geminiCliResponse] = await Promise.all([
+        fetchUserQuotaSummary(auth.access ?? "", projectContext.effectiveProjectId)
+          .catch((): RetrieveUserQuotaSummaryResponse => ({ groups: undefined })),
         fetchAvailableModels(auth.access ?? "", projectContext.effectiveProjectId)
           .catch((): FetchAvailableModelsResponse => ({ models: undefined })),
         fetchGeminiCliQuota(auth.access ?? "", projectContext.effectiveProjectId),
       ]);
 
-      // Process Antigravity quota
-      if (antigravityResponse.models === undefined) {
+      // Process Antigravity quota (prefer retrieveUserQuotaSummary, fallback to fetchAvailableModels)
+      if (antigravitySummaryResponse.groups !== undefined) {
+        quotaResult = aggregateQuotaSummary(antigravitySummaryResponse);
+      } else if (antigravityModelsResponse.models !== undefined) {
+        quotaResult = aggregateQuota(antigravityModelsResponse.models);
+      } else {
         quotaResult = {
           groups: {},
           modelCount: 0,
           error: "Failed to fetch Antigravity quota",
         };
-      } else {
-        quotaResult = aggregateQuota(antigravityResponse.models);
       }
 
       // Process Gemini CLI quota
