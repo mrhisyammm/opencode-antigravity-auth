@@ -397,7 +397,7 @@ Invalid JSON payload received. Unknown name "parameters" at 'request.tools[0]'
 **Solutions:**
 1. **Update to latest beta:**
    ```json
-   { "plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"] }
+   { "plugin": ["@mrhisyammm/opencode-antigravity-auth@latest"] }
    ```
 
 2. **Disable MCP servers** one-by-one to find the problematic one
@@ -556,7 +556,7 @@ The correct key is `plugin` (singular):
 
 ```json
 {
-  "plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"]
+  "plugin": ["@mrhisyammm/opencode-antigravity-auth@latest"]
 }
 ```
 
@@ -567,7 +567,7 @@ The correct key is `plugin` (singular):
 ### Migrating Accounts Between Machines
 
 When copying `antigravity-accounts.json` to a new machine:
-1. Ensure the plugin is installed: `"plugin": ["@mrhisyammm/@mrhisyammm/opencode-antigravity-auth@latest"]`
+1. Ensure the plugin is installed: `"plugin": ["@mrhisyammm/opencode-antigravity-auth@latest"]`
 2. Copy `~/.config/opencode/antigravity-accounts.json`
 3. If you get "API key missing" error, the refresh token may be invalid — re-authenticate
 
