@@ -2,6 +2,7 @@ import {
   ANTIGRAVITY_ENDPOINT_PROD,
   getAntigravityHeaders,
   ANTIGRAVITY_PROVIDER_ID,
+  ANTIGRAVITY_ENDPOINT_FALLBACKS,
 } from "../constants.js";
 import { accessTokenExpired, formatRefreshParts, parseRefreshParts } from "./auth.js";
 import { logQuotaFetch, logQuotaStatus } from "./debug.js";
@@ -185,30 +186,31 @@ export async function fetchAvailableModels(
   accessToken: string,
   projectId: string,
 ): Promise<FetchAvailableModelsResponse> {
-  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
   const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
   const errors: string[] = [];
-
   const body = projectId ? { project: projectId } : {};
-  const response = await fetchWithTimeout(`${endpoint}/v1internal:fetchAvailableModels`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "User-Agent": quotaUserAgent,
-    },
-    body: JSON.stringify(body),
-  });
 
-  if (response.ok) {
-    return (await response.json()) as FetchAvailableModelsResponse;
+  for (const endpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
+    try {
+      const response = await fetchWithTimeout(`${endpoint}/v1internal:fetchAvailableModels`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "User-Agent": quotaUserAgent,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        return (await response.json()) as FetchAvailableModelsResponse;
+      }
+      const msg = await response.text().catch(() => "");
+      errors.push(`fetchAvailableModels ${response.status} at ${endpoint}: ${msg.slice(0, 100)}`);
+    } catch (error) {
+      errors.push(`fetchAvailableModels error at ${endpoint}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
-
-  const message = await response.text().catch(() => "");
-  const snippet = message.trim().slice(0, 200);
-  errors.push(
-    `fetchAvailableModels ${response.status} at ${endpoint}${snippet ? `: ${snippet}` : ""}`,
-  );
 
   throw new Error(errors.join("; ") || "fetchAvailableModels failed");
 }
@@ -327,24 +329,33 @@ export async function fetchUserQuotaSummary(
   accessToken: string,
   projectId: string,
 ): Promise<RetrieveUserQuotaSummaryResponse> {
-  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
   const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
-
+  const errors: string[] = [];
   const body = projectId ? { project: projectId } : {};
-  const response = await fetchWithTimeout(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "User-Agent": quotaUserAgent,
-    },
-    body: JSON.stringify(body),
-  });
 
-  if (response.ok) {
-    return (await response.json()) as RetrieveUserQuotaSummaryResponse;
+  for (const endpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
+    try {
+      const response = await fetchWithTimeout(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "User-Agent": quotaUserAgent,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        return (await response.json()) as RetrieveUserQuotaSummaryResponse;
+      }
+      const msg = await response.text().catch(() => "");
+      errors.push(`retrieveUserQuotaSummary ${response.status} at ${endpoint}: ${msg.slice(0, 100)}`);
+    } catch (error) {
+      errors.push(`retrieveUserQuotaSummary error at ${endpoint}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
-  throw new Error(`fetchUserQuotaSummary failed: ${response.status}`);
+
+  throw new Error(errors.join("; ") || "fetchUserQuotaSummary failed");
 }
 
 function aggregateQuotaSummary(summary: RetrieveUserQuotaSummaryResponse): QuotaSummary {

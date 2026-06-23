@@ -37837,27 +37837,29 @@ async function fetchWithTimeout2(url3, options, timeoutMs = FETCH_TIMEOUT_MS2) {
   }
 }
 async function fetchAvailableModels(accessToken, projectId) {
-  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
   const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
   const errors = [];
   const body = projectId ? { project: projectId } : {};
-  const response = await fetchWithTimeout2(`${endpoint}/v1internal:fetchAvailableModels`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "User-Agent": quotaUserAgent
-    },
-    body: JSON.stringify(body)
-  });
-  if (response.ok) {
-    return await response.json();
+  for (const endpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
+    try {
+      const response = await fetchWithTimeout2(`${endpoint}/v1internal:fetchAvailableModels`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "User-Agent": quotaUserAgent
+        },
+        body: JSON.stringify(body)
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+      const msg = await response.text().catch(() => "");
+      errors.push(`fetchAvailableModels ${response.status} at ${endpoint}: ${msg.slice(0, 100)}`);
+    } catch (error92) {
+      errors.push(`fetchAvailableModels error at ${endpoint}: ${error92 instanceof Error ? error92.message : String(error92)}`);
+    }
   }
-  const message = await response.text().catch(() => "");
-  const snippet = message.trim().slice(0, 200);
-  errors.push(
-    `fetchAvailableModels ${response.status} at ${endpoint}${snippet ? `: ${snippet}` : ""}`
-  );
   throw new Error(errors.join("; ") || "fetchAvailableModels failed");
 }
 async function fetchGeminiCliQuota(accessToken, projectId) {
@@ -37923,22 +37925,30 @@ function applyAccountUpdates(account, auth) {
   return changed ? updated : void 0;
 }
 async function fetchUserQuotaSummary(accessToken, projectId) {
-  const endpoint = ANTIGRAVITY_ENDPOINT_PROD;
   const quotaUserAgent = getAntigravityHeaders()["User-Agent"] || "antigravity/windows/amd64";
+  const errors = [];
   const body = projectId ? { project: projectId } : {};
-  const response = await fetchWithTimeout2(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "User-Agent": quotaUserAgent
-    },
-    body: JSON.stringify(body)
-  });
-  if (response.ok) {
-    return await response.json();
+  for (const endpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
+    try {
+      const response = await fetchWithTimeout2(`${endpoint}/v1internal:retrieveUserQuotaSummary`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "User-Agent": quotaUserAgent
+        },
+        body: JSON.stringify(body)
+      });
+      if (response.ok) {
+        return await response.json();
+      }
+      const msg = await response.text().catch(() => "");
+      errors.push(`retrieveUserQuotaSummary ${response.status} at ${endpoint}: ${msg.slice(0, 100)}`);
+    } catch (error92) {
+      errors.push(`retrieveUserQuotaSummary error at ${endpoint}: ${error92 instanceof Error ? error92.message : String(error92)}`);
+    }
   }
-  throw new Error(`fetchUserQuotaSummary failed: ${response.status}`);
+  throw new Error(errors.join("; ") || "fetchUserQuotaSummary failed");
 }
 function aggregateQuotaSummary(summary) {
   const groups = {};
