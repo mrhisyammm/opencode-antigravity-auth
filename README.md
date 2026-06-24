@@ -65,7 +65,7 @@ Paste this into any LLM agent (Claude Code, OpenCode, Cursor, etc.):
 Install the @mrhisyammm/opencode-antigravity-auth plugin and add the Antigravity model definitions to ~/.config/opencode/opencode.json by following: https://raw.githubusercontent.com/mrhisyammm/opencode-antigravity-auth/main/README.md
 ```
 
-**Option B: Manual setup**
+**Option B: Manual setup (Recommended)**
 
 1. **Add the plugin** to `~/.config/opencode/opencode.json`:
 
@@ -75,7 +75,19 @@ Install the @mrhisyammm/opencode-antigravity-auth plugin and add the Antigravity
    }
    ```
 
-   > Want bleeding-edge features? Use `@mrhisyammm/opencode-antigravity-auth@latest` instead.
+**Option C: Install via npm**
+
+If you prefer to install it globally on your machine:
+
+```bash
+npm install -g @mrhisyammm/opencode-antigravity-auth
+```
+
+Or locally in your project workspace node_modules:
+
+```bash
+npm install @mrhisyammm/opencode-antigravity-auth
+```
 
 2. **Login** with your Google account:
 
