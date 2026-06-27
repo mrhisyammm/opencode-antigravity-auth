@@ -44,3 +44,6 @@ CLIProxyAPI/
 LLM-API-Key-Proxy/
 opencode/
 opencode-better-antigravity-auth/
+
+# Local project memory (sensitive, do not commit)
+MEMORY.md
