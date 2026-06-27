@@ -47,3 +47,7 @@ opencode-better-antigravity-auth/
 
 # Local project memory (sensitive, do not commit)
 MEMORY.md
+
+# OpenCode session data copied from local storage
+.opencode-session/
+.opencode-snapshot/
