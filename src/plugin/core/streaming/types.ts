@@ -13,6 +13,7 @@ export interface SignatureStore {
 export interface StreamingCallbacks {
   onCacheSignature?: (sessionKey: string, text: string, signature: string) => void;
   onInjectDebug?: (response: unknown, debugText: string) => unknown;
+  onTokenUsage?: (usage: any) => void;
   // Note: onInjectSyntheticThinking removed - keep_thinking now unified with debug via debugText
   transformThinkingParts?: (parts: unknown) => unknown;
 }

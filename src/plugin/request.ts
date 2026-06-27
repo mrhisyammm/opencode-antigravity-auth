@@ -1883,6 +1883,7 @@ export async function transformAntigravityResponse(
   toolDebugSummary?: string,
   toolDebugPayload?: string,
   debugLines?: string[],
+  onTokenUsage?: (usage: any) => void,
 ): Promise<Response> {
   const contentType = response.headers.get("content-type") ?? "";
   const isJsonResponse = contentType.includes("application/json");
@@ -1922,7 +1923,8 @@ export async function transformAntigravityResponse(
       {
         onCacheSignature: cacheSignature,
         onInjectDebug: injectDebugThinking,
-        // onInjectSyntheticThinking removed - keep_thinking now uses debugText path
+        onTokenUsage,
+        // onInjectSyntheticThinking removed - keep_thinking now unified with debug via debugText
         transformThinkingParts,
       },
       {
@@ -2044,8 +2046,10 @@ export async function transformAntigravityResponse(
       );
     }
     
-    if (usage?.cachedContentTokenCount !== undefined) {
-      headers.set("x-antigravity-cached-content-token-count", String(usage.cachedContentTokenCount));
+    if (usage) {
+      if (usage.cachedContentTokenCount !== undefined) {
+        headers.set("x-antigravity-cached-content-token-count", String(usage.cachedContentTokenCount));
+      }
       if (usage.totalTokenCount !== undefined) {
         headers.set("x-antigravity-total-token-count", String(usage.totalTokenCount));
       }
@@ -2054,6 +2058,11 @@ export async function transformAntigravityResponse(
       }
       if (usage.candidatesTokenCount !== undefined) {
         headers.set("x-antigravity-candidates-token-count", String(usage.candidatesTokenCount));
+      }
+      if (onTokenUsage) {
+        try {
+          onTokenUsage(usage);
+        } catch (_) {}
       }
     }
 

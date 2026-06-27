@@ -192,6 +192,15 @@ export function transformSseLine(
   try {
     const parsed = JSON.parse(json) as { response?: unknown };
     if (parsed.response !== undefined) {
+      if (parsed.response && typeof parsed.response === 'object') {
+        const resp = parsed.response as Record<string, unknown>;
+        if (resp.usageMetadata && callbacks.onTokenUsage) {
+          try {
+            callbacks.onTokenUsage(resp.usageMetadata);
+          } catch (_) {}
+        }
+      }
+
       if (options.cacheSignatures && options.signatureSessionKey) {
         cacheThinkingSignaturesFromResponse(
           parsed.response,

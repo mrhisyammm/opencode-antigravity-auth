@@ -47,6 +47,7 @@ import { createAutoUpdateCheckerHook } from "./hooks/auto-update-checker/index.j
 import { loadConfig, initRuntimeConfig, type AntigravityConfig } from "./plugin/config/index.js";
 import { createSessionRecoveryHook, getRecoverySuccessToast } from "./plugin/recovery.js";
 import { checkAccountsQuota, fetchAvailableModels } from "./plugin/quota.js";
+import { saveLog } from "./plugin/dashboard/store.js";
 import { initDiskSignatureCache } from "./plugin/cache.js";
 import { createProactiveRefreshQueue, type ProactiveRefreshQueue } from "./plugin/refresh-queue.js";
 import { initLogger, createLogger } from "./plugin/logger.js";
@@ -2425,6 +2426,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
             let lastEndpointIndex = -1;
             
             for (let i = 0; i < ANTIGRAVITY_ENDPOINT_FALLBACKS.length; i++) {
+              let requestStartTime = Date.now();
               // Reset capacity retry counter when switching to a new endpoint
               if (i !== lastEndpointIndex) {
                 capacityRetryCount = 0;
@@ -2499,6 +2501,7 @@ export const createAntigravityPlugin = (providerId: string) => async (
                   tokenConsumed = getTokenTracker().consume(account.index);
                 }
 
+                requestStartTime = Date.now();
                 const response = await fetch(prepared.request, prepared.init);
                 pushDebug(`status=${response.status} ${response.statusText}`);
 
@@ -2850,22 +2853,50 @@ export const createAntigravityPlugin = (providerId: string) => async (
                   emptyResponseAttempts.delete(emptyAttemptKeyClean);
                 }
                 
-                const transformedResponse = await transformAntigravityResponse(
-                  response,
-                  prepared.streaming,
-                  debugContext,
-                  prepared.requestedModel,
-                  prepared.projectId,
-                  prepared.endpoint,
-                  prepared.effectiveModel,
-                  prepared.sessionId,
-                  prepared.toolDebugMissing,
-                  prepared.toolDebugSummary,
-                  prepared.toolDebugPayload,
-                  debugLines,
-                );
+                 const transformedResponse = await transformAntigravityResponse(
+                   response,
+                   prepared.streaming,
+                   debugContext,
+                   prepared.requestedModel,
+                   prepared.projectId,
+                   prepared.endpoint,
+                   prepared.effectiveModel,
+                   prepared.sessionId,
+                   prepared.toolDebugMissing,
+                   prepared.toolDebugSummary,
+                   prepared.toolDebugPayload,
+                   debugLines,
+                   (usage) => {
+                     const latencyMs = Date.now() - requestStartTime;
+                     const input = usage.promptTokenCount ?? 0;
+                     const output = usage.candidatesTokenCount ?? 0;
+                     const total = usage.totalTokenCount ?? (input + output);
+                     saveLog({
+                       accountEmail: account.email || "unknown",
+                       modelName: prepared.effectiveModel || "unknown",
+                       requestedModel: prepared.requestedModel || "unknown",
+                       tokens: { input, output, total, thinking: usage.cachedContentTokenCount },
+                       latencyMs,
+                       statusCode: response.status,
+                     }).catch(() => {});
+                   }
+                 );
 
-                // Check for context errors and show appropriate toast
+                 // Log failed request metadata if it is not 2xx
+                 if (!response.ok) {
+                   const latencyMs = Date.now() - requestStartTime;
+                   saveLog({
+                     accountEmail: account.email || "unknown",
+                     modelName: prepared.effectiveModel || "unknown",
+                     requestedModel: prepared.requestedModel || "unknown",
+                     tokens: { input: 0, output: 0, total: 0 },
+                     latencyMs,
+                     statusCode: response.status,
+                     error: response.statusText || `HTTP ${response.status}`,
+                   }).catch(() => {});
+                 }
+
+                 // Check for context errors and show appropriate toast
                 const contextError = transformedResponse.headers.get("x-antigravity-context-error");
                 if (contextError) {
                   if (contextError === "prompt_too_long") {
@@ -2883,6 +2914,18 @@ export const createAntigravityPlugin = (providerId: string) => async (
 
                 return transformedResponse;
               } catch (error) {
+                // Log exception as a failed request
+                const latencyMs = Date.now() - requestStartTime;
+                saveLog({
+                  accountEmail: account.email || "unknown",
+                  modelName: model || "unknown",
+                  requestedModel: model || "unknown",
+                  tokens: { input: 0, output: 0, total: 0 },
+                  latencyMs,
+                  statusCode: 0, // Network error
+                  error: error instanceof Error ? error.message : String(error),
+                }).catch(() => {});
+
                 // Refund token on network/API error (only if consumed)
                 if (tokenConsumed) {
                   getTokenTracker().refund(account.index);
