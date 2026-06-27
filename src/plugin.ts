@@ -48,6 +48,7 @@ import { loadConfig, initRuntimeConfig, type AntigravityConfig } from "./plugin/
 import { createSessionRecoveryHook, getRecoverySuccessToast } from "./plugin/recovery.js";
 import { checkAccountsQuota, fetchAvailableModels } from "./plugin/quota.js";
 import { saveLog } from "./plugin/dashboard/store.js";
+import { startDashboardServer, stopDashboardServer } from "./plugin/dashboard/server.js";
 import { initDiskSignatureCache } from "./plugin/cache.js";
 import { createProactiveRefreshQueue, type ProactiveRefreshQueue } from "./plugin/refresh-queue.js";
 import { initLogger, createLogger } from "./plugin/logger.js";
@@ -1763,8 +1764,19 @@ export const createAntigravityPlugin = (providerId: string) => async (
       
       // Note: AccountManager now ensures the current auth is always included in accounts
 
-      const accountManager = await AccountManager.loadFromDisk(auth);
+       const accountManager = await AccountManager.loadFromDisk(auth);
       activeAccountManager = accountManager;
+      
+      // Start the local dashboard server if enabled
+      if (config.dashboard?.enabled !== false) {
+        try {
+          const dashboardPort = config.dashboard?.port ?? 27140;
+          startDashboardServer(dashboardPort, accountManager);
+        } catch (serverError) {
+          log.error("Failed to start dashboard server", { error: String(serverError) });
+        }
+      }
+
       if (accountManager.getAccountCount() > 0) {
         accountManager.requestSaveToDisk();
       }

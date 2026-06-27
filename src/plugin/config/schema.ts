@@ -94,6 +94,18 @@ export const SignatureCacheConfigSchema = z.object({
 });
 
 /**
+ * Localhost Dashboard configuration.
+ */
+export const DashboardConfigSchema = z.object({
+  /** Enable the localhost traffic log & stats web dashboard (default: true) */
+  enabled: z.boolean().default(true),
+
+  /** The local port to run the dashboard server on (default: 27140) */
+  port: z.number().min(1024).max(65535).default(27140),
+});
+export type DashboardConfig = z.infer<typeof DashboardConfigSchema>;
+
+/**
  * Main configuration schema for the Antigravity OAuth plugin.
  */
 export const AntigravityConfigSchema = z.object({
@@ -500,6 +512,11 @@ export const AntigravityConfigSchema = z.object({
    */
   auto_update: z.boolean().default(true),
 
+  /**
+   * Localhost Web Dashboard settings.
+   */
+  dashboard: DashboardConfigSchema.optional(),
+
 });
 
 export type AntigravityConfig = z.infer<typeof AntigravityConfigSchema>;
@@ -557,6 +574,10 @@ export const DEFAULT_CONFIG: AntigravityConfig = {
     memory_ttl_seconds: 3600,
     disk_ttl_seconds: 172800,
     write_interval_seconds: 60,
+  },
+  dashboard: {
+    enabled: true,
+    port: 27140,
   },
   health_score: {
     initial: 70,
