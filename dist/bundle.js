@@ -38923,9 +38923,12 @@ function getFrontendHtml() {
     function buildQueryString() {
       const params = new URLSearchParams();
       if (currentPeriod) params.set('period', currentPeriod);
-      const model = document.getElementById('filter-model').value;
-      const account = document.getElementById('filter-account').value;
-      const status = document.getElementById('filter-status').value;
+      const modelEl = document.getElementById('filter-model');
+      const accountEl = document.getElementById('filter-account');
+      const statusEl = document.getElementById('filter-status');
+      const model = modelEl ? modelEl.value : '';
+      const account = accountEl ? accountEl.value : '';
+      const status = statusEl ? statusEl.value : '';
       if (model) params.set('model', model);
       if (account) params.set('account', account);
       if (status) params.set('status', status);
@@ -38942,9 +38945,12 @@ function getFrontendHtml() {
 
     function clearFilters() {
       currentPeriod = 'today';
-      document.getElementById('filter-model').value = '';
-      document.getElementById('filter-account').value = '';
-      document.getElementById('filter-status').value = '';
+      const modelEl = document.getElementById('filter-model');
+      const accountEl = document.getElementById('filter-account');
+      const statusEl = document.getElementById('filter-status');
+      if (modelEl) modelEl.value = '';
+      if (accountEl) accountEl.value = '';
+      if (statusEl) statusEl.value = '';
       document.querySelectorAll('.period-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.period === 'today');
       });
@@ -38954,17 +38960,22 @@ function getFrontendHtml() {
     function updateFilterIndicator() {
       let count = 0;
       if (currentPeriod && currentPeriod !== 'today') count++;
-      if (document.getElementById('filter-model').value) count++;
-      if (document.getElementById('filter-account').value) count++;
-      if (document.getElementById('filter-status').value) count++;
+      const modelEl = document.getElementById('filter-model');
+      const accountEl = document.getElementById('filter-account');
+      const statusEl = document.getElementById('filter-status');
+      if (modelEl && modelEl.value) count++;
+      if (accountEl && accountEl.value) count++;
+      if (statusEl && statusEl.value) count++;
       const el = document.getElementById('active-filters');
-      if (count > 0) {
-        el.classList.remove('hidden');
-        el.classList.add('flex');
-        document.getElementById('filter-count').textContent = count + ' filter' + (count > 1 ? 's' : '');
-      } else {
-        el.classList.add('hidden');
-        el.classList.remove('flex');
+      if (el) {
+        if (count > 0) {
+          el.classList.remove('hidden');
+          el.classList.add('flex');
+          document.getElementById('filter-count').textContent = count + ' filter' + (count > 1 ? 's' : '');
+        } else {
+          el.classList.add('hidden');
+          el.classList.remove('flex');
+        }
       }
     }
 
@@ -38982,12 +38993,13 @@ function getFrontendHtml() {
         const filters = await fetch('/api/filters').then(r => r.json());
         const modelSel = document.getElementById('filter-model');
         const accountSel = document.getElementById('filter-account');
+        if (!modelSel || !accountSel) return;
         const currentModel = modelSel.value;
         const currentAccount = accountSel.value;
-        modelSel.innerHTML = '<option value="">All Models</option>' + filters.models.map(m =>
+        modelSel.innerHTML = '<option value="">All Models</option>' + (filters.models || []).map(m =>
           '<option value="'+m+'"' + (m === currentModel ? ' selected' : '') + '>'+m+'</option>'
         ).join('');
-        accountSel.innerHTML = '<option value="">All Accounts</option>' + filters.accounts.map(a =>
+        accountSel.innerHTML = '<option value="">All Accounts</option>' + (filters.accounts || []).map(a =>
           '<option value="'+a+'"' + (a === currentAccount ? ' selected' : '') + '>'+a.split("@")[0]+'</option>'
         ).join('');
       } catch(e) { console.error('Failed to load filters:', e); }
@@ -39005,29 +39017,31 @@ function getFrontendHtml() {
           fetch('/api/logs?limit=500&' + qs).then(r => r.json()),
           fetch('/api/accounts').then(r => r.json())
         ]);
-        cachedLogs = logs;
-        updateStats(stats);
-        updateModelBreakdown(stats);
-        updateAccountBreakdown(stats);
-        updateLogsTable(logs);
-        updateAccounts(accounts);
-        updateDoughnut(stats);
-        updateTimelineChart(logs);
+        cachedLogs = Array.isArray(logs) ? logs : [];
+        
+        try { updateStats(stats); } catch(e) { console.error('Error updating stats:', e); }
+        try { updateModelBreakdown(stats); } catch(e) { console.error('Error updating model breakdown:', e); }
+        try { updateAccountBreakdown(stats); } catch(e) { console.error('Error updating account breakdown:', e); }
+        try { updateLogsTable(cachedLogs); } catch(e) { console.error('Error updating logs table:', e); }
+        try { updateAccounts(accounts); } catch(e) { console.error('Error updating accounts:', e); }
+        try { updateDoughnut(stats); } catch(e) { console.error('Error updating doughnut chart:', e); }
+        try { updateTimelineChart(cachedLogs); } catch(e) { console.error('Error updating timeline chart:', e); }
       } catch(err) { console.error('Refresh failed:', err); }
       finally { if (isManual && icon) setTimeout(() => icon.classList.remove('animate-spin'), 500); }
     }
 
     // ===== Stats Cards =====
     function updateStats(s) {
-      document.getElementById('stat-requests').textContent = fmtNum(s.totalRequests);
-      const rate = s.totalRequests > 0 ? Math.round(s.successRequests / s.totalRequests * 100) : 100;
+      if (!s) return;
+      document.getElementById('stat-requests').textContent = fmtNum(s.totalRequests || 0);
+      const rate = s.totalRequests > 0 ? Math.round((s.successRequests || 0) / s.totalRequests * 100) : 100;
       const rateEl = document.getElementById('stat-success-rate');
       rateEl.textContent = rate + '% success';
       rateEl.className = 'text-body-sm mt-1 ' + (rate >= 90 ? 'text-secondary' : 'text-tertiary');
-      document.getElementById('stat-tokens').textContent = fmtNum(s.totalTokens);
-      document.getElementById('stat-tokens-breakdown').textContent = fmtNum(s.totalInputTokens) + ' in / ' + fmtNum(s.totalOutputTokens) + ' out';
-      document.getElementById('stat-input').textContent = fmtNum(s.totalInputTokens);
-      document.getElementById('stat-output').textContent = fmtNum(s.totalOutputTokens);
+      document.getElementById('stat-tokens').textContent = fmtNum(s.totalTokens || 0);
+      document.getElementById('stat-tokens-breakdown').textContent = fmtNum(s.totalInputTokens || 0) + ' in / ' + fmtNum(s.totalOutputTokens || 0) + ' out';
+      document.getElementById('stat-input').textContent = fmtNum(s.totalInputTokens || 0);
+      document.getElementById('stat-output').textContent = fmtNum(s.totalOutputTokens || 0);
       document.getElementById('stat-latency').textContent = (s.averageLatencyMs || 0) + 'ms';
       document.getElementById('stat-failed').textContent = fmtNum(s.failedRequests || 0);
       const errRate = s.totalRequests > 0 ? (s.failedRequests / s.totalRequests * 100).toFixed(2) : '0.00';
@@ -39037,7 +39051,9 @@ function getFrontendHtml() {
     // ===== Model Breakdown =====
     function updateModelBreakdown(s) {
       const tbody = document.getElementById('model-breakdown-tbody');
-      const models = Object.entries(s.statsByModel).sort((a,b) => b[1].totalTokens - a[1].totalTokens);
+      if (!tbody) return;
+      const statsByModel = s && s.statsByModel ? s.statsByModel : {};
+      const models = Object.entries(statsByModel).sort((a,b) => b[1].totalTokens - a[1].totalTokens);
       if (models.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-on-surface-variant text-[13px]">No model data</td></tr>';
         return;
@@ -39058,7 +39074,9 @@ function getFrontendHtml() {
     // ===== Account Breakdown =====
     function updateAccountBreakdown(s) {
       const tbody = document.getElementById('account-breakdown-tbody');
-      const accs = Object.entries(s.statsByAccount).sort((a,b) => b[1].totalTokens - a[1].totalTokens);
+      if (!tbody) return;
+      const statsByAccount = s && s.statsByAccount ? s.statsByAccount : {};
+      const accs = Object.entries(statsByAccount).sort((a,b) => b[1].totalTokens - a[1].totalTokens);
       if (accs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-on-surface-variant text-[13px]">No account data</td></tr>';
         return;
@@ -39078,23 +39096,25 @@ function getFrontendHtml() {
     // ===== Logs Table =====
     function updateLogsTable(logs) {
       const tbody = document.getElementById('logs-tbody');
-      document.getElementById('log-count').textContent = logs.length + ' entries';
-      if (logs.length === 0) {
+      if (!tbody) return;
+      const logsArray = Array.isArray(logs) ? logs : [];
+      document.getElementById('log-count').textContent = logsArray.length + ' entries';
+      if (logsArray.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-on-surface-variant text-[13px]">No requests match the current filters</td></tr>';
         return;
       }
-      tbody.innerHTML = logs.map(l => {
+      tbody.innerHTML = logsArray.map(l => {
         const ok = l.statusCode >= 200 && l.statusCode < 300;
         const badge = ok
           ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[11px] font-medium border border-secondary-container/40"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>' + l.statusCode + '</span>'
           : '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container/20 text-error text-[11px] font-medium border border-error-container/40"><span class="w-1.5 h-1.5 rounded-full bg-error"></span>' + l.statusCode + '</span>';
-        const shortModel = l.modelName.replace('antigravity-', '');
-        const shortEmail = l.accountEmail.split('@')[0];
+        const shortModel = (l.modelName || '').replace('antigravity-', '');
+        const shortEmail = (l.accountEmail || '').split('@')[0];
         return '<tr onclick="showLogDetails('' + l.id + '')" class="hover:bg-surface-container-high transition cursor-pointer border-b border-outline-variant/20">'
           + '<td class="py-3 px-3">' + badge + '</td>'
           + '<td class="py-3 px-3 font-mono text-on-surface text-[12px] truncate max-w-[150px]">' + shortModel + '</td>'
           + '<td class="py-3 px-3 text-on-surface-variant">' + shortEmail + '</td>'
-          + '<td class="py-3 px-3 text-right text-on-surface-variant font-label-caps"><span class="text-outline">' + fmtNum(l.tokens.input) + '</span> / <span class="text-on-surface">' + fmtNum(l.tokens.output) + '</span></td>'
+          + '<td class="py-3 px-3 text-right text-on-surface-variant font-label-caps"><span class="text-outline">' + fmtNum(l.tokens?.input) + '</span> / <span class="text-on-surface">' + fmtNum(l.tokens?.output) + '</span></td>'
           + '<td class="py-3 px-3 text-right text-on-surface font-label-caps">' + (l.latencyMs > 5000 ? '<span class="text-tertiary">' : '<span>') + l.latencyMs + 'ms</span></td>'
           + '<td class="py-3 px-3 text-right text-on-surface-variant font-label-caps">' + formatTime(l.timestamp) + '</td>'
           + '</tr>';
@@ -39103,14 +39123,16 @@ function getFrontendHtml() {
 
     // ===== Accounts Quota =====
     function updateAccounts(accounts) {
-      const enabled = accounts.filter(a => a.enabled).length;
-      document.getElementById('stat-accounts-badge').textContent = enabled + '/' + accounts.length + ' active';
+      const accountsArray = Array.isArray(accounts) ? accounts : [];
+      const enabled = accountsArray.filter(a => a.enabled).length;
+      document.getElementById('stat-accounts-badge').textContent = enabled + '/' + accountsArray.length + ' active';
       const container = document.getElementById('accounts-container');
-      if (accounts.length === 0) {
+      if (!container) return;
+      if (accountsArray.length === 0) {
         container.innerHTML = '<div class="col-span-full py-12 text-center text-on-surface-variant text-[13px]">No account data yet</div>';
         return;
       }
-      container.innerHTML = accounts.map(acc => {
+      container.innerHTML = accountsArray.map(acc => {
         const isCooling = acc.coolingDownUntil && acc.coolingDownUntil > Date.now();
         const dot = isCooling ? '<span class="w-2.5 h-2.5 rounded-full bg-tertiary inline-block"></span>'
           : acc.enabled ? '<span class="w-2.5 h-2.5 rounded-full bg-secondary inline-block"></span>'
@@ -39165,15 +39187,18 @@ function getFrontendHtml() {
       '#2563eb', '#4edea3', '#ffb95f', '#ffb4ab', '#b4c5ff', '#00a572', '#996100', '#93000a', '#dae2fd', '#434655'
     ];
     function updateDoughnut(stats) {
+      if (typeof Chart === 'undefined') return;
       const ctx = document.getElementById('tokenChart');
+      if (!ctx) return;
       const noData = document.getElementById('chart-no-data');
-      const models = Object.keys(stats.statsByModel);
+      const statsByModel = stats && stats.statsByModel ? stats.statsByModel : {};
+      const models = Object.keys(statsByModel);
       if (models.length === 0) {
-        ctx.classList.add('hidden'); noData.classList.remove('hidden');
+        ctx.classList.add('hidden'); if(noData) noData.classList.remove('hidden');
         return;
       }
-      ctx.classList.remove('hidden'); noData.classList.add('hidden');
-      const data = models.map(m => stats.statsByModel[m].totalTokens);
+      ctx.classList.remove('hidden'); if(noData) noData.classList.add('hidden');
+      const data = models.map(m => statsByModel[m].totalTokens || 0);
       const labels = models.map(m => m.replace('antigravity-', ''));
       if (tokenChart) {
         tokenChart.data.labels = labels;
@@ -39200,17 +39225,20 @@ function getFrontendHtml() {
 
     // ===== Timeline Chart =====
     function updateTimelineChart(logs) {
+      if (typeof Chart === 'undefined') return;
       const canvas = document.getElementById('timelineChart');
+      if (!canvas) return;
       const noData = document.getElementById('timeline-no-data');
-      if (logs.length === 0) {
-        canvas.classList.add('hidden'); noData.classList.remove('hidden');
+      const logsArray = Array.isArray(logs) ? logs : [];
+      if (logsArray.length === 0) {
+        canvas.classList.add('hidden'); if(noData) noData.classList.remove('hidden');
         if (timelineChart) { timelineChart.destroy(); timelineChart = null; }
         return;
       }
-      canvas.classList.remove('hidden'); noData.classList.add('hidden');
+      canvas.classList.remove('hidden'); if(noData) noData.classList.add('hidden');
 
       // Sort logs chronologically
-      const sortedLogs = [...logs].sort((a, b) => a.timestamp - b.timestamp);
+      const sortedLogs = [...logsArray].sort((a, b) => a.timestamp - b.timestamp);
       
       const buckets = {};
       sortedLogs.forEach(l => {
@@ -39223,8 +39251,8 @@ function getFrontendHtml() {
           label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         }
         if (!buckets[label]) buckets[label] = { input: 0, output: 0 };
-        buckets[label].input += (l.tokens.input || 0);
-        buckets[label].output += (l.tokens.output || 0);
+        buckets[label].input += (l.tokens?.input || 0);
+        buckets[label].output += (l.tokens?.output || 0);
       });
 
       const labels = Object.keys(buckets);
@@ -39288,6 +39316,7 @@ function getFrontendHtml() {
     async function showLogDetails(logId) {
       const modal = document.getElementById('details-modal');
       const content = document.getElementById('modal-content');
+      if (!modal || !content) return;
       modal.classList.remove('hidden');
       content.innerHTML = '<div class="flex items-center justify-center py-8 text-on-surface-variant"><span class="material-symbols-outlined animate-spin mr-2">progress_activity</span>Loading details...</div>';
       try {
@@ -39309,10 +39338,10 @@ function getFrontendHtml() {
           + '<div class="bg-surface-container-low p-3.5 rounded border border-outline-variant/40">'
           + '<h5 class="font-semibold text-white mb-3 text-[12px] flex items-center gap-1.5 font-display"><span class="material-symbols-outlined text-[18px]">receipt_long</span>Token Accounting</h5>'
           + '<div class="grid grid-cols-2 gap-x-4 gap-y-2 font-label-caps text-[11px]">'
-          + '<div class="flex justify-between text-on-surface-variant"><span>Input</span><span class="text-on-surface">' + fmtNumFull(log.tokens.input) + '</span></div>'
-          + '<div class="flex justify-between text-on-surface-variant"><span>Output</span><span class="text-on-surface">' + fmtNumFull(log.tokens.output) + '</span></div>'
-          + '<div class="flex justify-between text-on-surface-variant"><span>Thinking</span><span class="text-outline">' + (log.tokens.thinking ? fmtNumFull(log.tokens.thinking) : '0') + '</span></div>'
-          + '<div class="flex justify-between text-white font-bold border-t border-outline-variant/30 pt-2 col-span-2"><span>Total</span><span class="text-primary">' + fmtNumFull(log.tokens.total) + '</span></div>'
+          + '<div class="flex justify-between text-on-surface-variant"><span>Input</span><span class="text-on-surface">' + fmtNumFull(log.tokens?.input) + '</span></div>'
+          + '<div class="flex justify-between text-on-surface-variant"><span>Output</span><span class="text-on-surface">' + fmtNumFull(log.tokens?.output) + '</span></div>'
+          + '<div class="flex justify-between text-on-surface-variant"><span>Thinking</span><span class="text-outline">' + (log.tokens?.thinking ? fmtNumFull(log.tokens.thinking) : '0') + '</span></div>'
+          + '<div class="flex justify-between text-white font-bold border-t border-outline-variant/30 pt-2 col-span-2"><span>Total</span><span class="text-primary">' + fmtNumFull(log.tokens?.total) + '</span></div>'
           + '</div></div>'
           + (!ok && log.error ? '<div class="bg-error-container/20 border border-error-container/40 text-error p-3.5 rounded"><h5 class="font-semibold text-white mb-2 text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">warning</span>Error Trace</h5><p class="font-mono text-[11px] whitespace-pre-wrap select-all bg-surface-container-lowest p-2 rounded border border-outline-variant/20">' + log.error + '</p></div>' : '');
       } catch(err) { content.innerHTML = '<div class="text-error">Error: ' + err.message + '</div>'; }
