@@ -38425,7 +38425,6 @@ function getFrontendHtml() {
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
@@ -38575,14 +38574,8 @@ function getFrontendHtml() {
       background: #222a3d;
     }
     .tab-active {
-      color: #b4c5ff;
-      border-bottom-color: #b4c5ff;
-    }
-    .tab-inactive {
-      color: #c3c6d7;
-    }
-    .tab-inactive:hover {
-      color: #b4c5ff;
+      color: #b4c5ff !important;
+      border-bottom: 2px solid #b4c5ff;
     }
   </style>
 </head>
@@ -38601,10 +38594,10 @@ function getFrontendHtml() {
           </div>
         </div>
         <div class="flex gap-6 h-full items-end pb-2">
-          <a id="tab-dashboard" class="tab-btn text-primary font-medium border-b-2 border-primary px-1 text-body-sm cursor-pointer" onclick="switchTab('dashboard')">Dashboard</a>
-          <a id="tab-analytics" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm cursor-pointer" onclick="switchTab('analytics')">Analytics</a>
-          <a id="tab-quotas" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm cursor-pointer" onclick="switchTab('quotas')">Quotas</a>
-          <a id="tab-logs" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm cursor-pointer" onclick="switchTab('logs')">Logs</a>
+          <a id="tab-dashboard" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm pb-1 cursor-pointer" onclick="switchTab('dashboard')">Dashboard</a>
+          <a id="tab-analytics" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm pb-1 cursor-pointer" onclick="switchTab('analytics')">Analytics</a>
+          <a id="tab-quotas" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm pb-1 cursor-pointer" onclick="switchTab('quotas')">Quotas</a>
+          <a id="tab-logs" class="tab-btn text-on-surface-variant hover:text-primary transition-colors duration-200 px-1 text-body-sm pb-1 cursor-pointer" onclick="switchTab('logs')">Logs</a>
         </div>
       </div>
       <div class="flex items-center gap-4">
@@ -38895,23 +38888,25 @@ function getFrontendHtml() {
       return m >= 60 ? Math.floor(m/60)+'h '+m%60+'m' : m+'m';
     }
     function fmtNum(n) {
+      if (n === undefined || n === null || isNaN(n)) return '0';
       if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
       if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
       return n.toString();
     }
     function fmtNumFull(n) {
+      if (n === undefined || n === null || isNaN(n)) return '0';
       return n.toLocaleString();
     }
 
     // ===== Tab Switcher =====
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('text-primary', 'font-medium', 'border-b-2', 'border-primary');
+        btn.classList.remove('tab-active');
         btn.classList.add('text-on-surface-variant');
       });
       const activeBtn = document.getElementById('tab-' + tabId);
       if (activeBtn) {
-        activeBtn.classList.add('text-primary', 'font-medium', 'border-b-2', 'border-primary');
+        activeBtn.classList.add('tab-active');
         activeBtn.classList.remove('text-on-surface-variant');
       }
 
@@ -38945,7 +38940,6 @@ function getFrontendHtml() {
       refreshData();
     }
 
-    // Interactive function mock to reset filters
     function clearFilters() {
       currentPeriod = 'today';
       document.getElementById('filter-model').value = '';
@@ -39034,8 +39028,8 @@ function getFrontendHtml() {
       document.getElementById('stat-tokens-breakdown').textContent = fmtNum(s.totalInputTokens) + ' in / ' + fmtNum(s.totalOutputTokens) + ' out';
       document.getElementById('stat-input').textContent = fmtNum(s.totalInputTokens);
       document.getElementById('stat-output').textContent = fmtNum(s.totalOutputTokens);
-      document.getElementById('stat-latency').textContent = s.averageLatencyMs + 'ms';
-      document.getElementById('stat-failed').textContent = fmtNum(s.failedRequests);
+      document.getElementById('stat-latency').textContent = (s.averageLatencyMs || 0) + 'ms';
+      document.getElementById('stat-failed').textContent = fmtNum(s.failedRequests || 0);
       const errRate = s.totalRequests > 0 ? (s.failedRequests / s.totalRequests * 100).toFixed(2) : '0.00';
       document.getElementById('stat-failed-pct').textContent = errRate + '% error rate';
     }
@@ -39215,53 +39209,74 @@ function getFrontendHtml() {
       }
       canvas.classList.remove('hidden'); noData.classList.add('hidden');
 
-      // Bucket logs by time
+      // Sort logs chronologically
+      const sortedLogs = [...logs].sort((a, b) => a.timestamp - b.timestamp);
+      
       const buckets = {};
-      const sortedLogs = [...logs].sort((a,b) => a.timestamp - b.timestamp);
       sortedLogs.forEach(l => {
         const d = new Date(l.timestamp);
-        let key;
+        let label;
         if (timelineGrouping === 'hour') {
-          d.setMinutes(0, 0, 0);
-          key = d.getTime();
+          const hrs = d.getHours();
+          label = (hrs < 10 ? '0' + hrs : hrs) + ':00';
         } else {
-          d.setHours(0, 0, 0, 0);
-          key = d.getTime();
+          label = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         }
-        if (!buckets[key]) buckets[key] = { input: 0, output: 0, thinking: 0, requests: 0 };
-        buckets[key].input += (l.tokens.input || 0);
-        buckets[key].output += (l.tokens.output || 0);
-        buckets[key].thinking += (l.tokens.thinking || 0);
-        buckets[key].requests++;
+        if (!buckets[label]) buckets[label] = { input: 0, output: 0 };
+        buckets[label].input += (l.tokens.input || 0);
+        buckets[label].output += (l.tokens.output || 0);
       });
 
-      const times = Object.keys(buckets).map(Number).sort((a,b) => a - b);
-      const inputData = times.map(t => ({ x: t, y: buckets[t].input }));
-      const outputData = times.map(t => ({ x: t, y: buckets[t].output }));
+      const labels = Object.keys(buckets);
+      const inputData = labels.map(l => buckets[l].input);
+      const outputData = labels.map(l => buckets[l].output);
 
       const datasets = [
-        { label: 'Output Tokens', data: outputData, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.08)', fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2 },
-        { label: 'Input Tokens', data: inputData, borderColor: '#4edea3', backgroundColor: 'rgba(78, 222, 163, 0.08)', fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4, borderWidth: 2 },
+        { 
+          label: 'Output Tokens', 
+          data: outputData, 
+          borderColor: '#2563eb', 
+          backgroundColor: 'rgba(37, 99, 235, 0.08)', 
+          fill: true, 
+          tension: 0.4, 
+          pointRadius: 0, 
+          pointHoverRadius: 4, 
+          borderWidth: 2 
+        },
+        { 
+          label: 'Input Tokens', 
+          data: inputData, 
+          borderColor: '#4edea3', 
+          backgroundColor: 'rgba(78, 222, 163, 0.08)', 
+          fill: true, 
+          tension: 0.4, 
+          pointRadius: 0, 
+          pointHoverRadius: 4, 
+          borderWidth: 2 
+        },
       ];
 
       if (timelineChart) {
+        timelineChart.data.labels = labels;
         timelineChart.data.datasets = datasets;
-        timelineChart.options.scales.x.time.unit = timelineGrouping;
         timelineChart.update();
       } else {
-        timelineChart = new Chart(canvas, {
+        const ctx = canvas.getContext('2d');
+        timelineChart = new Chart(ctx, {
           type: 'line',
-          data: { datasets },
+          data: { labels, datasets },
           options: {
-            responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            responsive: true, 
+            maintainAspectRatio: false, 
+            interaction: { mode: 'index', intersect: false },
             scales: {
-              x: { type: 'time', time: { unit: timelineGrouping, displayFormats: { hour: 'HH:mm', day: 'MMM d' } }, grid: { display: false, color: '#2d3449' }, ticks: { color: '#8d90a0', font: { size: 9 } } },
+              x: { grid: { display: false, color: '#2d3449' }, ticks: { color: '#8d90a0', font: { size: 9 } } },
               y: { beginAtZero: true, grid: { color: '#2d3449', borderDash: [4, 4] }, ticks: { color: '#8d90a0', font: { size: 9 }, callback: v => fmtNum(v) } }
             },
             plugins: {
               legend: { position: 'top', labels: { boxWidth: 12, padding: 8, font: { size: 9 }, color: '#c3c6d7', usePointStyle: true } },
               tooltip: { backgroundColor: '#131b2e', titleColor: '#dae2fd', bodyColor: '#c3c6d7', borderColor: '#434655', borderWidth: 1, padding: 8, cornerRadius: 4,
-                callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtNum(ctx.raw.y) + ' tokens' }
+                callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmtNum(ctx.raw) + ' tokens' }
               }
             }
           }
@@ -39313,6 +39328,7 @@ function getFrontendHtml() {
     }
 
     // ===== Init =====
+    switchTab('dashboard');
     loadFilters();
     refreshData(false);
     setInterval(() => refreshData(false), 3000);
