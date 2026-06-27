@@ -61,54 +61,54 @@ var require_polyfills = __commonJS({
     }
     var chdir;
     module.exports = patch;
-    function patch(fs5) {
+    function patch(fs6) {
       if (constants.hasOwnProperty("O_SYMLINK") && process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
-        patchLchmod(fs5);
+        patchLchmod(fs6);
       }
-      if (!fs5.lutimes) {
-        patchLutimes(fs5);
+      if (!fs6.lutimes) {
+        patchLutimes(fs6);
       }
-      fs5.chown = chownFix(fs5.chown);
-      fs5.fchown = chownFix(fs5.fchown);
-      fs5.lchown = chownFix(fs5.lchown);
-      fs5.chmod = chmodFix(fs5.chmod);
-      fs5.fchmod = chmodFix(fs5.fchmod);
-      fs5.lchmod = chmodFix(fs5.lchmod);
-      fs5.chownSync = chownFixSync(fs5.chownSync);
-      fs5.fchownSync = chownFixSync(fs5.fchownSync);
-      fs5.lchownSync = chownFixSync(fs5.lchownSync);
-      fs5.chmodSync = chmodFixSync(fs5.chmodSync);
-      fs5.fchmodSync = chmodFixSync(fs5.fchmodSync);
-      fs5.lchmodSync = chmodFixSync(fs5.lchmodSync);
-      fs5.stat = statFix(fs5.stat);
-      fs5.fstat = statFix(fs5.fstat);
-      fs5.lstat = statFix(fs5.lstat);
-      fs5.statSync = statFixSync(fs5.statSync);
-      fs5.fstatSync = statFixSync(fs5.fstatSync);
-      fs5.lstatSync = statFixSync(fs5.lstatSync);
-      if (fs5.chmod && !fs5.lchmod) {
-        fs5.lchmod = function(path5, mode, cb) {
+      fs6.chown = chownFix(fs6.chown);
+      fs6.fchown = chownFix(fs6.fchown);
+      fs6.lchown = chownFix(fs6.lchown);
+      fs6.chmod = chmodFix(fs6.chmod);
+      fs6.fchmod = chmodFix(fs6.fchmod);
+      fs6.lchmod = chmodFix(fs6.lchmod);
+      fs6.chownSync = chownFixSync(fs6.chownSync);
+      fs6.fchownSync = chownFixSync(fs6.fchownSync);
+      fs6.lchownSync = chownFixSync(fs6.lchownSync);
+      fs6.chmodSync = chmodFixSync(fs6.chmodSync);
+      fs6.fchmodSync = chmodFixSync(fs6.fchmodSync);
+      fs6.lchmodSync = chmodFixSync(fs6.lchmodSync);
+      fs6.stat = statFix(fs6.stat);
+      fs6.fstat = statFix(fs6.fstat);
+      fs6.lstat = statFix(fs6.lstat);
+      fs6.statSync = statFixSync(fs6.statSync);
+      fs6.fstatSync = statFixSync(fs6.fstatSync);
+      fs6.lstatSync = statFixSync(fs6.lstatSync);
+      if (fs6.chmod && !fs6.lchmod) {
+        fs6.lchmod = function(path5, mode, cb) {
           if (cb) process.nextTick(cb);
         };
-        fs5.lchmodSync = function() {
+        fs6.lchmodSync = function() {
         };
       }
-      if (fs5.chown && !fs5.lchown) {
-        fs5.lchown = function(path5, uid, gid, cb) {
+      if (fs6.chown && !fs6.lchown) {
+        fs6.lchown = function(path5, uid, gid, cb) {
           if (cb) process.nextTick(cb);
         };
-        fs5.lchownSync = function() {
+        fs6.lchownSync = function() {
         };
       }
       if (platform === "win32") {
-        fs5.rename = typeof fs5.rename !== "function" ? fs5.rename : (function(fs$rename) {
+        fs6.rename = typeof fs6.rename !== "function" ? fs6.rename : (function(fs$rename) {
           function rename(from, to, cb) {
             var start = Date.now();
             var backoff = 0;
             fs$rename(from, to, function CB(er) {
               if (er && (er.code === "EACCES" || er.code === "EPERM" || er.code === "EBUSY") && Date.now() - start < 6e4) {
                 setTimeout(function() {
-                  fs5.stat(to, function(stater, st) {
+                  fs6.stat(to, function(stater, st) {
                     if (stater && stater.code === "ENOENT")
                       fs$rename(from, to, CB);
                     else
@@ -124,9 +124,9 @@ var require_polyfills = __commonJS({
           }
           if (Object.setPrototypeOf) Object.setPrototypeOf(rename, fs$rename);
           return rename;
-        })(fs5.rename);
+        })(fs6.rename);
       }
-      fs5.read = typeof fs5.read !== "function" ? fs5.read : (function(fs$read) {
+      fs6.read = typeof fs6.read !== "function" ? fs6.read : (function(fs$read) {
         function read(fd, buffer, offset, length, position, callback_) {
           var callback;
           if (callback_ && typeof callback_ === "function") {
@@ -134,22 +134,22 @@ var require_polyfills = __commonJS({
             callback = function(er, _, __) {
               if (er && er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
-                return fs$read.call(fs5, fd, buffer, offset, length, position, callback);
+                return fs$read.call(fs6, fd, buffer, offset, length, position, callback);
               }
               callback_.apply(this, arguments);
             };
           }
-          return fs$read.call(fs5, fd, buffer, offset, length, position, callback);
+          return fs$read.call(fs6, fd, buffer, offset, length, position, callback);
         }
         if (Object.setPrototypeOf) Object.setPrototypeOf(read, fs$read);
         return read;
-      })(fs5.read);
-      fs5.readSync = typeof fs5.readSync !== "function" ? fs5.readSync : /* @__PURE__ */ (function(fs$readSync) {
+      })(fs6.read);
+      fs6.readSync = typeof fs6.readSync !== "function" ? fs6.readSync : /* @__PURE__ */ (function(fs$readSync) {
         return function(fd, buffer, offset, length, position) {
           var eagCounter = 0;
           while (true) {
             try {
-              return fs$readSync.call(fs5, fd, buffer, offset, length, position);
+              return fs$readSync.call(fs6, fd, buffer, offset, length, position);
             } catch (er) {
               if (er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
@@ -159,10 +159,10 @@ var require_polyfills = __commonJS({
             }
           }
         };
-      })(fs5.readSync);
-      function patchLchmod(fs6) {
-        fs6.lchmod = function(path5, mode, callback) {
-          fs6.open(
+      })(fs6.readSync);
+      function patchLchmod(fs7) {
+        fs7.lchmod = function(path5, mode, callback) {
+          fs7.open(
             path5,
             constants.O_WRONLY | constants.O_SYMLINK,
             mode,
@@ -171,80 +171,80 @@ var require_polyfills = __commonJS({
                 if (callback) callback(err);
                 return;
               }
-              fs6.fchmod(fd, mode, function(err2) {
-                fs6.close(fd, function(err22) {
+              fs7.fchmod(fd, mode, function(err2) {
+                fs7.close(fd, function(err22) {
                   if (callback) callback(err2 || err22);
                 });
               });
             }
           );
         };
-        fs6.lchmodSync = function(path5, mode) {
-          var fd = fs6.openSync(path5, constants.O_WRONLY | constants.O_SYMLINK, mode);
+        fs7.lchmodSync = function(path5, mode) {
+          var fd = fs7.openSync(path5, constants.O_WRONLY | constants.O_SYMLINK, mode);
           var threw = true;
           var ret;
           try {
-            ret = fs6.fchmodSync(fd, mode);
+            ret = fs7.fchmodSync(fd, mode);
             threw = false;
           } finally {
             if (threw) {
               try {
-                fs6.closeSync(fd);
+                fs7.closeSync(fd);
               } catch (er) {
               }
             } else {
-              fs6.closeSync(fd);
+              fs7.closeSync(fd);
             }
           }
           return ret;
         };
       }
-      function patchLutimes(fs6) {
-        if (constants.hasOwnProperty("O_SYMLINK") && fs6.futimes) {
-          fs6.lutimes = function(path5, at, mt, cb) {
-            fs6.open(path5, constants.O_SYMLINK, function(er, fd) {
+      function patchLutimes(fs7) {
+        if (constants.hasOwnProperty("O_SYMLINK") && fs7.futimes) {
+          fs7.lutimes = function(path5, at, mt, cb) {
+            fs7.open(path5, constants.O_SYMLINK, function(er, fd) {
               if (er) {
                 if (cb) cb(er);
                 return;
               }
-              fs6.futimes(fd, at, mt, function(er2) {
-                fs6.close(fd, function(er22) {
+              fs7.futimes(fd, at, mt, function(er2) {
+                fs7.close(fd, function(er22) {
                   if (cb) cb(er2 || er22);
                 });
               });
             });
           };
-          fs6.lutimesSync = function(path5, at, mt) {
-            var fd = fs6.openSync(path5, constants.O_SYMLINK);
+          fs7.lutimesSync = function(path5, at, mt) {
+            var fd = fs7.openSync(path5, constants.O_SYMLINK);
             var ret;
             var threw = true;
             try {
-              ret = fs6.futimesSync(fd, at, mt);
+              ret = fs7.futimesSync(fd, at, mt);
               threw = false;
             } finally {
               if (threw) {
                 try {
-                  fs6.closeSync(fd);
+                  fs7.closeSync(fd);
                 } catch (er) {
                 }
               } else {
-                fs6.closeSync(fd);
+                fs7.closeSync(fd);
               }
             }
             return ret;
           };
-        } else if (fs6.futimes) {
-          fs6.lutimes = function(_a2, _b, _c, cb) {
+        } else if (fs7.futimes) {
+          fs7.lutimes = function(_a2, _b, _c, cb) {
             if (cb) process.nextTick(cb);
           };
-          fs6.lutimesSync = function() {
+          fs7.lutimesSync = function() {
           };
         }
       }
       function chmodFix(orig) {
         if (!orig) return orig;
         return function(target, mode, cb) {
-          return orig.call(fs5, target, mode, function(er) {
+          return orig.call(fs6, target, mode, function(er) {
             if (chownErOk(er)) er = null;
             if (cb) cb.apply(this, arguments);
           });
@@ -254,7 +254,7 @@ var require_polyfills = __commonJS({
         if (!orig) return orig;
         return function(target, mode) {
           try {
-            return orig.call(fs5, target, mode);
+            return orig.call(fs6, target, mode);
           } catch (er) {
             if (!chownErOk(er)) throw er;
           }
@@ -263,7 +263,7 @@ var require_polyfills = __commonJS({
       function chownFix(orig) {
         if (!orig) return orig;
         return function(target, uid, gid, cb) {
-          return orig.call(fs5, target, uid, gid, function(er) {
+          return orig.call(fs6, target, uid, gid, function(er) {
             if (chownErOk(er)) er = null;
             if (cb) cb.apply(this, arguments);
           });
@@ -273,7 +273,7 @@ var require_polyfills = __commonJS({
         if (!orig) return orig;
         return function(target, uid, gid) {
           try {
-            return orig.call(fs5, target, uid, gid);
+            return orig.call(fs6, target, uid, gid);
           } catch (er) {
             if (!chownErOk(er)) throw er;
           }
@@ -293,13 +293,13 @@ var require_polyfills = __commonJS({
             }
             if (cb) cb.apply(this, arguments);
           }
-          return options ? orig.call(fs5, target, options, callback) : orig.call(fs5, target, callback);
+          return options ? orig.call(fs6, target, options, callback) : orig.call(fs6, target, callback);
         };
       }
       function statFixSync(orig) {
         if (!orig) return orig;
         return function(target, options) {
-          var stats = options ? orig.call(fs5, target, options) : orig.call(fs5, target);
+          var stats = options ? orig.call(fs6, target, options) : orig.call(fs6, target);
           if (stats) {
             if (stats.uid < 0) stats.uid += 4294967296;
             if (stats.gid < 0) stats.gid += 4294967296;
@@ -328,7 +328,7 @@ var require_legacy_streams = __commonJS({
   "node_modules/graceful-fs/legacy-streams.js"(exports, module) {
     var Stream = __require("stream").Stream;
     module.exports = legacy;
-    function legacy(fs5) {
+    function legacy(fs6) {
       return {
         ReadStream,
         WriteStream
@@ -371,7 +371,7 @@ var require_legacy_streams = __commonJS({
           });
           return;
         }
-        fs5.open(this.path, this.flags, this.mode, function(err, fd) {
+        fs6.open(this.path, this.flags, this.mode, function(err, fd) {
           if (err) {
             self.emit("error", err);
             self.readable = false;
@@ -410,7 +410,7 @@ var require_legacy_streams = __commonJS({
         this.busy = false;
         this._queue = [];
         if (this.fd === null) {
-          this._open = fs5.open;
+          this._open = fs6.open;
           this._queue.push([this._open, this.path, this.flags, this.mode, void 0]);
           this.flush();
         }
@@ -445,7 +445,7 @@ var require_clone = __commonJS({
 // node_modules/graceful-fs/graceful-fs.js
 var require_graceful_fs = __commonJS({
   "node_modules/graceful-fs/graceful-fs.js"(exports, module) {
-    var fs5 = __require("fs");
+    var fs6 = __require("fs");
     var polyfills = require_polyfills();
     var legacy = require_legacy_streams();
     var clone3 = require_clone();
@@ -477,12 +477,12 @@ var require_graceful_fs = __commonJS({
         m = "GFS4: " + m.split(/\n/).join("\nGFS4: ");
         console.error(m);
       };
-    if (!fs5[gracefulQueue]) {
+    if (!fs6[gracefulQueue]) {
       queue = global[gracefulQueue] || [];
-      publishQueue(fs5, queue);
-      fs5.close = (function(fs$close) {
+      publishQueue(fs6, queue);
+      fs6.close = (function(fs$close) {
         function close(fd, cb) {
-          return fs$close.call(fs5, fd, function(err) {
+          return fs$close.call(fs6, fd, function(err) {
             if (!err) {
               resetQueue();
             }
@@ -494,40 +494,40 @@ var require_graceful_fs = __commonJS({
           value: fs$close
         });
         return close;
-      })(fs5.close);
-      fs5.closeSync = (function(fs$closeSync) {
+      })(fs6.close);
+      fs6.closeSync = (function(fs$closeSync) {
         function closeSync(fd) {
-          fs$closeSync.apply(fs5, arguments);
+          fs$closeSync.apply(fs6, arguments);
           resetQueue();
         }
         Object.defineProperty(closeSync, previousSymbol, {
           value: fs$closeSync
         });
         return closeSync;
-      })(fs5.closeSync);
+      })(fs6.closeSync);
       if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
         process.on("exit", function() {
-          debug(fs5[gracefulQueue]);
-          __require("assert").equal(fs5[gracefulQueue].length, 0);
+          debug(fs6[gracefulQueue]);
+          __require("assert").equal(fs6[gracefulQueue].length, 0);
         });
       }
     }
     var queue;
     if (!global[gracefulQueue]) {
-      publishQueue(global, fs5[gracefulQueue]);
+      publishQueue(global, fs6[gracefulQueue]);
     }
-    module.exports = patch(clone3(fs5));
-    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs5.__patched) {
-      module.exports = patch(fs5);
-      fs5.__patched = true;
+    module.exports = patch(clone3(fs6));
+    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs6.__patched) {
+      module.exports = patch(fs6);
+      fs6.__patched = true;
     }
-    function patch(fs6) {
-      polyfills(fs6);
-      fs6.gracefulify = patch;
-      fs6.createReadStream = createReadStream;
-      fs6.createWriteStream = createWriteStream2;
-      var fs$readFile = fs6.readFile;
-      fs6.readFile = readFile;
+    function patch(fs7) {
+      polyfills(fs7);
+      fs7.gracefulify = patch;
+      fs7.createReadStream = createReadStream;
+      fs7.createWriteStream = createWriteStream2;
+      var fs$readFile = fs7.readFile;
+      fs7.readFile = readFile;
       function readFile(path5, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -543,8 +543,8 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$writeFile = fs6.writeFile;
-      fs6.writeFile = writeFile;
+      var fs$writeFile = fs7.writeFile;
+      fs7.writeFile = writeFile;
       function writeFile(path5, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -560,9 +560,9 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$appendFile = fs6.appendFile;
+      var fs$appendFile = fs7.appendFile;
       if (fs$appendFile)
-        fs6.appendFile = appendFile;
+        fs7.appendFile = appendFile;
       function appendFile(path5, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
@@ -578,9 +578,9 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$copyFile = fs6.copyFile;
+      var fs$copyFile = fs7.copyFile;
       if (fs$copyFile)
-        fs6.copyFile = copyFile;
+        fs7.copyFile = copyFile;
       function copyFile(src, dest, flags, cb) {
         if (typeof flags === "function") {
           cb = flags;
@@ -598,8 +598,8 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$readdir = fs6.readdir;
-      fs6.readdir = readdir;
+      var fs$readdir = fs7.readdir;
+      fs7.readdir = readdir;
       var noReaddirOptionVersions = /^v[0-5]\./;
       function readdir(path5, options, cb) {
         if (typeof options === "function")
@@ -640,21 +640,21 @@ var require_graceful_fs = __commonJS({
         }
       }
       if (process.version.substr(0, 4) === "v0.8") {
-        var legStreams = legacy(fs6);
+        var legStreams = legacy(fs7);
         ReadStream = legStreams.ReadStream;
         WriteStream = legStreams.WriteStream;
       }
-      var fs$ReadStream = fs6.ReadStream;
+      var fs$ReadStream = fs7.ReadStream;
       if (fs$ReadStream) {
         ReadStream.prototype = Object.create(fs$ReadStream.prototype);
         ReadStream.prototype.open = ReadStream$open;
       }
-      var fs$WriteStream = fs6.WriteStream;
+      var fs$WriteStream = fs7.WriteStream;
       if (fs$WriteStream) {
         WriteStream.prototype = Object.create(fs$WriteStream.prototype);
         WriteStream.prototype.open = WriteStream$open;
       }
-      Object.defineProperty(fs6, "ReadStream", {
+      Object.defineProperty(fs7, "ReadStream", {
         get: function() {
           return ReadStream;
         },
@@ -664,7 +664,7 @@ var require_graceful_fs = __commonJS({
         enumerable: true,
         configurable: true
       });
-      Object.defineProperty(fs6, "WriteStream", {
+      Object.defineProperty(fs7, "WriteStream", {
         get: function() {
           return WriteStream;
         },
@@ -675,7 +675,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileReadStream = ReadStream;
-      Object.defineProperty(fs6, "FileReadStream", {
+      Object.defineProperty(fs7, "FileReadStream", {
         get: function() {
           return FileReadStream;
         },
@@ -686,7 +686,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileWriteStream = WriteStream;
-      Object.defineProperty(fs6, "FileWriteStream", {
+      Object.defineProperty(fs7, "FileWriteStream", {
         get: function() {
           return FileWriteStream;
         },
@@ -735,13 +735,13 @@ var require_graceful_fs = __commonJS({
         });
       }
       function createReadStream(path5, options) {
-        return new fs6.ReadStream(path5, options);
+        return new fs7.ReadStream(path5, options);
       }
       function createWriteStream2(path5, options) {
-        return new fs6.WriteStream(path5, options);
+        return new fs7.WriteStream(path5, options);
       }
-      var fs$open = fs6.open;
-      fs6.open = open;
+      var fs$open = fs7.open;
+      fs7.open = open;
       function open(path5, flags, mode, cb) {
         if (typeof mode === "function")
           cb = mode, mode = null;
@@ -757,20 +757,20 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      return fs6;
+      return fs7;
     }
     function enqueue(elem) {
       debug("ENQUEUE", elem[0].name, elem[1]);
-      fs5[gracefulQueue].push(elem);
+      fs6[gracefulQueue].push(elem);
       retry();
     }
     var retryTimer;
     function resetQueue() {
       var now = Date.now();
-      for (var i = 0; i < fs5[gracefulQueue].length; ++i) {
-        if (fs5[gracefulQueue][i].length > 2) {
-          fs5[gracefulQueue][i][3] = now;
-          fs5[gracefulQueue][i][4] = now;
+      for (var i = 0; i < fs6[gracefulQueue].length; ++i) {
+        if (fs6[gracefulQueue][i].length > 2) {
+          fs6[gracefulQueue][i][3] = now;
+          fs6[gracefulQueue][i][4] = now;
         }
       }
       retry();
@@ -778,9 +778,9 @@ var require_graceful_fs = __commonJS({
     function retry() {
       clearTimeout(retryTimer);
       retryTimer = void 0;
-      if (fs5[gracefulQueue].length === 0)
+      if (fs6[gracefulQueue].length === 0)
         return;
-      var elem = fs5[gracefulQueue].shift();
+      var elem = fs6[gracefulQueue].shift();
       var fn = elem[0];
       var args = elem[1];
       var err = elem[2];
@@ -802,7 +802,7 @@ var require_graceful_fs = __commonJS({
           debug("RETRY", fn.name, args);
           fn.apply(null, args.concat([startTime]));
         } else {
-          fs5[gracefulQueue].push(elem);
+          fs6[gracefulQueue].push(elem);
         }
       }
       if (retryTimer === void 0) {
@@ -1237,10 +1237,10 @@ var require_mtime_precision = __commonJS({
   "node_modules/proper-lockfile/lib/mtime-precision.js"(exports, module) {
     "use strict";
     var cacheSymbol = Symbol();
-    function probe(file3, fs5, callback) {
-      const cachedPrecision = fs5[cacheSymbol];
+    function probe(file3, fs6, callback) {
+      const cachedPrecision = fs6[cacheSymbol];
       if (cachedPrecision) {
-        return fs5.stat(file3, (err, stat) => {
+        return fs6.stat(file3, (err, stat) => {
           if (err) {
             return callback(err);
           }
@@ -1248,16 +1248,16 @@ var require_mtime_precision = __commonJS({
         });
       }
       const mtime = new Date(Math.ceil(Date.now() / 1e3) * 1e3 + 5);
-      fs5.utimes(file3, mtime, mtime, (err) => {
+      fs6.utimes(file3, mtime, mtime, (err) => {
         if (err) {
           return callback(err);
         }
-        fs5.stat(file3, (err2, stat) => {
+        fs6.stat(file3, (err2, stat) => {
           if (err2) {
             return callback(err2);
           }
           const precision = stat.mtime.getTime() % 1e3 === 0 ? "s" : "ms";
-          Object.defineProperty(fs5, cacheSymbol, { value: precision });
+          Object.defineProperty(fs6, cacheSymbol, { value: precision });
           callback(null, stat.mtime, precision);
         });
       });
@@ -1279,7 +1279,7 @@ var require_lockfile = __commonJS({
   "node_modules/proper-lockfile/lib/lockfile.js"(exports, module) {
     "use strict";
     var path5 = __require("path");
-    var fs5 = require_graceful_fs();
+    var fs6 = require_graceful_fs();
     var retry = require_retry2();
     var onExit = require_signal_exit();
     var mtimePrecision = require_mtime_precision();
@@ -1410,7 +1410,7 @@ var require_lockfile = __commonJS({
         update: null,
         realpath: true,
         retries: 0,
-        fs: fs5,
+        fs: fs6,
         onCompromised: (err) => {
           throw err;
         },
@@ -1454,7 +1454,7 @@ var require_lockfile = __commonJS({
     }
     function unlock(file3, options, callback) {
       options = {
-        fs: fs5,
+        fs: fs6,
         realpath: true,
         ...options
       };
@@ -1476,7 +1476,7 @@ var require_lockfile = __commonJS({
       options = {
         stale: 1e4,
         realpath: true,
-        fs: fs5,
+        fs: fs6,
         ...options
       };
       options.stale = Math.max(options.stale || 0, 2e3);
@@ -1515,16 +1515,16 @@ var require_lockfile = __commonJS({
 var require_adapter = __commonJS({
   "node_modules/proper-lockfile/lib/adapter.js"(exports, module) {
     "use strict";
-    var fs5 = require_graceful_fs();
-    function createSyncFs(fs6) {
+    var fs6 = require_graceful_fs();
+    function createSyncFs(fs7) {
       const methods = ["mkdir", "realpath", "stat", "rmdir", "utimes"];
-      const newFs = { ...fs6 };
+      const newFs = { ...fs7 };
       methods.forEach((method) => {
         newFs[method] = (...args) => {
           const callback = args.pop();
           let ret;
           try {
-            ret = fs6[`${method}Sync`](...args);
+            ret = fs7[`${method}Sync`](...args);
           } catch (err) {
             return callback(err);
           }
@@ -1562,7 +1562,7 @@ var require_adapter = __commonJS({
     }
     function toSyncOptions(options) {
       options = { ...options };
-      options.fs = createSyncFs(options.fs || fs5);
+      options.fs = createSyncFs(options.fs || fs6);
       if (typeof options.retries === "number" && options.retries > 0 || options.retries && typeof options.retries.retries === "number" && options.retries.retries > 0) {
         throw Object.assign(new Error("Cannot use retries with the sync api"), { code: "ESYNC" });
       }
@@ -1580,27 +1580,27 @@ var require_adapter = __commonJS({
 var require_proper_lockfile = __commonJS({
   "node_modules/proper-lockfile/index.js"(exports, module) {
     "use strict";
-    var lockfile2 = require_lockfile();
+    var lockfile3 = require_lockfile();
     var { toPromise, toSync, toSyncOptions } = require_adapter();
     async function lock(file3, options) {
-      const release = await toPromise(lockfile2.lock)(file3, options);
+      const release = await toPromise(lockfile3.lock)(file3, options);
       return toPromise(release);
     }
     function lockSync(file3, options) {
-      const release = toSync(lockfile2.lock)(file3, toSyncOptions(options));
+      const release = toSync(lockfile3.lock)(file3, toSyncOptions(options));
       return toSync(release);
     }
     function unlock(file3, options) {
-      return toPromise(lockfile2.unlock)(file3, options);
+      return toPromise(lockfile3.unlock)(file3, options);
     }
     function unlockSync(file3, options) {
-      return toSync(lockfile2.unlock)(file3, toSyncOptions(options));
+      return toSync(lockfile3.unlock)(file3, toSyncOptions(options));
     }
     function check3(file3, options) {
-      return toPromise(lockfile2.check)(file3, options);
+      return toPromise(lockfile3.check)(file3, options);
     }
     function checkSync(file3, options) {
-      return toSync(lockfile2.check)(file3, toSyncOptions(options));
+      return toSync(lockfile3.check)(file3, toSyncOptions(options));
     }
     module.exports = lock;
     module.exports.lock = lock;
@@ -14327,6 +14327,8 @@ var GITIGNORE_ENTRIES = [
   "antigravity-accounts.json",
   "antigravity-accounts.json.*.tmp",
   "antigravity-signature-cache.json",
+  "antigravity-dashboard-logs.json",
+  "antigravity-dashboard-logs.json.*.tmp",
   "antigravity-logs/"
 ];
 async function ensureGitignore(configDir) {
@@ -15138,7 +15140,7 @@ function initLogger(client) {
 }
 function createLogger(module) {
   const service = `antigravity.${module}`;
-  const log11 = (level, message, extra) => {
+  const log13 = (level, message, extra) => {
     if (isDebugTuiEnabled()) {
       const app = _client?.app;
       if (app && typeof app.log === "function") {
@@ -15155,10 +15157,10 @@ function createLogger(module) {
     }
   };
   return {
-    debug: (message, extra) => log11("debug", message, extra),
-    info: (message, extra) => log11("info", message, extra),
-    warn: (message, extra) => log11("warn", message, extra),
-    error: (message, extra) => log11("error", message, extra)
+    debug: (message, extra) => log13("debug", message, extra),
+    info: (message, extra) => log13("info", message, extra),
+    warn: (message, extra) => log13("warn", message, extra),
+    error: (message, extra) => log13("error", message, extra)
   };
 }
 
@@ -30584,6 +30586,12 @@ var SignatureCacheConfigSchema = external_exports2.object({
   /** Background write interval in seconds (default: 60) */
   write_interval_seconds: external_exports2.number().min(10).max(600).default(60)
 });
+var DashboardConfigSchema = external_exports2.object({
+  /** Enable the localhost traffic log & stats web dashboard (default: true) */
+  enabled: external_exports2.boolean().default(true),
+  /** The local port to run the dashboard server on (default: 27140) */
+  port: external_exports2.number().min(1024).max(65535).default(27140)
+});
 var AntigravityConfigSchema = external_exports2.object({
   /** JSON Schema reference for IDE support */
   $schema: external_exports2.string().optional(),
@@ -30936,7 +30944,11 @@ var AntigravityConfigSchema = external_exports2.object({
    * Enable automatic plugin updates.
    * @default true
    */
-  auto_update: external_exports2.boolean().default(true)
+  auto_update: external_exports2.boolean().default(true),
+  /**
+   * Localhost Web Dashboard settings.
+   */
+  dashboard: DashboardConfigSchema.optional()
 });
 var DEFAULT_CONFIG = {
   quiet_mode: false,
@@ -30987,6 +30999,10 @@ var DEFAULT_CONFIG = {
     memory_ttl_seconds: 3600,
     disk_ttl_seconds: 172800,
     write_interval_seconds: 60
+  },
+  dashboard: {
+    enabled: true,
+    port: 27140
   },
   health_score: {
     initial: 70,
@@ -31251,6 +31267,15 @@ function transformSseLine(line, signatureStore, thoughtBuffer, sentThinkingBuffe
   try {
     const parsed = JSON.parse(json3);
     if (parsed.response !== void 0) {
+      if (parsed.response && typeof parsed.response === "object") {
+        const resp = parsed.response;
+        if (resp.usageMetadata && callbacks.onTokenUsage) {
+          try {
+            callbacks.onTokenUsage(resp.usageMetadata);
+          } catch (_) {
+          }
+        }
+      }
       if (options.cacheSignatures && options.signatureSessionKey) {
         cacheThinkingSignaturesFromResponse(
           parsed.response,
@@ -34298,8 +34323,8 @@ function createSessionRecoveryHook(ctx, config3) {
     if (!sessionID) return false;
     let assistantMsgID = info.id;
     let msgs;
-    const log11 = createLogger("session-recovery");
-    log11.debug("Recovery attempt started", {
+    const log13 = createLogger("session-recovery");
+    log13.debug("Recovery attempt started", {
       errorType,
       sessionID,
       providedMsgID: assistantMsgID ?? "none"
@@ -34319,7 +34344,7 @@ function createSessionRecoveryHook(ctx, config3) {
         const m = msgs[i];
         if (m && m.info?.role === "assistant" && m.info?.id) {
           assistantMsgID = m.info.id;
-          log11.debug("Found assistant message ID from session messages", {
+          log13.debug("Found assistant message ID from session messages", {
             msgID: assistantMsgID,
             msgIndex: i
           });
@@ -34328,7 +34353,7 @@ function createSessionRecoveryHook(ctx, config3) {
       }
     }
     if (!assistantMsgID) {
-      log11.debug("No assistant message ID found, cannot recover");
+      log13.debug("No assistant message ID found, cannot recover");
       return false;
     }
     if (processingErrors.has(assistantMsgID)) return false;
@@ -34368,7 +34393,7 @@ function createSessionRecoveryHook(ctx, config3) {
       }
       return success3;
     } catch (err) {
-      log11.error("Recovery failed", { error: String(err) });
+      log13.error("Recovery failed", { error: String(err) });
       return false;
     } finally {
       processingErrors.delete(assistantMsgID);
@@ -35663,7 +35688,7 @@ function buildThinkingWarmupBody(bodyText, isClaudeThinking) {
   }
   return JSON.stringify(parsed);
 }
-async function transformAntigravityResponse(response, streaming, debugContext, requestedModel, projectId, endpoint, effectiveModel, sessionId, toolDebugMissing, toolDebugSummary, toolDebugPayload, debugLines) {
+async function transformAntigravityResponse(response, streaming, debugContext, requestedModel, projectId, endpoint, effectiveModel, sessionId, toolDebugMissing, toolDebugSummary, toolDebugPayload, debugLines, onTokenUsage) {
   const contentType = response.headers.get("content-type") ?? "";
   const isJsonResponse = contentType.includes("application/json");
   const isEventStreamResponse = contentType.includes("text/event-stream");
@@ -35685,7 +35710,8 @@ async function transformAntigravityResponse(response, streaming, debugContext, r
       {
         onCacheSignature: cacheSignature,
         onInjectDebug: injectDebugThinking,
-        // onInjectSyntheticThinking removed - keep_thinking now uses debugText path
+        onTokenUsage,
+        // onInjectSyntheticThinking removed - keep_thinking now unified with debug via debugText
         transformThinkingParts
       },
       {
@@ -35789,8 +35815,10 @@ ${debugText}` : "";
         usage.promptTokenCount ?? usage.totalTokenCount ?? 0
       );
     }
-    if (usage?.cachedContentTokenCount !== void 0) {
-      headers.set("x-antigravity-cached-content-token-count", String(usage.cachedContentTokenCount));
+    if (usage) {
+      if (usage.cachedContentTokenCount !== void 0) {
+        headers.set("x-antigravity-cached-content-token-count", String(usage.cachedContentTokenCount));
+      }
       if (usage.totalTokenCount !== void 0) {
         headers.set("x-antigravity-total-token-count", String(usage.totalTokenCount));
       }
@@ -35799,6 +35827,12 @@ ${debugText}` : "";
       }
       if (usage.candidatesTokenCount !== void 0) {
         headers.set("x-antigravity-candidates-token-count", String(usage.candidatesTokenCount));
+      }
+      if (onTokenUsage) {
+        try {
+          onTokenUsage(usage);
+        } catch (_) {
+        }
       }
     }
     logAntigravityDebugResponse(debugContext, response, {
@@ -38049,8 +38083,751 @@ async function checkAccountsQuota(accounts, client, providerId = ANTIGRAVITY_PRO
   return results;
 }
 
+// src/plugin/dashboard/store.ts
+var import_proper_lockfile2 = __toESM(require_proper_lockfile(), 1);
+import { promises as fs5 } from "node:fs";
+import { existsSync as existsSync10 } from "node:fs";
+import { join as join12, dirname as dirname5 } from "node:path";
+import { randomBytes as randomBytes3 } from "node:crypto";
+var log8 = createLogger("dashboard-store");
+var MAX_LOGS = 1e3;
+function getLogFilePath2() {
+  return join12(getConfigDir(), "antigravity-dashboard-logs.json");
+}
+async function withFileLock2(path5, fn) {
+  const configDir = dirname5(path5);
+  await fs5.mkdir(configDir, { recursive: true });
+  if (!existsSync10(path5)) {
+    await fs5.writeFile(path5, JSON.stringify([], null, 2), "utf-8");
+  }
+  let release = null;
+  try {
+    release = await import_proper_lockfile2.default.lock(path5, { retries: 5, realpath: false });
+    return await fn();
+  } finally {
+    if (release) {
+      await release();
+    }
+  }
+}
+async function saveLog(trafficLog) {
+  const path5 = getLogFilePath2();
+  const fullLog = {
+    ...trafficLog,
+    id: randomBytes3(8).toString("hex"),
+    timestamp: Date.now()
+  };
+  try {
+    await withFileLock2(path5, async () => {
+      let logs = [];
+      try {
+        const content = await fs5.readFile(path5, "utf-8");
+        logs = JSON.parse(content);
+      } catch (e) {
+      }
+      logs.push(fullLog);
+      if (logs.length > MAX_LOGS) {
+        logs = logs.slice(logs.length - MAX_LOGS);
+      }
+      const tempPath = `${path5}.${randomBytes3(6).toString("hex")}.tmp`;
+      await fs5.writeFile(tempPath, JSON.stringify(logs, null, 2), "utf-8");
+      await fs5.rename(tempPath, path5);
+    });
+  } catch (error92) {
+    log8.error("Failed to save traffic log", { error: String(error92) });
+  }
+  return fullLog;
+}
+async function getLogs(limit = 100) {
+  const path5 = getLogFilePath2();
+  if (!existsSync10(path5)) {
+    return [];
+  }
+  try {
+    const content = await fs5.readFile(path5, "utf-8");
+    const logs = JSON.parse(content);
+    return logs.slice(-limit).reverse();
+  } catch (error92) {
+    log8.error("Failed to get traffic logs", { error: String(error92) });
+    return [];
+  }
+}
+async function getStats() {
+  const logs = await getLogs(MAX_LOGS);
+  const stats = {
+    totalRequests: logs.length,
+    successRequests: 0,
+    failedRequests: 0,
+    totalInputTokens: 0,
+    totalOutputTokens: 0,
+    totalTokens: 0,
+    totalThinkingTokens: 0,
+    averageLatencyMs: 0,
+    statsByModel: {},
+    statsByAccount: {}
+  };
+  if (logs.length === 0) {
+    return stats;
+  }
+  let totalLatency = 0;
+  for (const logItem of logs) {
+    const isSuccess = logItem.statusCode >= 200 && logItem.statusCode < 300;
+    if (isSuccess) stats.successRequests++;
+    else stats.failedRequests++;
+    const input2 = logItem.tokens.input || 0;
+    const output2 = logItem.tokens.output || 0;
+    const total = logItem.tokens.total || 0;
+    const thinking = logItem.tokens.thinking || 0;
+    stats.totalInputTokens += input2;
+    stats.totalOutputTokens += output2;
+    stats.totalTokens += total;
+    stats.totalThinkingTokens += thinking;
+    totalLatency += logItem.latencyMs;
+    const m = logItem.modelName || "unknown";
+    if (!stats.statsByModel[m]) {
+      stats.statsByModel[m] = {
+        requests: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        thinkingTokens: 0,
+        averageLatencyMs: 0
+      };
+    }
+    const modelStat = stats.statsByModel[m];
+    modelStat.requests++;
+    modelStat.inputTokens += input2;
+    modelStat.outputTokens += output2;
+    modelStat.totalTokens += total;
+    modelStat.thinkingTokens += thinking;
+    modelStat.averageLatencyMs += logItem.latencyMs;
+    const acc = logItem.accountEmail || "unknown";
+    if (!stats.statsByAccount[acc]) {
+      stats.statsByAccount[acc] = {
+        requests: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        thinkingTokens: 0
+      };
+    }
+    const accStat = stats.statsByAccount[acc];
+    accStat.requests++;
+    accStat.inputTokens += input2;
+    accStat.outputTokens += output2;
+    accStat.totalTokens += total;
+    accStat.thinkingTokens += thinking;
+  }
+  stats.averageLatencyMs = Math.round(totalLatency / logs.length);
+  for (const key of Object.keys(stats.statsByModel)) {
+    const modelStat = stats.statsByModel[key];
+    modelStat.averageLatencyMs = Math.round(modelStat.averageLatencyMs / modelStat.requests);
+  }
+  return stats;
+}
+async function clearLogs() {
+  const path5 = getLogFilePath2();
+  try {
+    if (existsSync10(path5)) {
+      await fs5.unlink(path5);
+    }
+  } catch (error92) {
+    log8.error("Failed to clear traffic logs", { error: String(error92) });
+  }
+}
+
+// src/plugin/dashboard/server.ts
+import http from "node:http";
+import { parse as parse5 } from "node:url";
+var log9 = createLogger("dashboard-server");
+var serverInstance = null;
+function startDashboardServer(port, accountManager) {
+  if (serverInstance) {
+    log9.info("Dashboard server already running");
+    return serverInstance;
+  }
+  const server = http.createServer(async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+    const parsedUrl = parse5(req.url || "", true);
+    const pathname = parsedUrl.pathname;
+    try {
+      if (pathname === "/api/logs" && req.method === "GET") {
+        const limit = parsedUrl.query.limit ? parseInt(parsedUrl.query.limit, 10) : 100;
+        const logs = await getLogs(limit);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(logs));
+        return;
+      }
+      if (pathname === "/api/stats" && req.method === "GET") {
+        const stats = await getStats();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(stats));
+        return;
+      }
+      if (pathname === "/api/logs" && req.method === "DELETE") {
+        await clearLogs();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+      if (pathname === "/api/accounts" && req.method === "GET") {
+        if (!accountManager) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Account manager not initialized" }));
+          return;
+        }
+        const accounts = accountManager.getAccountsSnapshot().map((acc) => ({
+          index: acc.index,
+          email: acc.email,
+          enabled: acc.enabled,
+          cachedQuota: acc.cachedQuota,
+          cachedQuotaUpdatedAt: acc.cachedQuotaUpdatedAt,
+          coolingDownUntil: acc.coolingDownUntil,
+          cooldownReason: acc.cooldownReason
+        }));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(accounts));
+        return;
+      }
+      if ((pathname === "/" || pathname === "/index.html") && req.method === "GET") {
+        const htmlContent = getFrontendHtml();
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(htmlContent);
+        return;
+      }
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Not Found" }));
+    } catch (err) {
+      log9.error("Error handling dashboard request", { error: String(err) });
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Internal Server Error" }));
+    }
+  });
+  server.listen(port, "127.0.0.1", () => {
+    log9.info(`Dashboard server listening on http://127.0.0.1:${port}`);
+  });
+  const cleanup = () => {
+    stopDashboardServer();
+  };
+  process.once("exit", cleanup);
+  process.once("SIGINT", cleanup);
+  process.once("SIGTERM", cleanup);
+  serverInstance = server;
+  return server;
+}
+function stopDashboardServer() {
+  if (serverInstance) {
+    serverInstance.close();
+    serverInstance = null;
+    log9.info("Dashboard server stopped");
+  }
+}
+function getFrontendHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Monitor & Quota Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f1f5f9; }
+    .card { background-color: #1e293b; border: 1px solid #334155; }
+    .progress-bar-bg { background-color: #334155; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #1e293b; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+  <!-- Top Navbar -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600 text-white p-2 rounded-lg text-lg flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-gauge-high"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white flex items-center">
+          Antigravity Monitor <span class="ml-2 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">Dashboard</span>
+        </h1>
+        <p class="text-xs text-slate-400">Real-time traffic inspector and token usage statistics</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <button onclick="clearAllLogs()" class="px-4 py-2 bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white rounded-lg border border-rose-500/20 hover:border-rose-500 text-sm font-medium transition duration-200">
+        <i class="fa-solid fa-trash-can mr-2"></i>Clear Logs
+      </button>
+      <button onclick="refreshData(true)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 text-sm font-medium transition duration-200 flex items-center">
+        <i id="refresh-icon" class="fa-solid fa-arrows-rotate mr-2"></i>Refresh
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column: Metrics & Charts (Spans 1/3) -->
+    <div class="lg:col-span-1 flex flex-col space-y-6">
+      <!-- Quick Stats Grid -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="card p-4 rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 font-medium">Total Requests</span>
+            <span class="text-blue-400 bg-blue-500/10 p-1.5 rounded-lg text-xs"><i class="fa-solid fa-paper-plane"></i></span>
+          </div>
+          <div>
+            <h2 id="stat-requests" class="text-2xl font-bold text-white">0</h2>
+            <p id="stat-success-rate" class="text-[10px] text-emerald-400 font-semibold mt-1">0% success rate</p>
+          </div>
+        </div>
+
+        <div class="card p-4 rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 font-medium">Total Tokens</span>
+            <span class="text-purple-400 bg-purple-500/10 p-1.5 rounded-lg text-xs"><i class="fa-solid fa-brain"></i></span>
+          </div>
+          <div>
+            <h2 id="stat-tokens" class="text-2xl font-bold text-white">0</h2>
+            <p id="stat-tokens-breakdown" class="text-[10px] text-slate-400 mt-1">0 in / 0 out</p>
+          </div>
+        </div>
+
+        <div class="card p-4 rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 font-medium">Avg Latency</span>
+            <span class="text-amber-400 bg-amber-500/10 p-1.5 rounded-lg text-xs"><i class="fa-solid fa-stopwatch"></i></span>
+          </div>
+          <div>
+            <h2 id="stat-latency" class="text-2xl font-bold text-white">0ms</h2>
+            <p class="text-[10px] text-slate-400 mt-1">average response time</p>
+          </div>
+        </div>
+
+        <div class="card p-4 rounded-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400 font-medium">Active Accounts</span>
+            <span class="text-teal-400 bg-teal-500/10 p-1.5 rounded-lg text-xs"><i class="fa-solid fa-user-group"></i></span>
+          </div>
+          <div>
+            <h2 id="stat-accounts" class="text-2xl font-bold text-white">0</h2>
+            <p id="stat-accounts-detail" class="text-[10px] text-slate-400 mt-1">0 enabled pool</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Token Chart -->
+      <div class="card p-5 rounded-xl flex flex-col">
+        <h3 class="text-sm font-semibold text-white mb-4 flex items-center">
+          <i class="fa-solid fa-chart-pie mr-2 text-blue-500"></i>Tokens consumed by model
+        </h3>
+        <div class="relative flex-1 flex items-center justify-center min-h-[220px]">
+          <canvas id="tokenChart" class="max-w-[200px] max-h-[200px]"></canvas>
+          <div id="chart-no-data" class="absolute inset-0 flex items-center justify-center text-xs text-slate-400">No data available</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle/Right Column: Accounts Quota & Live Traffic (Spans 2/3) -->
+    <div class="lg:col-span-2 flex flex-col space-y-6">
+      <!-- Accounts Quota Status -->
+      <div class="card p-5 rounded-xl">
+        <h3 class="text-sm font-semibold text-white mb-4 flex items-center">
+          <i class="fa-solid fa-id-card mr-2 text-teal-400"></i>Accounts Quota Status
+        </h3>
+        <div id="accounts-container" class="space-y-4 max-h-[260px] overflow-y-auto scrollbar-thin pr-1">
+          <div class="text-center text-xs text-slate-400 py-6">No account information retrieved yet.</div>
+        </div>
+      </div>
+
+      <!-- Live Traffic Logs -->
+      <div class="card p-5 rounded-xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold text-white flex items-center">
+            <i class="fa-solid fa-list-check mr-2 text-blue-400"></i>Live Traffic Monitor
+          </h3>
+          <span class="text-xs text-slate-400 font-medium">auto-refreshes every 3s</span>
+        </div>
+        <div class="flex-1 overflow-x-auto scrollbar-thin">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 font-medium">
+                <th class="py-2.5 px-3">Status</th>
+                <th class="py-2.5 px-3">Model</th>
+                <th class="py-2.5 px-3">Account</th>
+                <th class="py-2.5 px-3 text-right">Tokens</th>
+                <th class="py-2.5 px-3 text-right">Latency</th>
+                <th class="py-2.5 px-3 text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody" class="divide-y divide-slate-800/50">
+              <tr>
+                <td colspan="6" class="py-12 text-center text-slate-400">No requests captured yet. Waiting for traffic...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Log Details Modal -->
+  <div id="details-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
+      <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <h4 class="font-bold text-white text-sm flex items-center">
+          <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>Request Details
+        </h4>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition duration-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div id="modal-content" class="p-5 space-y-4 text-xs text-slate-300">
+        <!-- Content injected dynamically -->
+      </div>
+      <div class="px-5 py-3 border-t border-slate-800 flex justify-end bg-slate-900/30">
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-slate-950 border-t border-slate-900 py-3 text-center text-[10px] text-slate-500">
+    Antigravity auth plugin v1.1.0 \u2022 Running locally in the background
+  </footer>
+
+  <script>
+    let tokenChart = null;
+
+    // Helper to format timestamps to hh:mm:ss
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }
+
+    // Helper to calculate time until reset
+    function formatResetTime(resetTime) {
+      if (!resetTime) return 'N/A';
+      const ms = Date.parse(resetTime) - Date.now();
+      if (ms <= 0) return 'resetting...';
+      const hours = ms / (1000 * 60 * 60);
+      if (hours >= 24) {
+        const days = Math.floor(hours / 24);
+        const remHours = Math.floor(hours % 24);
+        return remHours > 0 ? \`\${days}d \${remHours}h\` : \`\${days}d\`;
+      }
+      const mins = Math.ceil(ms / 60000);
+      if (mins >= 60) {
+        return \`\${Math.floor(mins / 60)}h \${mins % 60}m\`;
+      }
+      return \`\${mins}m\`;
+    }
+
+    // Format number to compact units e.g. 1.2K
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    // Fetch and populate data
+    async function refreshData(isManual = false) {
+      const icon = document.getElementById('refresh-icon');
+      if (isManual && icon) icon.classList.add('fa-spin');
+
+      try {
+        const [statsRes, logsRes, accountsRes] = await Promise.all([
+          fetch('/api/stats').then(r => r.json()),
+          fetch('/api/logs').then(r => r.json()),
+          fetch('/api/accounts').then(r => r.json())
+        ]);
+
+        updateStatsCard(statsRes);
+        updateLogsTable(logsRes);
+        updateAccountsSection(accountsRes);
+        updateChart(statsRes);
+
+      } catch (err) {
+        console.error("Dashboard failed to refresh:", err);
+      } finally {
+        if (isManual && icon) {
+          setTimeout(() => icon.classList.remove('fa-spin'), 600);
+        }
+      }
+    }
+
+    function updateStatsCard(stats) {
+      document.getElementById('stat-requests').innerText = stats.totalRequests;
+      
+      const successRate = stats.totalRequests > 0 
+        ? Math.round((stats.successRequests / stats.totalRequests) * 100) 
+        : 100;
+      const rateEl = document.getElementById('stat-success-rate');
+      rateEl.innerText = \`\${successRate}% success rate\`;
+      rateEl.className = successRate >= 90 ? "text-[10px] text-emerald-400 font-semibold mt-1" : "text-[10px] text-amber-400 font-semibold mt-1";
+
+      document.getElementById('stat-tokens').innerText = formatNumber(stats.totalTokens);
+      document.getElementById('stat-tokens-breakdown').innerText = \`\${formatNumber(stats.totalInputTokens)} in / \${formatNumber(stats.totalOutputTokens)} out\`;
+      
+      document.getElementById('stat-latency').innerText = \`\${stats.averageLatencyMs}ms\`;
+    }
+
+    function updateLogsTable(logs) {
+      const tbody = document.getElementById('logs-tbody');
+      if (logs.length === 0) {
+        tbody.innerHTML = \`<tr><td colspan="6" class="py-12 text-center text-slate-400">No requests captured yet. Waiting for traffic...</td></tr>\`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(log => {
+        const isSuccess = log.statusCode >= 200 && log.statusCode < 300;
+        const statusClass = isSuccess 
+          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+          : "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+        const shortEmail = log.accountEmail.split('@')[0] || log.accountEmail;
+        const formattedTokens = formatNumber(log.tokens.total);
+
+        return \`<tr onclick="showLogDetails('\${log.id}')" class="border-b border-slate-800/40 hover:bg-slate-800/30 transition duration-150 cursor-pointer">
+          <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold \${statusClass}">\${log.statusCode}</span></td>
+          <td class="py-2.5 px-3 font-semibold text-slate-200 font-mono text-[10px] truncate max-w-[150px]">\${log.modelName}</td>
+          <td class="py-2.5 px-3 text-slate-300 font-medium">\${shortEmail}</td>
+          <td class="py-2.5 px-3 text-right text-slate-300 font-semibold">\${formattedTokens}</td>
+          <td class="py-2.5 px-3 text-right text-slate-300">\${log.latencyMs}ms</td>
+          <td class="py-2.5 px-3 text-right text-slate-400 font-medium">\${formatTime(log.timestamp)}</td>
+        </tr>\`;
+      }).join('');
+    }
+
+    function updateAccountsSection(accounts) {
+      document.getElementById('stat-accounts').innerText = accounts.length;
+      const enabledCount = accounts.filter(a => a.enabled).length;
+      document.getElementById('stat-accounts-detail').innerText = \`\${enabledCount} enabled pool\`;
+
+      const container = document.getElementById('accounts-container');
+      if (accounts.length === 0) {
+        container.innerHTML = \`<div class="text-center text-xs text-slate-400 py-6">No account information retrieved yet.</div>\`;
+        return;
+      }
+
+      container.innerHTML = accounts.map(acc => {
+        const isCooling = acc.coolingDownUntil && acc.coolingDownUntil > Date.now();
+        const statusBadge = isCooling
+          ? \`<span class="bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 text-[9px] font-semibold"><i class="fa-solid fa-snowflake mr-1"></i>Cooling Down</span>\`
+          : acc.enabled
+            ? \`<span class="bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 text-[9px] font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>Active</span>\`
+            : \`<span class="bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 text-[9px] font-semibold">Disabled</span>\`;
+
+        // Generate quota group HTML
+        let quotaGroupsHtml = '';
+        if (acc.cachedQuota) {
+          const quotaEntries = [
+            { name: "Claude 5-Hour Limit", key: "claude-nonweekly" },
+            { name: "Claude Weekly Limit", key: "claude-weekly" },
+            { name: "Gemini 5-Hour Limit", key: "gemini-nonweekly" },
+            { name: "Gemini Weekly Limit", key: "gemini-weekly" }
+          ];
+
+          quotaGroupsHtml = \`<div class="grid grid-cols-2 gap-3 mt-3 pt-2.5 border-t border-slate-800/40">\`;
+          quotaEntries.forEach(entry => {
+            const q = acc.cachedQuota[entry.key];
+            if (!q) {
+              quotaGroupsHtml += \`<div>
+                <span class="text-[9px] text-slate-500 font-medium">\${entry.name}</span>
+                <div class="text-[10px] text-slate-400 italic mt-0.5">N/A (does not apply)</div>
+              </div>\`;
+            } else {
+              const remPct = Math.round((q.remainingFraction ?? 0) * 100);
+              const colorClass = remPct < 20 ? "bg-rose-500" : remPct < 60 ? "bg-amber-500" : "bg-emerald-500";
+              const textClass = remPct < 20 ? "text-rose-400" : remPct < 60 ? "text-amber-400" : "text-emerald-400";
+              const resetText = q.resetTime ? \`resets: \${formatResetTime(q.resetTime)}\` : 'N/A';
+              
+              quotaGroupsHtml += \`<div>
+                <div class="flex justify-between items-center text-[9px] font-medium text-slate-400 mb-1">
+                  <span>\${entry.name}</span>
+                  <span class="\${textClass}">\${remPct}%</span>
+                </div>
+                <div class="progress-bar-bg w-full rounded-full h-1 overflow-hidden">
+                  <div class="\${colorClass} h-full" style="width: \${remPct}%"></div>
+                </div>
+                <div class="text-[8px] text-slate-500 mt-1">\${resetText}</div>
+              </div>\`;
+            }
+          });
+          quotaGroupsHtml += \`</div>\`;
+        } else {
+          quotaGroupsHtml = \`<div class="text-[10px] text-slate-500 italic mt-2.5">No quota data cached yet. Make a request or trigger "Check quotas" to fetch.</div>\`;
+        }
+
+        return \`<div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-3.5 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-white flex items-center">
+              <i class="fa-solid fa-envelope mr-1.5 text-slate-400"></i>\${acc.email}
+            </span>
+            \${statusBadge}
+          </div>
+          \${quotaGroupsHtml}
+        </div>\`;
+      }).join('');
+    }
+
+    function updateChart(stats) {
+      const ctx = document.getElementById('tokenChart');
+      const chartNoData = document.getElementById('chart-no-data');
+      
+      const models = Object.keys(stats.statsByModel);
+      if (models.length === 0) {
+        if (ctx) ctx.classList.add('hidden');
+        if (chartNoData) chartNoData.classList.remove('hidden');
+        return;
+      }
+
+      if (ctx) ctx.classList.remove('hidden');
+      if (chartNoData) chartNoData.classList.add('hidden');
+
+      const data = models.map(m => stats.statsByModel[m].totalTokens);
+      const labels = models.map(m => m.replace('antigravity-', ''));
+      const bgColors = [
+        'rgba(59, 130, 246, 0.7)',  // blue
+        'rgba(168, 85, 247, 0.7)',  // purple
+        'rgba(249, 115, 22, 0.7)',  // orange
+        'rgba(20, 184, 166, 0.7)',  // teal
+        'rgba(239, 68, 68, 0.7)',   // red
+        'rgba(234, 179, 8, 0.7)',   // yellow
+      ];
+
+      if (tokenChart) {
+        tokenChart.data.labels = labels;
+        tokenChart.data.datasets[0].data = data;
+        tokenChart.update();
+      } else {
+        tokenChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: bgColors.slice(0, models.length),
+              borderWidth: 1.5,
+              borderColor: '#1e293b'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 8,
+                  padding: 8,
+                  font: { size: 9 },
+                  color: '#94a3b8'
+                }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+      }
+    }
+
+    async function showLogDetails(logId) {
+      const modal = document.getElementById('details-modal');
+      const content = document.getElementById('modal-content');
+      modal.classList.remove('hidden');
+      content.innerHTML = \`<div class="flex items-center justify-center py-6 text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading details...</div>\`;
+
+      try {
+        const logs = await fetch('/api/logs').then(r => r.json());
+        const log = logs.find(l => l.id === logId);
+        
+        if (!log) {
+          content.innerHTML = \`<div class="text-rose-400">Log transaction not found.</div>\`;
+          return;
+        }
+
+        const isSuccess = log.statusCode >= 200 && log.statusCode < 300;
+        const statusBadge = isSuccess
+          ? \`<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold">SUCCESS (\${log.statusCode})</span>\`
+          : \`<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded text-[10px] font-bold">FAILED (\${log.statusCode})</span>\`;
+
+        content.innerHTML = \`
+          <div class="grid grid-cols-3 gap-2 bg-slate-950/40 p-3 rounded-lg border border-slate-800">
+            <div class="text-slate-400 font-medium">Request Status:</div>
+            <div class="col-span-2 font-semibold">\${statusBadge}</div>
+            
+            <div class="text-slate-400 font-medium">Model ID:</div>
+            <div class="col-span-2 font-mono font-semibold text-slate-200">\${log.modelName}</div>
+
+            <div class="text-slate-400 font-medium">Requested Model:</div>
+            <div class="col-span-2 font-mono font-medium text-slate-300">\${log.requestedModel}</div>
+            
+            <div class="text-slate-400 font-medium">User Account:</div>
+            <div class="col-span-2 font-semibold text-slate-300">\${log.accountEmail}</div>
+            
+            <div class="text-slate-400 font-medium">Execution Latency:</div>
+            <div class="col-span-2 font-semibold text-amber-400">\${log.latencyMs}ms</div>
+
+            <div class="text-slate-400 font-medium">Timestamp:</div>
+            <div class="col-span-2 text-slate-400">\${new Date(log.timestamp).toLocaleString()}</div>
+          </div>
+
+          <div class="bg-slate-950/20 p-3 rounded-lg border border-slate-800/80">
+            <h5 class="font-bold text-white mb-2 flex items-center"><i class="fa-solid fa-ticket mr-1.5 text-purple-400"></i>Token Accounting</h5>
+            <div class="grid grid-cols-2 gap-y-2">
+              <div class="text-slate-400 font-medium flex justify-between pr-4"><span>Prompt Input:</span> <span>\${formatNumber(log.tokens.input)}</span></div>
+              <div class="text-slate-400 font-medium flex justify-between pl-4 border-l border-slate-800"><span>Candidates Output:</span> <span>\${formatNumber(log.tokens.output)}</span></div>
+              <div class="text-slate-400 font-medium flex justify-between pr-4 mt-1 border-t border-slate-800/50 pt-1"><span>Thinking (Cached):</span> <span>\${log.tokens.thinking ? formatNumber(log.tokens.thinking) : '0'}</span></div>
+              <div class="text-white font-bold flex justify-between pl-4 border-l border-slate-800 mt-1 border-t border-slate-800/50 pt-1"><span>Total Consumption:</span> <span class="text-purple-400">\${formatNumber(log.tokens.total)}</span></div>
+            </div>
+          </div>
+
+          \${!isSuccess && log.error ? \`
+            <div class="bg-rose-950/20 border border-rose-950 text-rose-300 p-3 rounded-lg">
+              <h5 class="font-bold text-white mb-1 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Error Message</h5>
+              <p class="font-mono text-[10px] whitespace-pre-wrap select-text">\${log.error}</p>
+            </div>
+          \` : ''}
+        \`;
+      } catch (err) {
+        content.innerHTML = \`<div class="text-rose-400">Failed to fetch log details: \${err.message}</div>\`;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('details-modal').classList.add('hidden');
+    }
+
+    async function clearAllLogs() {
+      if (confirm("Are you sure you want to delete all traffic logs and reset stats?")) {
+        try {
+          const res = await fetch('/api/logs', { method: 'DELETE' });
+          if (res.ok) {
+            refreshData();
+          }
+        } catch (e) {
+          console.error("Failed to clear logs:", e);
+        }
+      }
+    }
+
+    // Auto Refresh Polling (Every 3 seconds)
+    setInterval(() => refreshData(false), 3000);
+
+    // Initial Fetch
+    refreshData(false);
+  </script>
+</body>
+</html>`;
+}
+
 // src/plugin/refresh-queue.ts
-var log8 = createLogger("refresh-queue");
+var log10 = createLogger("refresh-queue");
 var DEFAULT_PROACTIVE_REFRESH_CONFIG = {
   enabled: true,
   bufferSeconds: 1800,
@@ -38144,7 +38921,7 @@ var ProactiveRefreshQueue = class {
       if (accountsToRefresh.length === 0) {
         return;
       }
-      log8.debug("Found accounts needing refresh", { count: accountsToRefresh.length });
+      log10.debug("Found accounts needing refresh", { count: accountsToRefresh.length });
       for (const account of accountsToRefresh) {
         if (!this.state.isRunning) {
           break;
@@ -38163,7 +38940,7 @@ var ProactiveRefreshQueue = class {
           }
         } catch (error92) {
           this.state.errorCount++;
-          log8.warn("Failed to refresh account", {
+          log10.warn("Failed to refresh account", {
             accountIndex: account.index,
             error: error92 instanceof Error ? error92.message : String(error92)
           });
@@ -38178,7 +38955,7 @@ var ProactiveRefreshQueue = class {
    */
   async refreshToken(auth, account) {
     const minutesUntilExpiry = account.expires ? Math.round((account.expires - Date.now()) / 6e4) : "unknown";
-    log8.debug("Proactively refreshing token", {
+    log10.debug("Proactively refreshing token", {
       accountIndex: account.index,
       email: account.email ?? "unknown",
       minutesUntilExpiry
@@ -38193,19 +38970,19 @@ var ProactiveRefreshQueue = class {
       return;
     }
     if (!this.config.enabled) {
-      log8.debug("Proactive refresh disabled by config");
+      log10.debug("Proactive refresh disabled by config");
       return;
     }
     this.state.isRunning = true;
     const intervalMs = this.config.checkIntervalSeconds * 1e3;
-    log8.debug("Started proactive refresh queue", {
+    log10.debug("Started proactive refresh queue", {
       checkIntervalSeconds: this.config.checkIntervalSeconds,
       bufferSeconds: this.config.bufferSeconds
     });
     setTimeout(() => {
       if (this.state.isRunning) {
         this.runRefreshCheck().catch((error92) => {
-          log8.error("Initial check failed", {
+          log10.error("Initial check failed", {
             error: error92 instanceof Error ? error92.message : String(error92)
           });
         });
@@ -38213,7 +38990,7 @@ var ProactiveRefreshQueue = class {
     }, 5e3);
     this.state.intervalHandle = setInterval(() => {
       this.runRefreshCheck().catch((error92) => {
-        log8.error("Check failed", {
+        log10.error("Check failed", {
           error: error92 instanceof Error ? error92.message : String(error92)
         });
       });
@@ -38231,7 +39008,7 @@ var ProactiveRefreshQueue = class {
       clearInterval(this.state.intervalHandle);
       this.state.intervalHandle = null;
     }
-    log8.debug("Stopped proactive refresh queue", {
+    log10.debug("Stopped proactive refresh queue", {
       refreshCount: this.state.refreshCount,
       errorCount: this.state.errorCount
     });
@@ -38279,7 +39056,7 @@ async function tryFetchVersion(url3, maxChars) {
   }
 }
 async function initAntigravityVersion() {
-  const log11 = createLogger("version");
+  const log13 = createLogger("version");
   const fallback = getAntigravityVersion();
   let version3;
   let source;
@@ -38293,20 +39070,20 @@ async function initAntigravityVersion() {
     } else {
       source = "fallback";
       setAntigravityVersion(fallback);
-      log11.info("version-fetch-failed", { fallback });
+      log13.info("version-fetch-failed", { fallback });
       return;
     }
   }
   if (version3 !== fallback) {
-    log11.info("version-updated", { version: version3, source, previous: fallback });
+    log13.info("version-updated", { version: version3, source, previous: fallback });
   } else {
-    log11.debug("version-unchanged", { version: version3, source });
+    log13.debug("version-unchanged", { version: version3, source });
   }
   setAntigravityVersion(version3);
 }
 
 // src/plugin/search.ts
-var log9 = createLogger("search");
+var log11 = createLogger("search");
 var sessionCounter = 0;
 var sessionPrefix = `search-${Date.now().toString(36)}`;
 function generateRequestId() {
@@ -38437,7 +39214,7 @@ ${urlList}`;
     }
   };
   const url3 = `${ANTIGRAVITY_ENDPOINT}/v1internal:generateContent`;
-  log9.debug("Executing search", {
+  log11.debug("Executing search", {
     query,
     urlCount: urls?.length ?? 0,
     thinking
@@ -38455,7 +39232,7 @@ ${urlList}`;
     });
     if (!response.ok) {
       const errorText = await response.text();
-      log9.debug("Search API error", { status: response.status, error: errorText });
+      log11.debug("Search API error", { status: response.status, error: errorText });
       return `## Search Error
 
 Failed to execute search: ${response.status} ${response.statusText}
@@ -38465,14 +39242,14 @@ ${errorText}
 Please try again with a different query.`;
     }
     const data = await response.json();
-    log9.debug("Search response received", { hasResponse: !!data.response });
+    log11.debug("Search response received", { hasResponse: !!data.response });
     const result = parseSearchResponse(data);
     const formatted = formatSearchResult(result);
-    log9.debug("Search response formatted", { resultLength: formatted.length });
+    log11.debug("Search response formatted", { resultLength: formatted.length });
     return formatted;
   } catch (error92) {
     const message = error92 instanceof Error ? error92.message : String(error92);
-    log9.debug("Search execution error", { error: message });
+    log11.debug("Search execution error", { error: message });
     return `## Search Error
 
 Failed to execute search: ${message}. Please try again with a different query.`;
@@ -38872,7 +39649,7 @@ var warmupAttemptedSessionIds = /* @__PURE__ */ new Set();
 var warmupSucceededSessionIds = /* @__PURE__ */ new Set();
 var isChildSession = false;
 var childSessionParentID = void 0;
-var log10 = createLogger("plugin");
+var log12 = createLogger("plugin");
 var rateLimitToastCooldowns = /* @__PURE__ */ new Map();
 var RATE_LIMIT_TOAST_COOLDOWN_MS = 5e3;
 var MAX_TOAST_COOLDOWN_ENTRIES = 100;
@@ -38948,7 +39725,7 @@ async function modelsFromAgySdkCredentials(config3, auth) {
     }
   }
   if (errors.length > 0) {
-    log10.debug("gemini-model-discovery-failed", { errors: errors.map((error92) => String(error92)) });
+    log12.debug("gemini-model-discovery-failed", { errors: errors.map((error92) => String(error92)) });
   }
   return {};
 }
@@ -39079,7 +39856,7 @@ async function triggerAsyncQuotaRefreshForAccount(accountManager, accountIndex, 
       accountManager.requestSaveToDisk();
     }
   } catch (err) {
-    log10.debug(`quota-refresh-failed email=${accountKey}`, { error: String(err) });
+    log12.debug(`quota-refresh-failed email=${accountKey}`, { error: String(err) });
   } finally {
     quotaRefreshInProgressByEmail.delete(accountKey);
   }
@@ -39900,11 +40677,11 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
       if (props?.info?.parentID) {
         isChildSession = true;
         childSessionParentID = props.info.parentID;
-        log10.debug("child-session-detected", { parentID: props.info.parentID });
+        log12.debug("child-session-detected", { parentID: props.info.parentID });
       } else {
         isChildSession = false;
         childSessionParentID = void 0;
-        log10.debug("root-session-detected", {});
+        log12.debug("root-session-detected", {});
       }
     }
     if (sessionRecovery && input2.event.type === "session.error") {
@@ -39928,7 +40705,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
           }).catch(() => {
           });
           const successToast = getRecoverySuccessToast();
-          log10.debug("recovery-toast", { ...successToast, isChildSession, toastScope: config3.toast_scope });
+          log12.debug("recovery-toast", { ...successToast, isChildSession, toastScope: config3.toast_scope });
           if (!(config3.toast_scope === "root_only" && isChildSession)) {
             await client.tui.showToast({
               body: {
@@ -39951,7 +40728,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
       thinking: tool.schema.boolean().optional().default(true).describe("Enable deep thinking for more thorough analysis (default: true)")
     },
     async execute(args, ctx) {
-      log10.debug("Google Search tool called", { query: args.query, urlCount: args.urls?.length ?? 0 });
+      log12.debug("Google Search tool called", { query: args.query, urlCount: args.urls?.length ?? 0 });
       const auth = cachedGetAuth ? await cachedGetAuth() : null;
       if (!auth || !isOAuthAuth(auth)) {
         return "Error: Not authenticated with Antigravity. Please run `opencode auth login` to authenticate.";
@@ -40002,7 +40779,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
         try {
           auth = cachedGetAuth ? await cachedGetAuth() : context.auth;
         } catch (error92) {
-          log10.debug("model-discovery-fallback", { error: error92 instanceof Error ? error92.message : String(error92) });
+          log12.debug("model-discovery-fallback", { error: error92 instanceof Error ? error92.message : String(error92) });
           return fallbackModels;
         }
         const [geminiResult, antigravityResult] = await Promise.allSettled([
@@ -40012,7 +40789,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
         const geminiModels = geminiResult.status === "fulfilled" ? geminiResult.value : {};
         const antigravityModels = antigravityResult.status === "fulfilled" ? antigravityResult.value : {};
         if (geminiResult.status === "rejected" || antigravityResult.status === "rejected") {
-          log10.debug("model-discovery-partial-fallback", {
+          log12.debug("model-discovery-partial-fallback", {
             geminiError: geminiResult.status === "rejected" ? String(geminiResult.reason) : void 0,
             antigravityError: antigravityResult.status === "rejected" ? String(antigravityResult.reason) : void 0
           });
@@ -40090,6 +40867,14 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
         const storedAccounts = await loadAccounts();
         const accountManager = await AccountManager.loadFromDisk(auth);
         activeAccountManager = accountManager;
+        if (config3.dashboard?.enabled !== false) {
+          try {
+            const dashboardPort = config3.dashboard?.port ?? 27140;
+            startDashboardServer(dashboardPort, accountManager);
+          } catch (serverError) {
+            log12.error("Failed to start dashboard server", { error: String(serverError) });
+          }
+        }
         if (accountManager.getAccountCount() > 0) {
           accountManager.requestSaveToDisk();
         }
@@ -40171,11 +40956,11 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
             const quietMode = config3.quiet_mode;
             const toastScope = config3.toast_scope;
             const showToast = async (message, variant) => {
-              log10.debug("toast", { message, variant, isChildSession, toastScope });
+              log12.debug("toast", { message, variant, isChildSession, toastScope });
               if (quietMode) return;
               if (abortSignal?.aborted) return;
               if (toastScope === "root_only" && isChildSession) {
-                log10.debug("toast-suppressed-child-session", { message, variant, parentID: childSessionParentID });
+                log12.debug("toast-suppressed-child-session", { message, variant, parentID: childSessionParentID });
                 return;
               }
               if (variant === "warning" && message.toLowerCase().includes("rate")) {
@@ -40396,17 +41181,17 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                   try {
                     await accountManager.saveToDisk();
                   } catch (error92) {
-                    log10.error("Failed to persist refreshed auth", { error: String(error92) });
+                    log12.error("Failed to persist refreshed auth", { error: String(error92) });
                   }
                 } catch (error92) {
                   if (error92 instanceof AntigravityTokenRefreshError && error92.code === "invalid_grant") {
                     const removed = accountManager.removeAccount(account);
                     if (removed) {
-                      log10.warn("Removed revoked account from pool - reauthenticate via `opencode auth login`");
+                      log12.warn("Removed revoked account from pool - reauthenticate via `opencode auth login`");
                       try {
                         await accountManager.saveToDisk();
                       } catch (persistError) {
-                        log10.error("Failed to persist revoked account removal", { error: String(persistError) });
+                        log12.error("Failed to persist revoked account removal", { error: String(persistError) });
                       }
                     }
                     if (accountManager.getAccountCount() === 0) {
@@ -40417,7 +41202,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                             body: { type: "oauth", refresh: "", access: "", expires: 0 }
                           });
                         } catch (storeError) {
-                          log10.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
+                          log12.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
                         }
                       }
                       const fallback = await tryAgySdkFallbackForRequest(
@@ -40475,7 +41260,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 try {
                   await accountManager.saveToDisk();
                 } catch (error92) {
-                  log10.error("Failed to persist project context", { error: String(error92) });
+                  log12.error("Failed to persist project context", { error: String(error92) });
                 }
               }
               const runThinkingWarmup = async (prepared, projectId) => {
@@ -40591,6 +41376,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                 let capacityRetryCount = 0;
                 let lastEndpointIndex = -1;
                 for (let i = 0; i < ANTIGRAVITY_ENDPOINT_FALLBACKS.length; i++) {
+                  let requestStartTime = Date.now();
                   if (i !== lastEndpointIndex) {
                     capacityRetryCount = 0;
                     lastEndpointIndex = i;
@@ -40651,6 +41437,7 @@ var createAntigravityPlugin = (providerId) => async ({ client, directory }) => {
                     if (config3.account_selection_strategy === "hybrid") {
                       tokenConsumed = getTokenTracker().consume(account.index);
                     }
+                    requestStartTime = Date.now();
                     const response = await fetch(prepared.request, prepared.init);
                     pushDebug(`status=${response.status} ${response.statusText}`);
                     if (response.status === 429 || response.status === 503 || response.status === 529) {
@@ -40926,8 +41713,36 @@ Alternatively, you can:
                       prepared.toolDebugMissing,
                       prepared.toolDebugSummary,
                       prepared.toolDebugPayload,
-                      debugLines
+                      debugLines,
+                      (usage) => {
+                        const latencyMs = Date.now() - requestStartTime;
+                        const input3 = usage.promptTokenCount ?? 0;
+                        const output2 = usage.candidatesTokenCount ?? 0;
+                        const total = usage.totalTokenCount ?? input3 + output2;
+                        saveLog({
+                          accountEmail: account.email || "unknown",
+                          modelName: prepared.effectiveModel || "unknown",
+                          requestedModel: prepared.requestedModel || "unknown",
+                          tokens: { input: input3, output: output2, total, thinking: usage.cachedContentTokenCount },
+                          latencyMs,
+                          statusCode: response.status
+                        }).catch(() => {
+                        });
+                      }
                     );
+                    if (!response.ok) {
+                      const latencyMs = Date.now() - requestStartTime;
+                      saveLog({
+                        accountEmail: account.email || "unknown",
+                        modelName: prepared.effectiveModel || "unknown",
+                        requestedModel: prepared.requestedModel || "unknown",
+                        tokens: { input: 0, output: 0, total: 0 },
+                        latencyMs,
+                        statusCode: response.status,
+                        error: response.statusText || `HTTP ${response.status}`
+                      }).catch(() => {
+                      });
+                    }
                     const contextError = transformedResponse.headers.get("x-antigravity-context-error");
                     if (contextError) {
                       if (contextError === "prompt_too_long") {
@@ -40944,6 +41759,18 @@ Alternatively, you can:
                     }
                     return transformedResponse;
                   } catch (error92) {
+                    const latencyMs = Date.now() - requestStartTime;
+                    saveLog({
+                      accountEmail: account.email || "unknown",
+                      modelName: model || "unknown",
+                      requestedModel: model || "unknown",
+                      tokens: { input: 0, output: 0, total: 0 },
+                      latencyMs,
+                      statusCode: 0,
+                      // Network error
+                      error: error92 instanceof Error ? error92.message : String(error92)
+                    }).catch(() => {
+                    });
                     if (tokenConsumed) {
                       getTokenTracker().refund(account.index);
                       tokenConsumed = false;
@@ -41411,7 +42238,7 @@ ${verifyUrl}
                           body: { type: "oauth", refresh: fallbackResult.refresh, access: "", expires: 0 }
                         });
                       } catch (storeError) {
-                        log10.error("Failed to update stored Antigravity OAuth credentials", { error: String(storeError) });
+                        log12.error("Failed to update stored Antigravity OAuth credentials", { error: String(storeError) });
                       }
                       const label = fallbackAccount.email || `Account ${1}`;
                       return {
@@ -41428,7 +42255,7 @@ ${verifyUrl}
                       body: { type: "oauth", refresh: "", access: "", expires: 0 }
                     });
                   } catch (storeError) {
-                    log10.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
+                    log12.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
                   }
                   return {
                     url: "",
@@ -41458,7 +42285,7 @@ Re-authenticating ${refreshEmail || "account"}...
                       body: { type: "oauth", refresh: "", access: "", expires: 0 }
                     });
                   } catch (storeError) {
-                    log10.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
+                    log12.error("Failed to clear stored Antigravity OAuth credentials", { error: String(storeError) });
                   }
                 } else {
                   startFresh = menuResult.mode === "fresh";

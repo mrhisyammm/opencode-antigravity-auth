@@ -97,6 +97,14 @@ export function startDashboardServer(
     log.info(`Dashboard server listening on http://127.0.0.1:${port}`);
   });
 
+  // Register process exit cleanups
+  const cleanup = () => {
+    stopDashboardServer();
+  };
+  process.once("exit", cleanup);
+  process.once("SIGINT", cleanup);
+  process.once("SIGTERM", cleanup);
+
   serverInstance = server;
   return server;
 }
