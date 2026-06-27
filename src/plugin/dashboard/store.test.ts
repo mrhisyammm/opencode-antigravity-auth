@@ -27,8 +27,9 @@ describe("Dashboard Store Layer", () => {
 
     const logs = await getLogs();
     expect(logs.length).toBe(1);
-    expect(logs[0].id).toBe(saved.id);
-    expect(logs[0].tokens.thinking).toBe(50);
+    const first = logs[0]!;
+    expect(first.id).toBe(saved.id);
+    expect(first.tokens.thinking).toBe(50);
   });
 
   it("should calculate correct aggregate statistics", async () => {

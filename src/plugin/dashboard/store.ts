@@ -51,10 +51,30 @@ export interface TrafficStats {
   }>;
 }
 
-const MAX_LOGS = 1000;
+const MAX_LOGS = 10000;
+
+export interface LogFilter {
+  model?: string;
+  account?: string;
+  dateFrom?: number;
+  dateTo?: number;
+  status?: "success" | "failed";
+}
 
 function getLogFilePath(): string {
   return join(getConfigDir(), "antigravity-dashboard-logs.json");
+}
+
+function applyFilter(logs: TrafficLog[], filter: LogFilter): TrafficLog[] {
+  return logs.filter(l => {
+    if (filter.model && l.modelName !== filter.model) return false;
+    if (filter.account && l.accountEmail !== filter.account) return false;
+    if (filter.dateFrom && l.timestamp < filter.dateFrom) return false;
+    if (filter.dateTo && l.timestamp > filter.dateTo) return false;
+    if (filter.status === "success" && !(l.statusCode >= 200 && l.statusCode < 300)) return false;
+    if (filter.status === "failed" && l.statusCode >= 200 && l.statusCode < 300) return false;
+    return true;
+  });
 }
 
 async function withFileLock<T>(path: string, fn: () => Promise<T>): Promise<T> {
@@ -110,27 +130,36 @@ export async function saveLog(trafficLog: Omit<TrafficLog, "id" | "timestamp">):
   return fullLog;
 }
 
-export async function getLogs(limit = 100): Promise<TrafficLog[]> {
+async function readAllLogs(): Promise<TrafficLog[]> {
   const path = getLogFilePath();
   if (!existsSync(path)) {
     return [];
   }
-
   try {
     const content = await fs.readFile(path, "utf-8");
-    const logs: TrafficLog[] = JSON.parse(content);
-    return logs.slice(-limit).reverse(); // Return newest first
+    return JSON.parse(content) as TrafficLog[];
   } catch (error) {
-    log.error("Failed to get traffic logs", { error: String(error) });
+    log.error("Failed to read traffic logs", { error: String(error) });
     return [];
   }
 }
 
-export async function getStats(): Promise<TrafficStats> {
-  const logs = await getLogs(MAX_LOGS);
-  
+export async function getLogs(limit = 100, filter?: LogFilter): Promise<TrafficLog[]> {
+  let logs = await readAllLogs();
+  if (filter) {
+    logs = applyFilter(logs, filter);
+  }
+  return logs.slice(-limit).reverse(); // Return newest first
+}
+
+export async function getStats(filter?: LogFilter): Promise<TrafficStats> {
+  let allLogs = await readAllLogs();
+  if (filter) {
+    allLogs = applyFilter(allLogs, filter);
+  }
+
   const stats: TrafficStats = {
-    totalRequests: logs.length,
+    totalRequests: allLogs.length,
     successRequests: 0,
     failedRequests: 0,
     totalInputTokens: 0,
@@ -142,13 +171,13 @@ export async function getStats(): Promise<TrafficStats> {
     statsByAccount: {},
   };
 
-  if (logs.length === 0) {
+  if (allLogs.length === 0) {
     return stats;
   }
 
   let totalLatency = 0;
 
-  for (const logItem of logs) {
+  for (const logItem of allLogs) {
     const isSuccess = logItem.statusCode >= 200 && logItem.statusCode < 300;
     if (isSuccess) stats.successRequests++;
     else stats.failedRequests++;
@@ -203,7 +232,7 @@ export async function getStats(): Promise<TrafficStats> {
     accStat.thinkingTokens += thinking;
   }
 
-  stats.averageLatencyMs = Math.round(totalLatency / logs.length);
+  stats.averageLatencyMs = Math.round(totalLatency / allLogs.length);
 
   // Compute averages for models
   for (const key of Object.keys(stats.statsByModel)) {
@@ -212,6 +241,33 @@ export async function getStats(): Promise<TrafficStats> {
   }
 
   return stats;
+}
+
+export interface AvailableFilters {
+  models: string[];
+  accounts: string[];
+  dateRange: { earliest: number; latest: number } | null;
+}
+
+export async function getAvailableFilters(): Promise<AvailableFilters> {
+  const logs = await readAllLogs();
+  const models = new Set<string>();
+  const accounts = new Set<string>();
+  let earliest = Infinity;
+  let latest = -Infinity;
+
+  for (const l of logs) {
+    if (l.modelName) models.add(l.modelName);
+    if (l.accountEmail) accounts.add(l.accountEmail);
+    if (l.timestamp < earliest) earliest = l.timestamp;
+    if (l.timestamp > latest) latest = l.timestamp;
+  }
+
+  return {
+    models: [...models].sort(),
+    accounts: [...accounts].sort(),
+    dateRange: logs.length > 0 ? { earliest, latest } : null,
+  };
 }
 
 export async function clearLogs(): Promise<void> {

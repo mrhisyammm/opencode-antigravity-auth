@@ -38310,6 +38310,9 @@ function startDashboardServer(port, accountManager) {
       res.end(JSON.stringify({ error: "Internal Server Error" }));
     }
   });
+  server.on("error", (err) => {
+    log9.error("Dashboard server error", { error: String(err) });
+  });
   server.listen(port, "127.0.0.1", () => {
     log9.info(`Dashboard server listening on http://127.0.0.1:${port}`);
   });
